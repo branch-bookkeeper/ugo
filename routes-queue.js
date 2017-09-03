@@ -27,7 +27,7 @@ router.route('/:user/:repository/:branch')
     .delete((req, res, next) => {
         if (Object.keys(req.body).length > 0) {
             redis.lrem(req.params.key, req.body)
-                .then(req.body)
+                .then(res.json(req.body))
                 .catch(next);
         } else {
             next(createError.BadRequest());
