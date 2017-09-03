@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const compression = require('compression');
+const queue = require('./routes-queue');
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.set('port', process.env.PORT || 3000);
 
 app.use(bodyParser.json());
 app.use(compression());
+
+app.use('/queue', queue);
 
 app.disable('x-powered-by');
 app.enable('trust proxy');
