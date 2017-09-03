@@ -6,7 +6,10 @@
   "author": "Branch Bookkeeper",
   "license": "GPL-3.0",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "test": "npm run lint && npm run test-ci",
+    "test-ci": "./test.sh",
+    "lint": "node_modules/.bin/eslint ."
   },
   "dependencies": {
     "async": "^2.5.0",
@@ -21,5 +24,14 @@
     "redis": "^2.8.0",
     "request": "^2.81.0",
     "request-promise": "^4.2.1"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "eslint": "^4.6.0",
+    "eslint-config-airbnb-base": "^12.0.0",
+    "eslint-plugin-import": "^2.7.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.5.0",
+    "supertest": "^3.0.0"
   }
 }
