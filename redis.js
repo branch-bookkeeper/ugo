@@ -23,13 +23,13 @@ const redis = Object.assign({
                 return;
             }
             redisClient.lrem(key, 0, JSON.stringify(data), (err, reply) => {
-                redis.emit('lrem', {data: data, key: key});
+                redis.emit('lrem', { data: data, key: key });
                 if (err) {
                     reject(err);
                 } else {
                     resolve(JSON.parse(reply));
                 }
-            })
+            });
         });
     },
     push(key, data) {
@@ -62,7 +62,7 @@ const redis = Object.assign({
             }
             if (key) {
                 redisClient.get(key, (err, data) => {
-                    if(err) {
+                    if (err) {
                         reject(err);
                     } else {
                         resolve(JSON.parse(data));
@@ -117,7 +117,7 @@ const redis = Object.assign({
                 return;
             }
             redisClient.keys(`${redisClient.options.prefix}${pattern}:*`, (err, rows) => {
-                if(err) {
+                if (err) {
                     reject(err);
                 } else {
                     resolve(rows.map(row => row.replace(redisClient.options.prefix, '')));
