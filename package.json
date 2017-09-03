@@ -1,0 +1,25 @@
+{
+  "name": "ugo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:branch-bookkeeper/ugo.git",
+  "author": "Branch Bookkeeper",
+  "license": "GPL-3.0",
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "async": "^2.5.0",
+    "body-parser": "^1.17.2",
+    "compression": "^1.7.0",
+    "express": "^4.15.4",
+    "http-errors": "^1.6.2",
+    "jsonwebtoken": "^7.4.3",
+    "morgan": "^1.8.2",
+    "nodemon": "^1.11.0",
+    "ramda": "^0.24.1",
+    "redis": "^2.8.0",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.1"
+  }
+}
