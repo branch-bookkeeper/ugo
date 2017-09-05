@@ -78,7 +78,7 @@ const redis = Object.assign({
                 return;
             }
             redisClient.lrange(key, 0, Number.MAX_SAFE_INTEGER, (err, reply) => {
-                if (!err && reply.length) {
+                if (!err) {
                     try {
                         resolve(reply.map(JSON.parse));
                     } catch (e) {
