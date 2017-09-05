@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 const queue = require('./routes-queue');
+const webhook = require('./routes-webhook');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(bodyParser.json());
 app.use(compression());
 
 app.use('/queue', queue);
+app.use('/webhook', webhook);
 
 app.disable('x-powered-by');
 app.enable('trust proxy');
@@ -32,10 +34,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(app.get('port'), () => {
-    console.info(`ugo started on port ${app.get('port')}`);
-});
-
 if (!test) {
     app.use(morgan('combined'));
 }
@@ -43,4 +41,8 @@ app.set('port', process.env.PORT || 3000);
 
 app.get('/', (req, res) => {
     res.send('Ciao Pina!');
+});
+
+module.exports = app.listen(app.get('port'), () => {
+    console.info(`ugo started on port ${app.get('port')}`);
 });

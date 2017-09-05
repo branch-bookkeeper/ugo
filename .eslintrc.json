@@ -1,0 +1,23 @@
+{
+    "extends": ["airbnb-base/rules/style"],
+    "env": {
+        "browser": true,
+        "greasemonkey": true,
+        "node": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "ecmaFeatures": {
+            "impliedStrict": true
+        }
+    },
+    "rules": {
+        "indent": ["error", 4, { "SwitchCase": 1, "VariableDeclarator": 1 }],
+        "comma-dangle": ["error", "always-multiline"],
+        "quote-props": ["error", "as-needed", { "unnecessary": true, "numbers": false }],
+        "func-names": 0,
+        "max-len": 0,
+        "no-underscore-dangle": 0,
+        "padded-blocks": 0
+    }
+}

@@ -23,13 +23,13 @@ const redis = Object.assign({
                 return;
             }
             redisClient.lrem(key, 0, JSON.stringify(data), (err, reply) => {
-                redis.emit('lrem', {data: data, key: key});
+                redis.emit('lrem', { data: data, key: key });
                 if (err) {
                     reject(err);
                 } else {
                     resolve(JSON.parse(reply));
                 }
-            })
+            });
         });
     },
     push(key, data) {
@@ -39,7 +39,7 @@ const redis = Object.assign({
                 return;
             }
             if (key && data) {
-                redisClient.rpush(key, JSON.stringify(data), resolve);
+                redisClient.rpush(key, JSON.stringify(data), (e, d) => resolve(d));
             }
         });
     },
@@ -50,7 +50,7 @@ const redis = Object.assign({
                 return;
             }
             if (key && data) {
-                redisClient.set(key, JSON.stringify(data), resolve);
+                redisClient.set(key, JSON.stringify(data), (e, d) => resolve(d));
             }
         });
     },
@@ -62,7 +62,7 @@ const redis = Object.assign({
             }
             if (key) {
                 redisClient.get(key, (err, data) => {
-                    if(err) {
+                    if (err) {
                         reject(err);
                     } else {
                         resolve(JSON.parse(data));
@@ -78,7 +78,7 @@ const redis = Object.assign({
                 return;
             }
             redisClient.lrange(key, 0, Number.MAX_SAFE_INTEGER, (err, reply) => {
-                if (!err && reply.length) {
+                if (!err) {
                     try {
                         resolve(reply.map(JSON.parse));
                     } catch (e) {
@@ -117,7 +117,7 @@ const redis = Object.assign({
                 return;
             }
             redisClient.keys(`${redisClient.options.prefix}${pattern}:*`, (err, rows) => {
-                if(err) {
+                if (err) {
                     reject(err);
                 } else {
                     resolve(rows.map(row => row.replace(redisClient.options.prefix, '')));

@@ -39,28 +39,28 @@ router.post('/', (req, res, next) => {
 
     Promise.all([
         redis.lrange(`${prefix}:${owner}:${repo}:${branch}`),
-        Github.getInstallationAccessToken(installationId)
+        Github.getInstallationAccessToken(installationId),
     ])
-    .then(([data, accessToken]) => {
-        let status = Github.STATUS_SUCCESS;
+        .then(([data, accessToken]) => {
+            let status = Github.STATUS_SUCCESS;
 
-        if(data.length === 0) {
-            status = Github.STATUS_FAILURE;
-        } else if (data[0].pullRequestNumber === pullRequestNumber) {
-            status = Github.STATUS_SUCCESS;
-        }
+            if (data.length === 0) {
+                status = Github.STATUS_FAILURE;
+            } else if (data[0].pullRequestNumber === pullRequestNumber) {
+                status = Github.STATUS_SUCCESS;
+            }
 
-        const options = {
-            accessToken,
-            url,
-            status,
-            description: status === Github.STATUS_SUCCESS ? 'It\'s your turn. Go go go!' : `There are ${data.length} people before you`,
-        };
+            const options = {
+                accessToken,
+                url,
+                status,
+                description: status === Github.STATUS_SUCCESS ? 'It\'s your turn. Go go go!' : `There are ${data.length} people before you`,
+            };
 
-        return Github.updatePullRequestStatus(options)
-    })
-    .then(() => res.send(''))
-    .catch(next)
+            return Github.updatePullRequestStatus(options);
+        })
+        .then(() => res.send(''))
+        .catch(next);
 });
 
 // Catch all

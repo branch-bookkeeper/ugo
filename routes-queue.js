@@ -16,7 +16,7 @@ router.route('/:user/:repository/:branch')
     })
     .get((req, res, next) => {
         redis.lrange(req.params.key)
-            .then(res.json)
+            .then(data => res.send(data))
             .catch(next);
     })
     .post((req, res, next) => {
@@ -27,7 +27,7 @@ router.route('/:user/:repository/:branch')
     .delete((req, res, next) => {
         if (Object.keys(req.body).length > 0) {
             redis.lrem(req.params.key, req.body)
-                .then(req.body)
+                .then(res.json(req.body))
                 .catch(next);
         } else {
             next(createError.BadRequest());

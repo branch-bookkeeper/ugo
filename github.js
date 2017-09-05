@@ -7,33 +7,33 @@ const userAgent = 'ugo';
 const getInstallationAccessToken = (appId, privateKey, installationId) => {
     const token = JWT.sign({
         iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000 + (10 * 60)),
+        exp: (Math.floor(Date.now() / 1000) + (10 * 60)),
         iss: appId,
-    }, privateKey, {algorithm: 'RS256'});
+    }, privateKey, { algorithm: 'RS256' });
 
     return request.post(`https://api.github.com/installations/${installationId}/access_tokens`, {
-        'auth': {
-            'bearer': token,
+        auth: {
+            bearer: token,
         },
-        'headers': {
+        headers: {
             'user-agent': userAgent,
-            'accept': 'application/vnd.github.machine-man-preview+json',
-        }
+            accept: 'application/vnd.github.machine-man-preview+json',
+        },
     }).then(prop('token'));
 };
 
 class Github {
     static updatePullRequestStatus(options) {
         return request.post(options.url, {
-            'headers': {
+            headers: {
                 'user-agent': userAgent,
-                'authorization': `token ${options.accessToken}`
+                authorization: `token ${options.accessToken}`,
             },
-            'body': {
-                'state': options.status,
-                'description' : options.description,
-                'context': 'Branch Bookkeeper'
-            }
+            body: {
+                state: options.status,
+                description: options.description,
+                context: 'Branch Bookkeeper',
+            },
         });
     }
 
