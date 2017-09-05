@@ -16,7 +16,7 @@ router.route('/:user/:repository/:branch')
     })
     .get((req, res, next) => {
         redis.lrange(req.params.key)
-            .then(res.json)
+            .then(data => res.send(data))
             .catch(next);
     })
     .post((req, res, next) => {
