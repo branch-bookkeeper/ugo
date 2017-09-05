@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 const queue = require('./routes-queue');
+const webhook = require('./routes-webhook');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(bodyParser.json());
 app.use(compression());
 
 app.use('/queue', queue);
+app.use('/webhook', webhook);
 
 app.disable('x-powered-by');
 app.enable('trust proxy');
