@@ -10,6 +10,7 @@
   "author": "Branch Bookkeeper",
   "license": "GPL-3.0",
   "scripts": {
+    "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "npm run lint && npm run test-ci",
     "test-ci": "./test.sh",
