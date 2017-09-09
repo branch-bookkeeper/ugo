@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
+const Rollbar = require('rollbar');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
 
@@ -11,6 +12,13 @@ const app = express();
 const environment = app.get('env') || 'production';
 const development = environment === 'development';
 const test = environment === 'test';
+
+const rollbar = new Rollbar({
+    accessToken: process.env['ROLLBAR_KEY'],
+    environment: environment,
+    captureUncaught: !development,
+    captureUnhandledRejections: !development,
+});
 
 app.set('port', process.env.PORT || 3000);
 
@@ -30,7 +38,11 @@ if (!test) {
 
 // error handlers
 app.use((err, req, res, next) => {
-    res.status(err.status || 500).json({
+    const status = err.status || 500;
+    if (status >= 500) {
+        rollbar.error(err, req);
+    }
+    res.status(status).json({
         stack: development ? err.stack : undefined,
         error: err.message,
     });
