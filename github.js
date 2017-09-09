@@ -3,6 +3,12 @@ const { prop } = require('ramda');
 const request = require('request-promise').defaults({ json: true });
 const fs = require('fs');
 const userAgent = 'ugo';
+const privateKeyPath = 'private.key';
+
+if (process.env.PRIVATE_KEY_URL !== undefined) {
+    request.get(process.env.PRIVATE_KEY_URL)
+        .then(res => fs.writeFile(privateKeyPath, res, () => console.log(`${privateKeyPath} saved`)));
+}
 
 const getInstallationAccessToken = (appId, privateKey, installationId) => {
     const token = JWT.sign({
@@ -38,7 +44,7 @@ class Github {
     }
 
     static getInstallationAccessToken(installationId) {
-        return getInstallationAccessToken(process.env.APP_ID, fs.readFileSync('private.key'), installationId);
+        return getInstallationAccessToken(process.env.APP_ID, fs.readFileSync(privateKeyPath), installationId);
     }
 }
 
