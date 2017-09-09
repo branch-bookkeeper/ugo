@@ -30,7 +30,7 @@ const getInstallationAccessToken = (appId, privateKey, installationId) => {
 
 class Github {
     static updatePullRequestStatus(options) {
-        return request.post(options.url, {
+        return request.post(options.statusUrl, {
             headers: {
                 'user-agent': userAgent,
                 authorization: `token ${options.accessToken}`,
@@ -38,6 +38,7 @@ class Github {
             body: {
                 state: options.status,
                 description: options.description,
+                target_url: options.targetUrl,
                 context: 'Branch Bookkeeper',
             },
         });
