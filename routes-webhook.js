@@ -12,14 +12,6 @@ router.use('/', (req, res, next) => {
     next();
 });
 
-// Installation
-router.post('/', (req, res, next) => {
-    if (req.get('X-GitHub-Event') !== 'installation') {
-        next();
-        return;
-    }
-});
-
 // PR
 router.post('/', (req, res, next) => {
     if (req.get('X-GitHub-Event') !== 'pull_request') {
