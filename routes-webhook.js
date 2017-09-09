@@ -30,7 +30,7 @@ router.post('/', (req, res, next) => {
     const body = req.body;
     const { installation: { id: installationId } } = body;
     const { pull_request: pullRequest } = body;
-    const { statuses_url: url } = pullRequest;
+    const { statuses_url: statusUrl } = pullRequest;
     const { base: { repo: baseRepo } } = pullRequest;
     const { base: { ref: branch } } = pullRequest;
     const { number: pullRequestNumber } = pullRequest;
@@ -42,19 +42,24 @@ router.post('/', (req, res, next) => {
         Github.getInstallationAccessToken(installationId),
     ])
         .then(([data, accessToken]) => {
-            let status = Github.STATUS_SUCCESS;
+            let status = Github.STATUS_FAILURE;
+            let description = 'It\'s your turn';
+            let targetUrl = `https://app.branch-bookkeeper.com/${owner}/${repo}/${branch}/${pullRequestNumber}`;
 
             if (data.length === 0) {
-                status = Github.STATUS_FAILURE;
+                description = 'Book to merge';
             } else if (data[0].pullRequestNumber === pullRequestNumber) {
                 status = Github.STATUS_SUCCESS;
+            } else {
+                description = `There are ${data.length} people before you`;
             }
 
             const options = {
                 accessToken,
-                url,
+                statusUrl,
                 status,
-                description: status === Github.STATUS_SUCCESS ? 'It\'s your turn. Go go go!' : `There are ${data.length} people before you`,
+                description,
+                targetUrl,
             };
 
             return Github.updatePullRequestStatus(options);
