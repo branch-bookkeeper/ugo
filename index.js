@@ -40,7 +40,7 @@ if (!test) {
 app.set('port', process.env.PORT || 3000);
 
 app.get('/', (req, res) => {
-    res.send('Ciao Pina!');
+    res.send('');
 });
 
 module.exports = app.listen(app.get('port'), () => {
