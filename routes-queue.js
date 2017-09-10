@@ -3,14 +3,14 @@ const redis = require('./redis');
 const createError = require('http-errors');
 const prefix = 'booking';
 
-router.route('/:user/:repository/:branch')
+router.route('/:owner/:repository/:branch')
     .all((req, res, next) => {
         if (!redis.enabled()) {
             next(createError.ServiceUnavailable('redis not available'));
             return;
         }
 
-        req.params.key = `${prefix}:${req.params.user}:${req.params.repository}:${req.params.branch}`;
+        req.params.key = `${prefix}:${req.params.owner}:${req.params.repository}:${req.params.branch}`;
 
         next();
     })
