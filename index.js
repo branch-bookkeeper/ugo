@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const compression = require('compression');
+const cors = require('cors');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
 
@@ -15,6 +16,7 @@ app.set('port', process.env.PORT || 3000);
 
 app.use(bodyParser.json());
 app.use(compression());
+app.use(cors({ origin: 'https://app.branch-bookkeeper.com' }));
 
 app.use('/queue', queue);
 app.use('/webhook', webhook);
