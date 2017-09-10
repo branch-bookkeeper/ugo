@@ -72,13 +72,20 @@ const redis = Object.assign({
             }
         });
     },
-    lrange(key) {
+    lrange(key, numberOfItems) {
         return new Promise((resolve, reject) => {
             if (!redisClient || !redisClient.ready) {
                 reject(eNC);
                 return;
             }
-            redisClient.lrange(key, 0, Number.MAX_SAFE_INTEGER, (err, reply) => {
+
+            if (numberOfItems) {
+                numberOfItems -= 1;
+            } else {
+                numberOfItems = Number.MAX_SAFE_INTEGER;
+            }
+
+            redisClient.lrange(key, 0, numberOfItems, (err, reply) => {
                 if (!err) {
                     try {
                         resolve(reply.map(JSON.parse));
