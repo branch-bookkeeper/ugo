@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
 const Rollbar = require('rollbar');
+const postal = require('postal');
+const applicationEventHandler = require('./application-event-handler');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
 
@@ -59,5 +61,11 @@ app.get('/', (req, res) => {
 });
 
 module.exports = app.listen(app.get('port'), () => {
-    console.info(`ugo started on port ${app.get('port')}`);
+    postal.publish({
+        channel: 'application',
+        topic: 'started',
+        data: {
+            port: app.get('port'),
+        },
+    });
 });
