@@ -42,7 +42,7 @@ if (!test) {
 // error handlers
 app.use((err, req, res, next) => {
     const status = err.status || 500;
-    if (status >= 500) {
+    if (status >= 500 && !development) {
         rollbar.error(err, req);
     }
     res.status(status).json({
