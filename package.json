@@ -26,6 +26,7 @@
     "http-errors": "^1.6.2",
     "jsonwebtoken": "^7.4.3",
     "morgan": "^1.8.2",
+    "newrelic": "^2.2.0",
     "nodemon": "^1.11.0",
     "ramda": "^0.24.1",
     "redis": "^2.8.0",

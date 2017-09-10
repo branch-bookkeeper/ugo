@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
 const Rollbar = require('rollbar');
+const newrelic = require('newrelic');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
 
