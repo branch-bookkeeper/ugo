@@ -2,13 +2,9 @@ const JWT = require('jsonwebtoken');
 const { prop } = require('ramda');
 const request = require('request-promise').defaults({ json: true });
 const fs = require('fs');
+const postal = require('postal');
 const userAgent = 'ugo';
-const privateKeyPath = 'private.key';
-
-if (process.env.PRIVATE_KEY_URL !== undefined) {
-    request.get(process.env.PRIVATE_KEY_URL)
-        .then(res => fs.writeFile(privateKeyPath, res, () => console.log(`${privateKeyPath} saved`)));
-}
+let privateKey = '';
 
 const getInstallationAccessToken = (appId, privateKey, installationId) => {
     const token = JWT.sign({
@@ -28,6 +24,17 @@ const getInstallationAccessToken = (appId, privateKey, installationId) => {
     }).then(prop('token'));
 };
 
+const readPrivateKey = ({ path: privateKeyPath }) => {
+    privateKey = fs.readFileSync(privateKeyPath);
+    console.log(`${ privateKeyPath } saved`);
+};
+
+postal.subscribe({
+    channel: 'github',
+    topic: 'key.saved',
+    callback: readPrivateKey,
+});
+
 class Github {
     static updatePullRequestStatus(options) {
         return request.post(options.statusUrl, {
@@ -45,7 +52,7 @@ class Github {
     }
 
     static getInstallationAccessToken(installationId) {
-        return getInstallationAccessToken(process.env.APP_ID, fs.readFileSync(privateKeyPath), installationId);
+        return getInstallationAccessToken(process.env.APP_ID, privateKey, installationId);
     }
 }
 
