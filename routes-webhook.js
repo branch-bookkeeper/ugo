@@ -29,14 +29,11 @@ router.post('/', (req, res, next) => {
     const { owner: { login: owner } } = baseRepo;
     const { name: repo } = baseRepo;
 
-    Promise.all([
-        redis.lrange(`${prefix}:${owner}:${repo}:${branch}`),
-        Github.getInstallationAccessToken(installationId),
-    ])
-        .then(([data, accessToken]) => {
+    redis.lrange(`${prefix}:${owner}:${repo}:${branch}`)
+        .then(data => {
             let status = Github.STATUS_FAILURE;
             let description = 'It\'s your turn';
-            let targetUrl = `https://app.branch-bookkeeper.com/${owner}/${repo}/${branch}/${pullRequestNumber}`;
+            const targetUrl = `https://app.branch-bookkeeper.com/${owner}/${repo}/${branch}/${pullRequestNumber}`;
 
             if (data.length === 0) {
                 description = 'Book to merge';
@@ -47,7 +44,7 @@ router.post('/', (req, res, next) => {
             }
 
             const options = {
-                accessToken,
+                installationId,
                 statusUrl,
                 status,
                 description,

@@ -37,18 +37,21 @@ postal.subscribe({
 
 class Github {
     static updatePullRequestStatus(options) {
-        return request.post(options.statusUrl, {
-            headers: {
-                'user-agent': userAgent,
-                authorization: `token ${options.accessToken}`,
-            },
-            body: {
-                state: options.status,
-                description: options.description,
-                target_url: options.targetUrl,
-                context: 'Branch Bookkeeper',
-            },
-        });
+        Github.getInstallationAccessToken(options.installationId)
+            .then(accessToken => {
+                return request.post(options.statusUrl, {
+                    headers: {
+                        'user-agent': userAgent,
+                        authorization: `token ${accessToken}`,
+                    },
+                    body: {
+                        state: options.status,
+                        description: options.description,
+                        target_url: options.targetUrl,
+                        context: 'Branch Bookkeeper',
+                    },
+                });
+            });
     }
 
     static getInstallationAccessToken(installationId) {
