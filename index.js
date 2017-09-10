@@ -6,6 +6,7 @@ const compression = require('compression');
 const cors = require('cors');
 const Rollbar = require('rollbar');
 const postal = require('postal');
+const queueEventHandler = require('./queue-event-handler');
 const applicationEventHandler = require('./application-event-handler');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
