@@ -25,7 +25,7 @@ app.set('port', process.env.PORT || 3000);
 
 app.use(bodyParser.json());
 app.use(compression());
-app.use(cors({ origin: 'https://app.branch-bookkeeper.com' }));
+app.use(cors({ origin: process.env.APP_ORIGIN || 'http://localhost:4000' }));
 
 app.use('/queue', queue);
 app.use('/webhook', webhook);
