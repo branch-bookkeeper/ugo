@@ -34,6 +34,7 @@ app.use('/queue', queue);
 app.use('/webhook', webhook);
 
 app.disable('x-powered-by');
+app.disable('etag');
 app.enable('trust proxy');
 
 if (!test) {
