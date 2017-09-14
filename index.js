@@ -30,16 +30,16 @@ app.use(bodyParser.json());
 app.use(compression());
 app.use(cors({ origin: process.env.APP_ORIGIN || 'http://localhost:4000' }));
 
+if (!test) {
+    app.use(morgan('combined'));
+}
+
 app.use('/queue', queue);
 app.use('/webhook', webhook);
 
 app.disable('x-powered-by');
 app.disable('etag');
 app.enable('trust proxy');
-
-if (!test) {
-    app.use(morgan('combined'));
-}
 
 // error handlers
 app.use((err, req, res, next) => {
