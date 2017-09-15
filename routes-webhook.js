@@ -2,7 +2,9 @@ const router = require('express').Router();
 const redis = require('./redis');
 const Github = require('./github');
 const createError = require('http-errors');
-const prefix = 'booking';
+const { findIndex, propEq } = require('ramda');
+const installationPrefix = 'installation';
+const bookingPrefix = 'booking';
 
 router.use('/', (req, res, next) => {
     if (!redis.enabled()) {
@@ -23,37 +25,49 @@ router.post('/', (req, res, next) => {
     const { installation: { id: installationId } } = body;
     const { pull_request: pullRequest } = body;
     const { statuses_url: statusUrl } = pullRequest;
-    const { base: { repo: baseRepo } } = pullRequest;
-    const { base: { ref: branch } } = pullRequest;
+    const { base: { repo: baseRepo, ref: branch } } = pullRequest;
     const { number: pullRequestNumber } = pullRequest;
     const { owner: { login: owner } } = baseRepo;
     const { name: repo } = baseRepo;
 
-    redis.lrange(`${prefix}:${owner}:${repo}:${branch}`)
-        .then(data => {
-            let status = Github.STATUS_FAILURE;
-            let description = 'It\'s your turn';
-            const targetUrl = `https://app.branch-bookkeeper.com/${owner}/${repo}/${branch}/${pullRequestNumber}`;
+    let status;
+    let description;
+    let targetUrl;
 
-            if (data.length === 0) {
+    redis.set(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`, {
+        statusUrl,
+        installationId,
+    })
+        .then(() => redis.lrange(`${bookingPrefix}:${owner}:${repo}:${branch}`))
+        .then(bookingData => {
+            targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
+            const index = findIndex(propEq('pullRequestNumber', pullRequestNumber))(bookingData);
+
+            if (bookingData.length === 0 || index < 0) {
                 description = 'Book to merge';
-            } else if (data[0].pullRequestNumber === pullRequestNumber) {
+                status = Github.STATUS_FAILURE;
+            } else if (index === 0) {
+                description = 'It\'s your turn';
                 status = Github.STATUS_SUCCESS;
             } else {
-                description = `There are ${data.length} people before you`;
+                description = `${index} PR before you`;
+                status = Github.STATUS_FAILURE;
             }
 
-            const options = {
+            return Github.updatePullRequestStatus({
                 installationId,
                 statusUrl,
                 status,
                 description,
                 targetUrl,
-            };
-
-            return Github.updatePullRequestStatus(options);
+            });
         })
-        .then(() => res.send(''))
+        .then(() => res.json({
+            pullRequestNumber,
+            status,
+            description,
+            targetUrl,
+        }))
         .catch(next);
 });
 
