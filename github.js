@@ -37,7 +37,7 @@ postal.subscribe({
 
 class Github {
     static updatePullRequestStatus(options) {
-        Github.getInstallationAccessToken(options.installationId)
+        return Github.getInstallationAccessToken(options.installationId)
             .then(accessToken => {
                 return request.post(options.statusUrl, {
                     headers: {
