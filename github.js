@@ -3,7 +3,7 @@ const { prop } = require('ramda');
 const request = require('request-promise').defaults({ json: true });
 const fs = require('fs');
 const postal = require('postal');
-const userAgent = 'ugo';
+const userAgent = 'branch-bookkeeper';
 let privateKey = '';
 
 const getInstallationAccessToken = (appId, privateKey, installationId) => {
