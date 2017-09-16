@@ -29,10 +29,13 @@ router.post('/', (req, res, next) => {
     const { number: pullRequestNumber } = pullRequest;
     const { owner: { login: owner } } = baseRepo;
     const { name: repo } = baseRepo;
+    const { sender: { login: username } } = body;
 
     let status;
     let description;
     let targetUrl;
+
+    req.username = username;
 
     redis.set(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`, {
         statusUrl,

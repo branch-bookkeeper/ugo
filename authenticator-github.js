@@ -23,8 +23,9 @@ const authenticator = (req, res, next) => {
 
     _getTokenInfo(token)
         .then(tokenInfo => {
-            const { client_id: clientId } = tokenInfo;
+            const { client_id: clientId, login } = tokenInfo;
             if (clientId === process.env.CLIENT_ID) {
+                req.username = login;
                 next();
             } else {
                 next(createError.Unauthorized('Unauthorized'));
