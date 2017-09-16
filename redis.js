@@ -44,14 +44,14 @@ const redis = Object.assign({
             }
         });
     },
-    set(key, data) {
+    set(key, data, ttl) {
         return new Promise((resolve, reject) => {
             if (!redisClient || !redisClient.ready) {
                 reject(eNC);
                 return;
             }
             if (key && data) {
-                redisClient.set(key, JSON.stringify(data), (e, d) => resolve(d));
+                redisClient.set(key, JSON.stringify(data), 'EX', ttl || -1, (e, d) => resolve(d));
             }
         });
     },
