@@ -2,13 +2,9 @@ const JWT = require('jsonwebtoken');
 const { prop } = require('ramda');
 const request = require('request-promise').defaults({ json: true });
 const fs = require('fs');
-const userAgent = 'ugo';
-const privateKeyPath = 'private.key';
-
-if (process.env.PRIVATE_KEY_URL !== undefined) {
-    request.get(process.env.PRIVATE_KEY_URL)
-        .then(res => fs.writeFile(privateKeyPath, res, () => console.log(`${privateKeyPath} saved`)));
-}
+const postal = require('postal');
+const userAgent = 'branch-bookkeeper';
+let privateKey = '';
 
 const getInstallationAccessToken = (appId, privateKey, installationId) => {
     const token = JWT.sign({
@@ -28,24 +24,38 @@ const getInstallationAccessToken = (appId, privateKey, installationId) => {
     }).then(prop('token'));
 };
 
+const readPrivateKey = ({ path: privateKeyPath }) => {
+    privateKey = fs.readFileSync(privateKeyPath);
+    console.log(`${ privateKeyPath } saved`);
+};
+
+postal.subscribe({
+    channel: 'github',
+    topic: 'key.saved',
+    callback: readPrivateKey,
+});
+
 class Github {
     static updatePullRequestStatus(options) {
-        return request.post(options.statusUrl, {
-            headers: {
-                'user-agent': userAgent,
-                authorization: `token ${options.accessToken}`,
-            },
-            body: {
-                state: options.status,
-                description: options.description,
-                target_url: options.targetUrl,
-                context: 'Branch Bookkeeper',
-            },
-        });
+        return Github.getInstallationAccessToken(options.installationId)
+            .then(accessToken => {
+                return request.post(options.statusUrl, {
+                    headers: {
+                        'user-agent': userAgent,
+                        authorization: `token ${accessToken}`,
+                    },
+                    body: {
+                        state: options.status,
+                        description: options.description,
+                        target_url: options.targetUrl,
+                        context: 'Branch Bookkeeper',
+                    },
+                });
+            });
     }
 
     static getInstallationAccessToken(installationId) {
-        return getInstallationAccessToken(process.env.APP_ID, fs.readFileSync(privateKeyPath), installationId);
+        return getInstallationAccessToken(process.env.APP_ID, privateKey, installationId);
     }
 }
 

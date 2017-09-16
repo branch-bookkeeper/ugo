@@ -1,10 +1,13 @@
+const newrelic = require('newrelic');
 const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
 const Rollbar = require('rollbar');
-const newrelic = require('newrelic');
+const postal = require('postal');
+const queueEventHandler = require('./queue-event-handler');
+const applicationEventHandler = require('./application-event-handler');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
 
@@ -27,20 +30,21 @@ app.use(bodyParser.json());
 app.use(compression());
 app.use(cors({ origin: process.env.APP_ORIGIN || 'http://localhost:4000' }));
 
-app.use('/queue', queue);
-app.use('/webhook', webhook);
-
-app.disable('x-powered-by');
-app.enable('trust proxy');
-
 if (!test) {
     app.use(morgan('combined'));
 }
 
+app.use('/queue', queue);
+app.use('/webhook', webhook);
+
+app.disable('x-powered-by');
+app.disable('etag');
+app.enable('trust proxy');
+
 // error handlers
 app.use((err, req, res, next) => {
     const status = err.status || 500;
-    if (status >= 500) {
+    if (status >= 500 && !development) {
         rollbar.error(err, req);
     }
     res.status(status).json({
@@ -59,5 +63,11 @@ app.get('/', (req, res) => {
 });
 
 module.exports = app.listen(app.get('port'), () => {
-    console.info(`ugo started on port ${app.get('port')}`);
+    postal.publish({
+        channel: 'application',
+        topic: 'started',
+        data: {
+            port: app.get('port'),
+        },
+    });
 });

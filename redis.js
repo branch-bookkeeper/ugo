@@ -2,9 +2,10 @@ const redisLib = require('redis');
 const async = require('async');
 const EventEmitter = require('events');
 const eNC = new Error('redis not connected');
+let redisClient;
 
 if (process.env['REDIS_URL']) {
-    var redisClient = redisLib.createClient(
+    redisClient = redisLib.createClient(
         process.env['REDIS_URL'],
         {
             prefix: process.env['NODE_ENV'] ? process.env['NODE_ENV'] + ':' : '',
@@ -71,13 +72,20 @@ const redis = Object.assign({
             }
         });
     },
-    lrange(key) {
+    lrange(key, numberOfItems) {
         return new Promise((resolve, reject) => {
             if (!redisClient || !redisClient.ready) {
                 reject(eNC);
                 return;
             }
-            redisClient.lrange(key, 0, Number.MAX_SAFE_INTEGER, (err, reply) => {
+
+            if (numberOfItems) {
+                numberOfItems -= 1;
+            } else {
+                numberOfItems = Number.MAX_SAFE_INTEGER;
+            }
+
+            redisClient.lrange(key, 0, numberOfItems, (err, reply) => {
                 if (!err) {
                     try {
                         resolve(reply.map(JSON.parse));
@@ -128,11 +136,11 @@ const redis = Object.assign({
 }, EventEmitter.prototype);
 
 if (process.env['REDIS_URL'] && redisClient) {
-    redisClient.on('error', function (error) {
+    redisClient.on('error', error => {
         console.error(error);
         redis.emit('error', error);
     });
-    redisClient.on('ready', function () {
+    redisClient.on('ready', () => {
         console.info('Connected to redis');
         redis.emit('ready');
     });
