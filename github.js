@@ -7,6 +7,10 @@ const userAgent = 'branch-bookkeeper';
 let privateKey = '';
 
 const getInstallationAccessToken = (appId, privateKey, installationId) => {
+    if (privateKey === '') {
+        return Promise.reject(new Error('Missing private key'));
+    }
+
     const token = JWT.sign({
         iat: Math.floor(Date.now() / 1000),
         exp: (Math.floor(Date.now() / 1000) + (10 * 60)),
