@@ -3,6 +3,7 @@ const { prop } = require('ramda');
 const request = require('request-promise').defaults({ json: true });
 const fs = require('fs');
 const postal = require('postal');
+const logger = require('./logger');
 const userAgent = 'branch-bookkeeper';
 let privateKey = '';
 
@@ -30,7 +31,7 @@ const getInstallationAccessToken = (appId, privateKey, installationId) => {
 
 const readPrivateKey = ({ path: privateKeyPath }) => {
     privateKey = fs.readFileSync(privateKeyPath);
-    console.log(`${ privateKeyPath } saved`);
+    logger.info(`${ privateKeyPath } saved`);
 };
 
 postal.subscribe({

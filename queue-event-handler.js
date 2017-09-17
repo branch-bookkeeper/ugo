@@ -1,6 +1,7 @@
 const postal = require('postal');
 const Github = require('./github');
 const redis = require('./redis');
+const logger = require('./logger');
 const installationPrefix = 'installation';
 const bookingPrefix = 'booking';
 
@@ -33,7 +34,7 @@ const addItem = ({ queue }) => {
             }
             return Promise.resolve(null);
         })
-        .catch(console.error);
+        .catch(logger.error);
 };
 
 const removeItem = ({ queue, item }) => {
@@ -75,7 +76,7 @@ const removeItem = ({ queue, item }) => {
                 });
             }
         })
-        .catch(console.error);
+        .catch(logger.error);
 };
 
 const _blockAllPullRequests = (queue) => {

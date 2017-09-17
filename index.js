@@ -10,6 +10,7 @@ const queueEventHandler = require('./queue-event-handler');
 const applicationEventHandler = require('./application-event-handler');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
+const logger = require('./logger');
 
 const app = express();
 
@@ -32,7 +33,7 @@ app.use(cors({ origin: process.env.APP_ORIGIN || 'http://localhost:4000' }));
 
 if (!test) {
     morgan.token('remote-user', req => req.username);
-    app.use(morgan('combined'));
+    app.use(morgan('combined', { stream: logger }));
 }
 
 app.use('/queue', queue);
