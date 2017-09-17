@@ -40,7 +40,7 @@ const redis = Object.assign({
                 return;
             }
             if (key && data) {
-                redisClient.rpush(key, JSON.stringify(data), (e, d) => resolve(d));
+                redisClient.rpush(key, JSON.stringify(data), (e, d) => e ? reject(e) : resolve(d));
             }
         });
     },
