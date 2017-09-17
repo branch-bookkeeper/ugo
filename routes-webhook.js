@@ -2,7 +2,7 @@ const router = require('express').Router();
 const redis = require('./redis');
 const Github = require('./github');
 const createError = require('http-errors');
-const { findIndex, propEq } = require('ramda');
+const { findIndex, propEq, find } = require('ramda');
 const manager = require('./manager-queue');
 const installationPrefix = 'installation';
 
@@ -22,6 +22,40 @@ router.post('/', (req, res, next) => {
     }
 
     const body = req.body;
+    const { action } = body;
+    const { sender: { login: username } } = body;
+
+    req.username = username;
+
+    if (action === 'closed') {
+        _handleClosed(req, res, next);
+    } else {
+        _handleOpened(req, res, next);
+    }
+});
+
+const _handleClosed = (req, res, next) => {
+    const body = req.body;
+    const { pull_request: pullRequest } = body;
+    const { base: { repo: baseRepo, ref: branch } } = pullRequest;
+    const { number: pullRequestNumber } = pullRequest;
+    const { owner: { login: owner } } = baseRepo;
+    const { name: repo } = baseRepo;
+
+    manager.getItems(`${owner}:${repo}:${branch}`)
+        .then(bookingData => {
+            const item = find(propEq('pullRequestNumber', pullRequestNumber))(bookingData);
+            if (item) {
+                return manager.removeItem(`${owner}:${repo}:${branch}`, item);
+            }
+        })
+        .then(() => redis.del(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`))
+        .then(() => res.send(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} closed`))
+        .catch(next);
+};
+
+const _handleOpened = (req, res, next) => {
+    const body = req.body;
     const { installation: { id: installationId } } = body;
     const { pull_request: pullRequest } = body;
     const { statuses_url: statusUrl } = pullRequest;
@@ -29,13 +63,9 @@ router.post('/', (req, res, next) => {
     const { number: pullRequestNumber } = pullRequest;
     const { owner: { login: owner } } = baseRepo;
     const { name: repo } = baseRepo;
-    const { sender: { login: username } } = body;
-
     let status;
     let description;
     let targetUrl;
-
-    req.username = username;
 
     redis.set(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`, {
         statusUrl,
@@ -72,7 +102,7 @@ router.post('/', (req, res, next) => {
             targetUrl,
         }))
         .catch(next);
-});
+};
 
 // Catch all
 router.all('/', (req, res) => res.send(''));
