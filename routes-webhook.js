@@ -3,8 +3,8 @@ const redis = require('./redis');
 const Github = require('./github');
 const createError = require('http-errors');
 const { findIndex, propEq } = require('ramda');
+const manager = require('./manager-queue');
 const installationPrefix = 'installation';
-const bookingPrefix = 'booking';
 
 router.use('/', (req, res, next) => {
     if (!redis.enabled()) {
@@ -41,7 +41,7 @@ router.post('/', (req, res, next) => {
         statusUrl,
         installationId,
     })
-        .then(() => redis.lrange(`${bookingPrefix}:${owner}:${repo}:${branch}`))
+        .then(() => manager.getItems(`${owner}:${repo}:${branch}`))
         .then(bookingData => {
             targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
             const index = findIndex(propEq('pullRequestNumber', pullRequestNumber))(bookingData);
