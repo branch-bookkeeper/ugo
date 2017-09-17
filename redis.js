@@ -62,6 +62,17 @@ const redis = Object.assign({
             }
         });
     },
+    del(key) {
+        return new Promise((resolve, reject) => {
+            if (!redisClient || !redisClient.ready) {
+                reject(eNC);
+                return;
+            }
+            if (key) {
+                redisClient.del(key, (e, d) => e ? reject(e) : resolve(d));
+            }
+        });
+    },
     get(key) {
         return new Promise((resolve, reject) => {
             if (!redisClient || !redisClient.ready) {
