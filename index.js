@@ -31,6 +31,7 @@ app.use(compression());
 app.use(cors({ origin: process.env.APP_ORIGIN || 'http://localhost:4000' }));
 
 if (!test) {
+    morgan.token('remote-user', req => req.username);
     app.use(morgan('combined'));
 }
 

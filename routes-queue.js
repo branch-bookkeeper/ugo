@@ -2,7 +2,10 @@ const router = require('express').Router();
 const redis = require('./redis');
 const createError = require('http-errors');
 const postal = require('postal');
+const authenticator = require('./authenticator-github');
 const prefix = 'booking';
+
+router.use(authenticator);
 
 router.route('/:owner/:repository/:branch')
     .all((req, res, next) => {

@@ -57,6 +57,22 @@ class Github {
     static getInstallationAccessToken(installationId) {
         return getInstallationAccessToken(process.env.APP_ID, privateKey, installationId);
     }
+
+    static getUserInfo(token) {
+        return request.get('https://api.github.com/user', {
+            headers: {
+                'user-agent': userAgent,
+                authorization: `token ${token}`,
+            },
+            resolveWithFullResponse: true,
+        })
+            .then(response => {
+                return {
+                    ...response.body,
+                    client_id: response.headers['x-oauth-client-id'],
+                };
+            });
+    }
 }
 
 Github.STATUS_SUCCESS = 'success';
