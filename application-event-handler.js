@@ -1,6 +1,7 @@
 const postal = require('postal');
 const request = require('request-promise');
 const fs = require('fs');
+const logger = require('./logger');
 
 const privateKeyPath = 'private.key';
 
@@ -29,6 +30,6 @@ postal.subscribe({
     channel: 'application',
     topic: 'started',
     callback: (data) => {
-        console.info(`ugo started on port ${data.port}`);
+        logger.info(`ugo started on port ${data.port}`);
     },
 });

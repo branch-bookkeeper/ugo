@@ -1,5 +1,6 @@
 const redisLib = require('redis');
 const async = require('async');
+const logger = require('./logger');
 const EventEmitter = require('events');
 const eNC = new Error('redis not connected');
 let redisClient;
@@ -155,15 +156,15 @@ const redis = Object.assign({
 
 if (process.env['REDIS_URL'] && redisClient) {
     redisClient.on('error', error => {
-        console.error(error);
+        logger.error(error);
         redis.emit('error', error);
     });
     redisClient.on('ready', () => {
-        console.info('Connected to redis');
+        logger.info('Connected to redis');
         redis.emit('ready');
     });
 } else {
-    console.info('redis parameters missing, skipping connection');
+    logger.info('redis parameters missing, skipping connection');
     redis.emit('unavailable');
 }
 
