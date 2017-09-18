@@ -40,7 +40,7 @@ const redis = Object.assign({
                 return;
             }
             if (key && data) {
-                redisClient.rpush(key, JSON.stringify(data), (e, d) => resolve(d));
+                redisClient.rpush(key, JSON.stringify(data), (e, d) => e ? reject(e) : resolve(d));
             }
         });
     },
@@ -51,7 +51,25 @@ const redis = Object.assign({
                 return;
             }
             if (key && data) {
-                redisClient.set(key, JSON.stringify(data), 'EX', ttl || -1, (e, d) => resolve(d));
+                const callback = (e, d) => e ? reject(e) : resolve(d);
+                const jsonData = JSON.stringify(data);
+
+                if (ttl) {
+                    redisClient.set(key, jsonData, 'EX', ttl || Number.MAX_SAFE_INTEGER, callback);
+                } else {
+                    redisClient.set(key, jsonData, callback);
+                }
+            }
+        });
+    },
+    del(key) {
+        return new Promise((resolve, reject) => {
+            if (!redisClient || !redisClient.ready) {
+                reject(eNC);
+                return;
+            }
+            if (key) {
+                redisClient.del(key, (e, d) => e ? reject(e) : resolve(d));
             }
         });
     },
