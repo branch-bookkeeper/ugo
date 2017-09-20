@@ -3,9 +3,8 @@ const createError = require('http-errors');
 const manager = require('./manager-queue');
 const authenticator = require('./authenticator-github');
 
-router.use(authenticator);
-
 router.route('/:owner/:repository/:branch')
+    .all(authenticator)
     .all((req, res, next) => {
         if (!manager.enabled()) {
             next(createError.ServiceUnavailable('queue not available'));
