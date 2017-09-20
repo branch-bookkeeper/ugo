@@ -8,7 +8,7 @@ const installationPrefix = 'installation';
 
 router.post('/', (req, res, next) => {
     if (!redis.enabled()) {
-        next(createError.ServiceUnavailable('redis not available'));
+        next(createError.ServiceUnavailable('queue not available'));
         return;
     }
 
