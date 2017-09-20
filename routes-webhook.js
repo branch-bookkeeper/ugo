@@ -72,6 +72,7 @@ const _handleOpened = (req, res, next) => {
         statusUrl,
         installationId,
     })
+        .then(() => redis.hset(installationPrefix, `${owner}:${repo}`, installationId))
         .then(() => manager.getItems(`${owner}:${repo}:${branch}`))
         .then(bookingData => {
             targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
