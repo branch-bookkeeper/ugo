@@ -3,7 +3,7 @@ const Github = require('./github');
 const redis = require('./redis');
 const logger = require('./logger');
 const { tail } = require('ramda');
-const installationPrefix = 'installation';
+const pullRequestPrefix = 'pullrequest';
 const bookingPrefix = 'booking';
 
 const addItem = ({ queue }) => {
@@ -18,16 +18,16 @@ const addItem = ({ queue }) => {
                 const [first] = queueItems;
                 const { pullRequestNumber } = first;
                 return Promise.all([
-                    redis.get(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`),
+                    redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`),
                     Promise.resolve(pullRequestNumber),
                 ]);
             }
             return Promise.resolve([null, null]);
         })
-        .then(([installationData, pullRequestNumber]) => {
-            if (installationData) {
+        .then(([pullRequestData, pullRequestNumber]) => {
+            if (pullRequestData) {
                 return _unblockPullRequest({
-                    ...installationData,
+                    ...pullRequestData,
                     owner,
                     repo,
                     branch,
@@ -43,11 +43,11 @@ const removeItem = ({ queue, item }) => {
     const [owner, repo, branch] = queue.split(':');
     const { pullRequestNumber } = item;
 
-    redis.get(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`)
-        .then(installationData => {
-            if (installationData) {
+    redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`)
+        .then(pullRequestData => {
+            if (pullRequestData) {
                 return _blockPullRequest({
-                    ...installationData,
+                    ...pullRequestData,
                     owner,
                     repo,
                     branch,
@@ -63,16 +63,16 @@ const removeItem = ({ queue, item }) => {
                 const [first] = queueItems;
                 const { pullRequestNumber } = first;
                 return Promise.all([
-                    redis.get(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`),
+                    redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`),
                     Promise.resolve(pullRequestNumber),
                 ]);
             }
             return Promise.resolve([null, null]);
         })
-        .then(([installationData, pullRequestNumber]) => {
-            if (installationData) {
+        .then(([pullRequestData, pullRequestNumber]) => {
+            if (pullRequestData) {
                 return _unblockPullRequest({
-                    ...installationData,
+                    ...pullRequestData,
                     owner,
                     repo,
                     branch,
@@ -89,11 +89,11 @@ const _blockAllPullRequests = (queue) => {
         .then(items => {
             const [owner, repo, branch] = queue.split(':');
             return Promise.all(tail(items).map(({ pullRequestNumber }, index) => {
-                return redis.get(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`)
-                    .then(installationData => {
-                        if (installationData) {
+                return redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`)
+                    .then(pullRequestData => {
+                        if (pullRequestData) {
                             return _blockPullRequest({
-                                ...installationData,
+                                ...pullRequestData,
                                 owner,
                                 repo,
                                 branch,

@@ -4,6 +4,7 @@ const Github = require('./github');
 const createError = require('http-errors');
 const { findIndex, propEq, find } = require('ramda');
 const manager = require('./manager-queue');
+const pullRequestPrefix = 'pullrequest';
 const installationPrefix = 'installation';
 
 router.post('/', (req, res, next) => {
@@ -49,7 +50,7 @@ const _handleClosed = (req, res, next) => {
                 return manager.removeItem(`${owner}:${repo}:${branch}`, item);
             }
         })
-        .then(() => redis.del(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`))
+        .then(() => redis.del(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`))
         .then(() => res.send(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} closed`))
         .catch(next);
 };
@@ -67,7 +68,7 @@ const _handleOpened = (req, res, next) => {
     let description;
     let targetUrl;
 
-    redis.set(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`, {
+    redis.set(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`, {
         statusUrl,
         installationId,
     })
