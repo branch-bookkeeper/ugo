@@ -16,21 +16,22 @@ const addItem = ({ queue }) => {
         .then(([, queueItems]) => {
             if (queueItems.length > 0) {
                 const [first] = queueItems;
+                const { pullRequestNumber } = first;
                 return Promise.all([
-                    redis.get(`${installationPrefix}:${owner}:${repo}:${first.pullRequestNumber}`),
-                    Promise.resolve(first),
+                    redis.get(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`),
+                    Promise.resolve(pullRequestNumber),
                 ]);
             }
             return Promise.resolve([null, null]);
         })
-        .then(([installationData, first]) => {
+        .then(([installationData, pullRequestNumber]) => {
             if (installationData) {
                 return _unblockPullRequest({
                     ...installationData,
                     owner,
                     repo,
                     branch,
-                    pullRequestNumber: first.pullRequestNumber,
+                    pullRequestNumber,
                 });
             }
             return Promise.resolve(null);
@@ -40,8 +41,9 @@ const addItem = ({ queue }) => {
 
 const removeItem = ({ queue, item }) => {
     const [owner, repo, branch] = queue.split(':');
+    const { pullRequestNumber } = item;
 
-    redis.get(`${installationPrefix}:${owner}:${repo}:${item.pullRequestNumber}`)
+    redis.get(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`)
         .then(installationData => {
             if (installationData) {
                 return _blockPullRequest({
@@ -50,7 +52,7 @@ const removeItem = ({ queue, item }) => {
                     repo,
                     branch,
                     description: 'Book to merge',
-                    pullRequestNumber: item.pullRequestNumber,
+                    pullRequestNumber,
                 });
             }
             return Promise.resolve(null);
@@ -59,21 +61,22 @@ const removeItem = ({ queue, item }) => {
         .then(queueItems => {
             if (queueItems.length > 0) {
                 const [first] = queueItems;
+                const { pullRequestNumber } = first;
                 return Promise.all([
-                    redis.get(`${installationPrefix}:${owner}:${repo}:${first.pullRequestNumber}`),
-                    Promise.resolve(first),
+                    redis.get(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`),
+                    Promise.resolve(pullRequestNumber),
                 ]);
             }
             return Promise.resolve([null, null]);
         })
-        .then(([installationData, first]) => {
+        .then(([installationData, pullRequestNumber]) => {
             if (installationData) {
                 return _unblockPullRequest({
                     ...installationData,
                     owner,
                     repo,
                     branch,
-                    pullRequestNumber: first.pullRequestNumber,
+                    pullRequestNumber,
                 });
             }
         })
@@ -85,8 +88,8 @@ const _blockAllPullRequests = (queue) => {
     return redis.lrange(`${bookingPrefix}:${queue}`)
         .then(items => {
             const [owner, repo, branch] = queue.split(':');
-            return Promise.all(tail(items).map((item, index) => {
-                return redis.get(`${installationPrefix}:${owner}:${repo}:${item.pullRequestNumber}`)
+            return Promise.all(tail(items).map(({ pullRequestNumber }, index) => {
+                return redis.get(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`)
                     .then(installationData => {
                         if (installationData) {
                             return _blockPullRequest({
@@ -94,7 +97,7 @@ const _blockAllPullRequests = (queue) => {
                                 owner,
                                 repo,
                                 branch,
-                                pullRequestNumber: item.pullRequestNumber,
+                                pullRequestNumber,
                                 description: `${index + 1} PR before you`,
                             });
                         }
