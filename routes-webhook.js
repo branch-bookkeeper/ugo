@@ -6,11 +6,15 @@ const { findIndex, propEq, find } = require('ramda');
 const manager = require('./manager-queue');
 const installationPrefix = 'installation';
 
-router.use('/', (req, res, next) => {
+router.post('/', (req, res, next) => {
     if (!redis.enabled()) {
         next(createError.ServiceUnavailable('redis not available'));
         return;
     }
+
+    const { sender: { login: username } } = req.body;
+
+    req.username = username;
     next();
 });
 
@@ -21,11 +25,7 @@ router.post('/', (req, res, next) => {
         return;
     }
 
-    const body = req.body;
-    const { action } = body;
-    const { sender: { login: username } } = body;
-
-    req.username = username;
+    const { action } = req.body;
 
     if (action === 'closed') {
         _handleClosed(req, res, next);
