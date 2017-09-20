@@ -113,6 +113,23 @@ const redis = Object.assign({
             }
         });
     },
+    hget(key, field) {
+        return new Promise((resolve, reject) => {
+            if (!redisClient || !redisClient.ready) {
+                reject(eNC);
+                return;
+            }
+            if (key && field) {
+                redisClient.hget(key, field, (err, data) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(JSON.parse(data));
+                    }
+                });
+            }
+        });
+    },
     lrange(key, numberOfItems) {
         return new Promise((resolve, reject) => {
             if (!redisClient || !redisClient.ready) {
