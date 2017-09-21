@@ -111,16 +111,25 @@ router.post('/', (req, res, next) => {
 const _handleClosed = (req, res, next) => {
     const body = req.body;
     const { pull_request: pullRequest } = body;
-    const { base: { repo: baseRepo, ref: branch } } = pullRequest;
-    const { number: pullRequestNumber } = pullRequest;
+    const {
+        number: pullRequestNumber,
+        base: {
+            repo: baseRepo,
+            ref: branch,
+        },
+        merged_by: mergeUser,
+    } = pullRequest;
     const { owner: { login: owner } } = baseRepo;
     const { name: repo } = baseRepo;
+    const meta = {
+        mergedByUsername: mergeUser ? mergeUser.login : null,
+    };
 
     manager.getItems(`${owner}:${repo}:${branch}`)
         .then(bookingData => {
             const item = find(propEq('pullRequestNumber', pullRequestNumber))(bookingData);
             if (item) {
-                return manager.removeItem(`${owner}:${repo}:${branch}`, item);
+                return manager.removeItem(`${owner}:${repo}:${branch}`, item, meta);
             }
         })
         .then(() => pullRequestManager.deletePullRequestInfo(owner, repo, pullRequestNumber))
