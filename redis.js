@@ -2,7 +2,7 @@ const redisLib = require('redis');
 const async = require('async');
 const logger = require('./logger');
 const EventEmitter = require('events');
-const eNC = new Error('redis not connected');
+const eNC = new Error('queue not connected');
 let redisClient;
 
 if (process.env['REDIS_URL']) {
