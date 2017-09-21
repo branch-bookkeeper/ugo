@@ -2,6 +2,7 @@ const postal = require('postal');
 const Github = require('./github');
 const redis = require('./redis');
 const logger = require('./logger');
+const { tail } = require('ramda');
 const installationPrefix = 'installation';
 const bookingPrefix = 'booking';
 
@@ -83,7 +84,7 @@ const _blockAllPullRequests = (queue) => {
     return redis.lrange(`${bookingPrefix}:${queue}`)
         .then(items => {
             const [owner, repo, branch] = queue.split(':');
-            return Promise.all(items.map((item, index) => {
+            return Promise.all(tail(items).map((item, index) => {
                 return redis.get(`${installationPrefix}:${owner}:${repo}:${item.pullRequestNumber}`)
                     .then(installationData => {
                         if (installationData) {
@@ -93,7 +94,7 @@ const _blockAllPullRequests = (queue) => {
                                 repo,
                                 branch,
                                 pullRequestNumber: item.pullRequestNumber,
-                                description: `${index} PR before you`,
+                                description: `${index + 1} PR before you`,
                             });
                         }
                         return Promise.resolve(null);
