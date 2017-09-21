@@ -39,20 +39,24 @@ const addItem = ({ queue }) => {
         .catch(logger.error);
 };
 
-const removeItem = ({ queue, item }) => {
+const removeItem = ({ queue, item, meta = {} }) => {
+    const { mergedByUsername } = meta;
     const [owner, repo, branch] = queue.split(':');
     const { pullRequestNumber } = item;
 
     redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`)
         .then(pullRequestData => {
             if (pullRequestData) {
-                return _blockPullRequest({
+                const blockOrUnblock = mergedByUsername ? _unblockPullRequest : _blockPullRequest;
+                const description = mergedByUsername ? `Merged by ${mergedByUsername}` : 'Book to merge';
+
+                return blockOrUnblock({
                     ...pullRequestData,
                     owner,
                     repo,
                     branch,
-                    description: 'Book to merge',
-                    pullRequestNumber,
+                    description,
+                    pullRequestNumber: item.pullRequestNumber,
                 });
             }
             return Promise.resolve(null);
