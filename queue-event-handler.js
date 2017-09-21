@@ -77,6 +77,7 @@ const removeItem = ({ queue, item }) => {
                 });
             }
         })
+        .then(() => _blockAllPullRequests(queue))
         .catch(logger.error);
 };
 
