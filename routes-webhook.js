@@ -66,6 +66,25 @@ router.post('/', (req, res, next) => {
 
 });
 
+// Installation repositories
+router.post('/', (req, res, next) => {
+    if (req.get('X-GitHub-Event') !== 'installation_repositories') {
+        next();
+        return;
+    }
+
+    const { action, installation } = req.body;
+    const { id } = installation;
+    const { account: { login: owner } } = installation;
+
+    installationManager.deleteInstallationInfos(id)
+        .then(() => res.send(`Installation repositories of installation ${id} for ${owner} ${action}`))
+        .catch(error => {
+            logger.error(error);
+            next(error);
+        });
+});
+
 const _handleClosed = (req, res, next) => {
     const body = req.body;
     const { pull_request: pullRequest } = body;
