@@ -22,13 +22,13 @@ router.route('/:owner/:repository/:branch')
     })
     .post((req, res, next) => {
         manager.addItem(req.params.key, req.body)
-            .then(data => res.status(201).json(data))
+            .then(res.status(201).json())
             .catch(next);
     })
     .delete((req, res, next) => {
         if (Object.keys(req.body).length > 0) {
             manager.removeItem(req.params.key, req.body)
-                .then(res.json(req.body))
+                .then(res.status(204).json())
                 .catch(next);
         } else {
             next(createError.BadRequest());
