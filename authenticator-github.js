@@ -2,6 +2,7 @@ const redis = require('./redis');
 const createError = require('http-errors');
 const Github = require('./github');
 const logger = require('./logger');
+const installationManager = require('./manager-installation');
 const {
     propEq,
     find,
@@ -9,7 +10,6 @@ const {
     isNil,
 } = require('ramda');
 const tokenPrefix = 'authentication:token:github';
-const installationPrefix = 'installation';
 const environment = process.env.NODE_ENV || 'production';
 const development = environment === 'development';
 const test = environment === 'test';
@@ -48,9 +48,9 @@ const authenticator = (req, res, next) => {
                 throw new Error('Wrong client id');
             }
         })
-        .then(() => redis.hget(installationPrefix, `${req.params.owner}:${req.params.repository}`))
+        .then(() => installationManager.getInstallationId(req.params.owner, req.params.repository))
         .then(throwErrorIfNil(new Error('No installation id')))
-        .then(installationId => _getInstallationInfo(token, installationId))
+        .then(installationId => installationManager.getInstallationInfo(token, installationId))
         .then(installationInfo => {
             if (!installationInfo) {
                 throw new Error('No installation found');
@@ -73,32 +73,6 @@ const authenticator = (req, res, next) => {
             logger.error(error);
             next(createError.Unauthorized('Unauthorized'));
         });
-};
-
-const _getInstallationInfo = (token, installationId) => {
-    if (redis.enabled()) {
-        return redis.get(`${installationPrefix}:info:${installationId}:${token}`)
-            .then(installationInfo => {
-                if (!installationInfo) {
-                    return _getInstallationInfoFromGithub(token, installationId);
-                }
-                return installationInfo;
-            });
-    }
-    return _getInstallationInfoFromGithub(token, installationId);
-};
-
-const _getInstallationInfoFromGithub = (token, installationId) => {
-    return Github.getInstallationInfo(token, installationId)
-        .then(installationInfo => _setInstallationInfo(installationId, installationInfo, token));
-};
-
-const _setInstallationInfo = (installationId, installationInfo, token) => {
-    if (redis.enabled() && installationInfo) {
-        redis.set(`${installationPrefix}:info:${installationId}:${token}`, installationInfo, 86400)
-            .then(() => installationInfo);
-    }
-    return installationInfo;
 };
 
 const _getTokenInfo = (token) => {

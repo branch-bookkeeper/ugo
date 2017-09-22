@@ -4,8 +4,8 @@ const Github = require('./github');
 const createError = require('http-errors');
 const { findIndex, propEq, find } = require('ramda');
 const manager = require('./manager-queue');
+const installationManager = require('./manager-installation');
 const pullRequestPrefix = 'pullrequest';
-const installationPrefix = 'installation';
 
 router.post('/', (req, res, next) => {
     if (!redis.enabled()) {
@@ -72,7 +72,7 @@ const _handleOpened = (req, res, next) => {
         statusUrl,
         installationId,
     })
-        .then(() => redis.hset(installationPrefix, `${owner}:${repo}`, installationId))
+        .then(() => installationManager.setInstallationId(owner, repo, installationId))
         .then(() => manager.getItems(`${owner}:${repo}:${branch}`))
         .then(bookingData => {
             targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
