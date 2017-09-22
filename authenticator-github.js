@@ -1,15 +1,13 @@
-const redis = require('./redis');
 const createError = require('http-errors');
-const Github = require('./github');
 const logger = require('./logger');
 const installationManager = require('./manager-installation');
+const tokenManager = require('./manager-token');
 const {
     propEq,
     find,
     curry,
     isNil,
 } = require('ramda');
-const tokenPrefix = 'authentication:token:github';
 const environment = process.env.NODE_ENV || 'production';
 const development = environment === 'development';
 const test = environment === 'test';
@@ -39,7 +37,7 @@ const authenticator = (req, res, next) => {
 
     const token = authHeader.replace('token ', '');
 
-    _getTokenInfo(token)
+    tokenManager.getTokenInfo(token)
         .then(tokenInfo => {
             const { client_id: clientId, login } = tokenInfo;
             if (clientId === process.env.CLIENT_ID) {
@@ -48,7 +46,7 @@ const authenticator = (req, res, next) => {
                 throw new Error('Wrong client id');
             }
         })
-        .then(() => installationManager.getInstallationId(req.params.owner, req.params.repository))
+        .then(() => installationManager.getInstallationId(req.params.owner))
         .then(throwErrorIfNil(new Error('No installation id')))
         .then(installationId => installationManager.getInstallationInfo(token, installationId))
         .then(installationInfo => {
@@ -73,32 +71,6 @@ const authenticator = (req, res, next) => {
             logger.error(error);
             next(createError.Unauthorized('Unauthorized'));
         });
-};
-
-const _getTokenInfo = (token) => {
-    if (redis.enabled()) {
-        return redis.get(`${tokenPrefix}:${token}`)
-            .then(tokenInfo => {
-                if (!tokenInfo) {
-                    return _getTokenInfoFromGithub(token);
-                }
-                return tokenInfo;
-            });
-    }
-    return _getTokenInfoFromGithub(token);
-};
-
-const _getTokenInfoFromGithub = (token) => {
-    return Github.getUserInfo(token)
-        .then(tokenInfo => _setTokenInfo(token, tokenInfo));
-};
-
-const _setTokenInfo = (token, tokenInfo) => {
-    if (redis.enabled() && tokenInfo) {
-        redis.set(`${tokenPrefix}:${token}`, tokenInfo, 86400)
-            .then(() => tokenInfo);
-    }
-    return tokenInfo;
 };
 
 module.exports = authenticator;
