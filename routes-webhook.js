@@ -126,7 +126,6 @@ const _handleOpened = (req, res, next) => {
         statusUrl,
         installationId,
     })
-        .then(() => installationManager.setInstallationId(owner, repo, installationId))
         .then(() => manager.getItems(`${owner}:${repo}:${branch}`))
         .then(bookingData => {
             targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
