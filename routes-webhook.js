@@ -1,14 +1,13 @@
 const router = require('express').Router();
-const redis = require('./redis');
 const Github = require('./github');
 const createError = require('http-errors');
 const { findIndex, propEq, find } = require('ramda');
 const manager = require('./manager-queue');
 const installationManager = require('./manager-installation');
-const pullRequestPrefix = 'pullrequest';
+const pullRequestManager = require('./manager-pullrequest');
 
 router.post('/', (req, res, next) => {
-    if (!redis.enabled()) {
+    if (!pullRequestManager.enabled()) {
         next(createError.ServiceUnavailable('queue not available'));
         return;
     }
@@ -50,7 +49,7 @@ const _handleClosed = (req, res, next) => {
                 return manager.removeItem(`${owner}:${repo}:${branch}`, item);
             }
         })
-        .then(() => redis.del(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`))
+        .then(() => pullRequestManager.deletePullRequestInfo(owner, repo, pullRequestNumber))
         .then(() => res.send(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} closed`))
         .catch(next);
 };
@@ -68,7 +67,7 @@ const _handleOpened = (req, res, next) => {
     let description;
     let targetUrl;
 
-    redis.set(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`, {
+    pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {
         statusUrl,
         installationId,
     })
