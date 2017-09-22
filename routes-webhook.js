@@ -5,6 +5,7 @@ const { findIndex, propEq, find } = require('ramda');
 const manager = require('./manager-queue');
 const installationManager = require('./manager-installation');
 const pullRequestManager = require('./manager-pullrequest');
+const logger = require('./logger');
 
 router.post('/', (req, res, next) => {
     if (!pullRequestManager.enabled()) {
@@ -102,7 +103,10 @@ const _handleClosed = (req, res, next) => {
         })
         .then(() => pullRequestManager.deletePullRequestInfo(owner, repo, pullRequestNumber))
         .then(() => res.send(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} closed`))
-        .catch(next);
+        .catch(error => {
+            logger.error(error);
+            next(error);
+        });
 };
 
 const _handleOpened = (req, res, next) => {
@@ -153,7 +157,10 @@ const _handleOpened = (req, res, next) => {
             description,
             targetUrl,
         }))
-        .catch(next);
+        .catch(error => {
+            logger.error(error);
+            next(error);
+        });
 };
 
 // Catch all
