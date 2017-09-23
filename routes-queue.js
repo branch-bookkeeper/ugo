@@ -22,7 +22,7 @@ router.route('/:owner/:repository/:branch')
     })
     .post((req, res, next) => {
         manager.addItem(req.params.key, req.body)
-            .then(data => res.status(201).json())
+            .then(res.status(201).json())
             .catch(next);
     })
     .delete((req, res, next) => {
