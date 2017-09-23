@@ -51,14 +51,6 @@ suite('Redis not available', () => {
             });
     });
 
-    test('redis mlrange', (done) => {
-        redis.mlrange(randomKey)
-            .catch(err => {
-                assert.isNotNull(err);
-                done();
-            });
-    });
-
     test('redis lrange', (done) => {
         redis.lrange(randomKey)
             .catch(err => {
