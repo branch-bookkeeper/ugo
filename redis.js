@@ -2,7 +2,6 @@ const redisLib = require('redis');
 const async = require('async');
 const logger = require('./logger');
 const EventEmitter = require('events');
-const eNC = new Error('queue not connected');
 let redisClient;
 
 if (process.env['REDIS_URL']) {
@@ -14,16 +13,20 @@ if (process.env['REDIS_URL']) {
     );
 }
 
+const rejectIfNotConnected = (resolve, reject) => {
+    if (!redisClient || !redisClient.ready) {
+        return Promise.reject(new Error('queue not connected'));
+    }
+
+    return new Promise(resolve, reject);
+};
+
 const redis = Object.assign({
     enabled() {
         return process.env['REDIS_URL'] !== undefined;
     },
     lrem(key, data) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
+        return rejectIfNotConnected((resolve, reject) => {
             redisClient.lrem(key, 0, JSON.stringify(data), (err, reply) => {
                 redis.emit('lrem', { data: data, key: key });
                 if (err) {
@@ -35,22 +38,14 @@ const redis = Object.assign({
         });
     },
     push(key, data) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
+        return rejectIfNotConnected((resolve, reject) => {
             if (key && data) {
                 redisClient.rpush(key, JSON.stringify(data), (e, d) => e ? reject(e) : resolve(d));
             }
         });
     },
     set(key, data, ttl) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
+        return rejectIfNotConnected((resolve, reject) => {
             if (key && data) {
                 const callback = (e, d) => e ? reject(e) : resolve(d);
                 const jsonData = JSON.stringify(data);
@@ -64,44 +59,28 @@ const redis = Object.assign({
         });
     },
     hset(key, field, data) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
+        return rejectIfNotConnected((resolve, reject) => {
             if (key && field && data) {
                 redisClient.hset(key, field, JSON.stringify(data), (e, d) => e ? reject(e) : resolve(d));
             }
         });
     },
     del(key) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
+        return rejectIfNotConnected((resolve, reject) => {
             if (key) {
                 redisClient.del(key, (e, d) => e ? reject(e) : resolve(d));
             }
         });
     },
     hdel(key, field) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
+        return rejectIfNotConnected((resolve, reject) => {
             if (key && field) {
                 redisClient.hdel(key, field, (e, d) => e ? reject(e) : resolve(d));
             }
         });
     },
     get(key) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
+        return rejectIfNotConnected((resolve, reject) => {
             if (key) {
                 redisClient.get(key, (err, data) => {
                     if (err) {
@@ -114,11 +93,7 @@ const redis = Object.assign({
         });
     },
     hget(key, field) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
+        return rejectIfNotConnected((resolve, reject) => {
             if (key && field) {
                 redisClient.hget(key, field, (err, data) => {
                     if (err) {
@@ -131,12 +106,7 @@ const redis = Object.assign({
         });
     },
     lrange(key, numberOfItems) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
-
+        return rejectIfNotConnected((resolve, reject) => {
             if (numberOfItems) {
                 numberOfItems -= 1;
             } else {
@@ -157,11 +127,7 @@ const redis = Object.assign({
         });
     },
     mlrange(namespace) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
+        return rejectIfNotConnected((resolve, reject) => {
             this.keys(`${namespace}`, (error, keys) => {
                 if (error) {
                     reject(error);
@@ -177,11 +143,7 @@ const redis = Object.assign({
         });
     },
     keys(pattern) {
-        return new Promise((resolve, reject) => {
-            if (!redisClient || !redisClient.ready) {
-                reject(eNC);
-                return;
-            }
+        return rejectIfNotConnected((resolve, reject) => {
             redisClient.keys(`${redisClient.options.prefix}${pattern}:*`, (err, rows) => {
                 if (err) {
                     reject(err);
