@@ -43,6 +43,14 @@ suite('Redis not available', () => {
             });
     });
 
+    test('redis hget', (done) => {
+        redis.hget(randomKey)
+            .catch(err => {
+                assert.isNotNull(err);
+                done();
+            });
+    });
+
     test('redis mlrange', (done) => {
         redis.mlrange(randomKey)
             .catch(err => {
@@ -61,6 +69,22 @@ suite('Redis not available', () => {
 
     test('redis set', (done) => {
         redis.set(randomKey, randomObject)
+            .catch(err => {
+                assert.isNotNull(err);
+                done();
+            });
+    });
+
+    test('redis hset', (done) => {
+        redis.hset(randomKey, randomObject)
+            .catch(err => {
+                assert.isNotNull(err);
+                done();
+            });
+    });
+
+    test('redis hdel', (done) => {
+        redis.hdel(randomKey, randomObject)
             .catch(err => {
                 assert.isNotNull(err);
                 done();
