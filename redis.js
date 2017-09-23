@@ -1,5 +1,4 @@
 const redisLib = require('redis');
-const async = require('async');
 const logger = require('./logger');
 const EventEmitter = require('events');
 let redisClient;
@@ -122,22 +121,6 @@ const redis = Object.assign({
                     }
                 } else {
                     reject(err);
-                }
-            });
-        });
-    },
-    mlrange(namespace) {
-        return rejectIfNotConnected((resolve, reject) => {
-            this.keys(`${namespace}`, (error, keys) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    async.map(keys, (key, done) => this.lrange(key, (error, data) => {
-                        done(error, {
-                            key: key,
-                            value: data,
-                        });
-                    }), resolve);
                 }
             });
         });
