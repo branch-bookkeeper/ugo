@@ -14,7 +14,7 @@ if (process.env['REDIS_URL']) {
 }
 
 const rejectIfNotConnected = (resolve, reject) => {
-    if (!redisClient || !redisClient.ready) {
+    if (!process.env['REDIS_URL'] || !redisClient || !redisClient.ready) {
         return Promise.reject(new Error('queue not connected'));
     }
 
