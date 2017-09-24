@@ -29,7 +29,7 @@ suite('Backend', () => {
     test('GET empty list', (done) => {
         request(server)
             .get(url)
-            .expect('content-type', /application\/json;/)
+            .expect('content-type', /application\/json/)
             .expect('content-length', '2')
             .expect([])
             .expect(200, done);
@@ -40,10 +40,9 @@ suite('Backend', () => {
         request(server)
             .post(url)
             .send(randomObject)
-            .expect('content-type', /application\/json;/)
-            .expect('content-length', '1')
+            .expect('content-type', /application\/json/)
             .expect(res => {
-                assert.equal(res.body, 1);
+                assert.empty(res.body);
             })
             .expect(201, done);
     });
@@ -53,10 +52,9 @@ suite('Backend', () => {
         request(server)
             .post(url)
             .send(randomObject)
-            .expect('content-type', /application\/json;/)
-            .expect('content-length', '1')
+            .expect('content-type', /application\/json/)
             .expect(res => {
-                assert.equal(res.body, 2);
+                assert.empty(res.body);
             })
             .expect(201, done);
     });
@@ -66,10 +64,9 @@ suite('Backend', () => {
         request(server)
             .post(url)
             .send(randomObject)
-            .expect('content-type', /application\/json;/)
-            .expect('content-length', '1')
+            .expect('content-type', /application\/json/)
             .expect(res => {
-                assert.equal(res.body, 3);
+                assert.empty(res.body);
             })
             .expect(201, done);
     });
@@ -77,7 +74,7 @@ suite('Backend', () => {
     test('GET list with three items', (done) => {
         request(server)
             .get(url)
-            .expect('content-type', /application\/json;/)
+            .expect('content-type', /application\/json/)
             .expect('content-length', '64')
             .expect(res => {
                 assert.equal(res.body[0].data, '1-' + randomKey);
@@ -92,18 +89,16 @@ suite('Backend', () => {
         request(server)
             .delete(url)
             .send(randomObject)
-            .expect('content-type', /application\/json;/)
-            .expect('content-length', '20')
             .expect(res => {
-                assert.equal(res.body.data, '2-' + randomKey);
+                assert.empty(res.body);
             })
-            .expect(200, done);
+            .expect(204, done);
     });
 
     test('GET list with first and third item', (done) => {
         request(server)
             .get(url)
-            .expect('content-type', /application\/json;/)
+            .expect('content-type', /application\/json/)
             .expect('content-length', '43')
             .expect(res => {
                 assert.equal(res.body[0].data, '1-' + randomKey);
@@ -117,18 +112,16 @@ suite('Backend', () => {
         request(server)
             .delete(url)
             .send(randomObject)
-            .expect('content-type', /application\/json;/)
-            .expect('content-length', '20')
             .expect(res => {
-                assert.equal(res.body.data, '1-' + randomKey);
+                assert.empty(res.body);
             })
-            .expect(200, done);
+            .expect(204, done);
     });
 
     test('GET list with item three', (done) => {
         request(server)
             .get(url)
-            .expect('content-type', /application\/json;/)
+            .expect('content-type', /application\/json/)
             .expect('content-length', '22')
             .expect(res => {
                 assert.equal(res.body[0].data, '3-' + randomKey);

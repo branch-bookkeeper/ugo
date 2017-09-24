@@ -1,13 +1,14 @@
 const router = require('express').Router();
-const redis = require('./redis');
 const Github = require('./github');
 const createError = require('http-errors');
 const { findIndex, propEq, find } = require('ramda');
 const manager = require('./manager-queue');
-const installationPrefix = 'installation';
+const installationManager = require('./manager-installation');
+const pullRequestManager = require('./manager-pullrequest');
+const logger = require('./logger');
 
 router.post('/', (req, res, next) => {
-    if (!redis.enabled()) {
+    if (!pullRequestManager.enabled()) {
         next(createError.ServiceUnavailable('queue not available'));
         return;
     }
@@ -34,6 +35,57 @@ router.post('/', (req, res, next) => {
     }
 });
 
+// Installation
+router.post('/', (req, res, next) => {
+    if (req.get('X-GitHub-Event') !== 'installation') {
+        next();
+        return;
+    }
+
+    const { action, installation } = req.body;
+    const { id } = installation;
+    const { account: { login: owner } } = installation;
+
+    let pendingPromise;
+
+    if (action === 'created') {
+        pendingPromise = installationManager.setInstallationId(owner, id);
+    } else if (action === 'deleted') {
+        pendingPromise = Promise.all([
+            installationManager.deleteInstallationId(owner),
+            installationManager.deleteInstallationInfos(id),
+            pullRequestManager.deletePullRequestInfos(owner),
+        ]);
+    }
+
+    pendingPromise
+        .then(() => res.send(`Installation ${id} for ${owner} ${action}`))
+        .catch(error => {
+            logger.error(error);
+            next(error);
+        });
+
+});
+
+// Installation repositories
+router.post('/', (req, res, next) => {
+    if (req.get('X-GitHub-Event') !== 'installation_repositories') {
+        next();
+        return;
+    }
+
+    const { action, installation } = req.body;
+    const { id } = installation;
+    const { account: { login: owner } } = installation;
+
+    installationManager.deleteInstallationInfos(id)
+        .then(() => res.send(`Installation repositories of installation ${id} for ${owner} ${action}`))
+        .catch(error => {
+            logger.error(error);
+            next(error);
+        });
+});
+
 const _handleClosed = (req, res, next) => {
     const body = req.body;
     const { pull_request: pullRequest } = body;
@@ -49,9 +101,12 @@ const _handleClosed = (req, res, next) => {
                 return manager.removeItem(`${owner}:${repo}:${branch}`, item);
             }
         })
-        .then(() => redis.del(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`))
+        .then(() => pullRequestManager.deletePullRequestInfo(owner, repo, pullRequestNumber))
         .then(() => res.send(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} closed`))
-        .catch(next);
+        .catch(error => {
+            logger.error(error);
+            next(error);
+        });
 };
 
 const _handleOpened = (req, res, next) => {
@@ -67,7 +122,7 @@ const _handleOpened = (req, res, next) => {
     let description;
     let targetUrl;
 
-    redis.set(`${installationPrefix}:${owner}:${repo}:${pullRequestNumber}`, {
+    pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {
         statusUrl,
         installationId,
     })
@@ -101,7 +156,10 @@ const _handleOpened = (req, res, next) => {
             description,
             targetUrl,
         }))
-        .catch(next);
+        .catch(error => {
+            logger.error(error);
+            next(error);
+        });
 };
 
 // Catch all

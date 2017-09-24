@@ -78,6 +78,23 @@ class Github {
                 };
             });
     }
+
+    static getInstallationInfo(token, installationId) {
+        return request.get(`https://api.github.com/user/installations/${installationId}/repositories`, {
+            headers: {
+                'user-agent': userAgent,
+                authorization: `token ${token}`,
+                accept: 'application/vnd.github.machine-man-preview+json',
+            },
+            resolveWithFullResponse: true,
+        })
+            .then(response => {
+                return {
+                    ...response.body,
+                    client_id: response.headers['x-oauth-client-id'],
+                };
+            });
+    }
 }
 
 Github.STATUS_SUCCESS = 'success';

@@ -1,10 +1,26 @@
-const redis = require('./redis');
 const createError = require('http-errors');
-const Github = require('./github');
-const prefix = 'authentication:token:github';
+const logger = require('./logger');
+const installationManager = require('./manager-installation');
+const tokenManager = require('./manager-token');
+const {
+    propEq,
+    find,
+    curry,
+    isNil,
+} = require('ramda');
 const environment = process.env.NODE_ENV || 'production';
 const development = environment === 'development';
 const test = environment === 'test';
+
+const throwErrorIf = curry((condition, error, input) => {
+    if (condition(input)) {
+        throw error;
+    }
+
+    return input;
+});
+
+const throwErrorIfNil = throwErrorIf(isNil);
 
 const authenticator = (req, res, next) => {
     if (test || development) {
@@ -21,43 +37,40 @@ const authenticator = (req, res, next) => {
 
     const token = authHeader.replace('token ', '');
 
-    _getTokenInfo(token)
+    tokenManager.getTokenInfo(token)
         .then(tokenInfo => {
             const { client_id: clientId, login } = tokenInfo;
             if (clientId === process.env.CLIENT_ID) {
                 req.username = login;
-                next();
             } else {
-                next(createError.Unauthorized('Unauthorized'));
+                throw new Error('Wrong client id');
             }
         })
-        .catch(next);
-};
+        .then(() => installationManager.getInstallationId(req.params.owner))
+        .then(throwErrorIfNil(new Error('No installation id')))
+        .then(installationId => installationManager.getInstallationInfo(token, installationId))
+        .then(installationInfo => {
+            if (!installationInfo) {
+                throw new Error('No installation found');
+            }
+            const { repositories } = installationInfo;
+            const item = find(propEq('full_name', `${req.params.owner}/${req.params.repository}`))(repositories);
 
-const _getTokenInfo = (token) => {
-    if (redis.enabled()) {
-        return redis.get(`${prefix}:${token}`)
-            .then(tokenInfo => {
-                if (!tokenInfo) {
-                    return _getTokenInfoFromGithub(token);
-                }
-                return tokenInfo;
-            });
-    }
-    return _getTokenInfoFromGithub(token);
-};
+            if (!item) {
+                throw new Error('Repository not found');
+            }
 
-const _getTokenInfoFromGithub = (token) => {
-    return Github.getUserInfo(token)
-        .then(tokenInfo => _setTokenInfo(token, tokenInfo));
-};
+            const { permissions: { push: canPush, pull: canPull } } = item;
 
-const _setTokenInfo = (token, tokenInfo) => {
-    if (redis.enabled() && tokenInfo) {
-        redis.set(`${prefix}:${token}`, tokenInfo, 86400)// TODO TTL
-            .then(() => tokenInfo);
-    }
-    return tokenInfo;
+            if (!canPush || !canPull) {
+                throw new Error('Repository not accessible');
+            }
+        })
+        .then(next)
+        .catch(error => {
+            logger.error(error);
+            next(createError.Unauthorized('Unauthorized'));
+        });
 };
 
 module.exports = authenticator;
