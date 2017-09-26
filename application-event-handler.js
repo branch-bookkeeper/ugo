@@ -17,6 +17,11 @@ const downloadPrivateKey = () => {
                     },
                 });
             }));
+    } else {
+        postal.publish({
+            channel: 'github',
+            topic: 'key.not_available',
+        });
     }
 };
 
