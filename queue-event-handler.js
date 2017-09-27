@@ -3,7 +3,7 @@ const Github = require('./github');
 const redis = require('./redis');
 const logger = require('./logger');
 const { tail } = require('ramda');
-const pullRequestPrefix = 'pullrequest';
+const pullRequestManager = require('./manager-pullrequest');
 const bookingPrefix = 'booking';
 
 const addItem = ({ queue }) => {
@@ -18,7 +18,7 @@ const addItem = ({ queue }) => {
                 const [first] = queueItems;
                 const { pullRequestNumber } = first;
                 return Promise.all([
-                    redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`),
+                    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber),
                     Promise.resolve(pullRequestNumber),
                 ]);
             }
@@ -44,7 +44,7 @@ const removeItem = ({ queue, item, meta = {} }) => {
     const [owner, repo, branch] = queue.split(':');
     const { pullRequestNumber } = item;
 
-    redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`)
+    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
         .then(pullRequestData => {
             if (pullRequestData) {
                 const blockOrUnblock = mergedByUsername ? _unblockPullRequest : _blockPullRequest;
@@ -67,7 +67,7 @@ const removeItem = ({ queue, item, meta = {} }) => {
                 const [first] = queueItems;
                 const { pullRequestNumber } = first;
                 return Promise.all([
-                    redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`),
+                    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber),
                     Promise.resolve(pullRequestNumber),
                 ]);
             }
@@ -93,7 +93,7 @@ const _blockAllPullRequests = (queue) => {
         .then(items => {
             const [owner, repo, branch] = queue.split(':');
             return Promise.all(tail(items).map(({ pullRequestNumber }, index) => {
-                return redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`)
+                return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
                     .then(pullRequestData => {
                         if (pullRequestData) {
                             return _blockPullRequest({
