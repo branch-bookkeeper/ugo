@@ -32,6 +32,11 @@ const getInstallationAccessToken = (appId, privateKey, installationId) => {
 const readPrivateKey = ({ path: privateKeyPath }) => {
     privateKey = fs.readFileSync(privateKeyPath);
     logger.info(`${ privateKeyPath } saved`);
+
+    postal.publish({
+        channel: 'github',
+        topic: 'key.ready',
+    });
 };
 
 postal.subscribe({
