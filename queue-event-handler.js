@@ -4,14 +4,14 @@ const redis = require('./redis');
 const logger = require('./logger');
 const { tail } = require('ramda');
 const pullRequestManager = require('./manager-pullrequest');
-const bookingPrefix = 'booking';
+const queueManager = require('./manager-queue');
 
 const addItem = ({ queue }) => {
     const [owner, repo, branch] = queue.split(':');
 
     Promise.all([
         _blockAllPullRequests(queue),
-        redis.lrange(`${bookingPrefix}:${queue}`, 2),
+        queueManager.getItems(queue, 2),
     ])
         .then(([, queueItems]) => {
             if (queueItems.length > 0) {
@@ -61,7 +61,7 @@ const removeItem = ({ queue, item, meta = {} }) => {
             }
             return Promise.resolve(null);
         })
-        .then(() => redis.lrange(`${bookingPrefix}:${queue}`, 1))
+        .then(() => queueManager.getItems(queue, 1))
         .then(queueItems => {
             if (queueItems.length > 0) {
                 const [first] = queueItems;
@@ -89,7 +89,7 @@ const removeItem = ({ queue, item, meta = {} }) => {
 };
 
 const _blockAllPullRequests = (queue) => {
-    return redis.lrange(`${bookingPrefix}:${queue}`)
+    return queueManager.getItems(queue)
         .then(items => {
             const [owner, repo, branch] = queue.split(':');
             return Promise.all(tail(items).map(({ pullRequestNumber }, index) => {
