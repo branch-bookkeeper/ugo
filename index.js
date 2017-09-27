@@ -10,6 +10,7 @@ const queueEventHandler = require('./queue-event-handler');
 const applicationEventHandler = require('./application-event-handler');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
+const pullRequest = require('./routes-pullrequest');
 const logger = require('./logger');
 
 const app = express();
@@ -37,6 +38,7 @@ if (!test) {
 }
 
 app.use('/queue', queue);
+app.use('/pull-request', pullRequest);
 app.use('/webhook', webhook);
 
 app.disable('x-powered-by');
