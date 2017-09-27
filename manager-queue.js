@@ -33,8 +33,8 @@ class QueueManager {
             });
     }
 
-    static getItems(queue) {
-        return redis.lrange(`${prefix}:${queue}`);
+    static getItems(queue, numberOfItems) {
+        return redis.lrange(`${prefix}:${queue}`, numberOfItems);
     }
 
     static enabled() {
