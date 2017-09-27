@@ -21,7 +21,7 @@ class PullRequestManager {
     }
 
     static getPullRequestInfo(owner, repo, number) {
-        return redis.get(`${pullRequestPrefix}:${owner}:${repo}:${number}`);
+        return redis.get(`${prefix}:${owner}:${repo}:${number}`);
     }
 
     static deletePullRequestInfo(owner, repo, number) {
