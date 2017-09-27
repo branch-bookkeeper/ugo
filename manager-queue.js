@@ -18,7 +18,7 @@ class QueueManager {
             });
     }
 
-    static removeItem(queue, item) {
+    static removeItem(queue, item, meta) {
         return redis.lrem(`${prefix}:${queue}`, item)
             .then(() => {
                 postal.publish({
@@ -27,6 +27,7 @@ class QueueManager {
                     data: {
                         queue,
                         item,
+                        meta,
                     },
                 });
             });
