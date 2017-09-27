@@ -1,7 +1,12 @@
 const router = require('express').Router();
 const Github = require('./github');
 const createError = require('http-errors');
-const { findIndex, propEq, find } = require('ramda');
+const {
+    findIndex,
+    propEq,
+    find,
+    pluck,
+} = require('ramda');
 const manager = require('./manager-queue');
 const installationManager = require('./manager-installation');
 const pullRequestManager = require('./manager-pullrequest');
@@ -142,13 +147,17 @@ const _handleClosed = (req, res, next) => {
 
 const _handleOpened = (req, res, next) => {
     const body = req.body;
-    const { installation: { id: installationId } } = body;
-    const { pull_request: pullRequest } = body;
-    const { statuses_url: statusUrl } = pullRequest;
-    const { base: { repo: baseRepo, ref: branch } } = pullRequest;
-    const { number: pullRequestNumber } = pullRequest;
-    const { owner: { login: owner } } = baseRepo;
-    const { name: repo } = baseRepo;
+    const { installation: { id: installationId }, pull_request: pullRequest } = body;
+    const {
+        statuses_url: statusUrl,
+        title,
+        html_url: humanUrl,
+        assignees,
+        number: pullRequestNumber,
+        base: { repo: baseRepo, ref: branch },
+        user: { login: author },
+    } = pullRequest;
+    const { owner: { login: owner }, name: repo } = baseRepo;
     let status;
     let description;
     let targetUrl;
@@ -156,6 +165,11 @@ const _handleOpened = (req, res, next) => {
     pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {
         statusUrl,
         installationId,
+        pullRequestNumber,
+        title,
+        author,
+        humanUrl,
+        assignees: pluck('login', assignees),
     })
         .then(() => manager.getItems(`${owner}:${repo}:${branch}`))
         .then(bookingData => {
