@@ -3,22 +3,22 @@ const Github = require('./github');
 const redis = require('./redis');
 const logger = require('./logger');
 const { tail } = require('ramda');
-const pullRequestPrefix = 'pullrequest';
-const bookingPrefix = 'booking';
+const pullRequestManager = require('./manager-pullrequest');
+const queueManager = require('./manager-queue');
 
 const addItem = ({ queue }) => {
     const [owner, repo, branch] = queue.split(':');
 
     Promise.all([
         _blockAllPullRequests(queue),
-        redis.lrange(`${bookingPrefix}:${queue}`, 2),
+        queueManager.getItems(queue, 2),
     ])
         .then(([, queueItems]) => {
             if (queueItems.length > 0) {
                 const [first] = queueItems;
                 const { pullRequestNumber } = first;
                 return Promise.all([
-                    redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`),
+                    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber),
                     Promise.resolve(pullRequestNumber),
                 ]);
             }
@@ -44,7 +44,7 @@ const removeItem = ({ queue, item, meta = {} }) => {
     const [owner, repo, branch] = queue.split(':');
     const { pullRequestNumber } = item;
 
-    redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`)
+    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
         .then(pullRequestData => {
             if (pullRequestData) {
                 const blockOrUnblock = mergedByUsername ? _unblockPullRequest : _blockPullRequest;
@@ -61,13 +61,13 @@ const removeItem = ({ queue, item, meta = {} }) => {
             }
             return Promise.resolve(null);
         })
-        .then(() => redis.lrange(`${bookingPrefix}:${queue}`, 1))
+        .then(() => queueManager.getItems(queue, 1))
         .then(queueItems => {
             if (queueItems.length > 0) {
                 const [first] = queueItems;
                 const { pullRequestNumber } = first;
                 return Promise.all([
-                    redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`),
+                    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber),
                     Promise.resolve(pullRequestNumber),
                 ]);
             }
@@ -89,11 +89,11 @@ const removeItem = ({ queue, item, meta = {} }) => {
 };
 
 const _blockAllPullRequests = (queue) => {
-    return redis.lrange(`${bookingPrefix}:${queue}`)
+    return queueManager.getItems(queue)
         .then(items => {
             const [owner, repo, branch] = queue.split(':');
             return Promise.all(tail(items).map(({ pullRequestNumber }, index) => {
-                return redis.get(`${pullRequestPrefix}:${owner}:${repo}:${pullRequestNumber}`)
+                return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
                     .then(pullRequestData => {
                         if (pullRequestData) {
                             return _blockPullRequest({
