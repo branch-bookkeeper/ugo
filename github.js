@@ -4,18 +4,13 @@ const request = require('request-promise').defaults({ json: true });
 const fs = require('fs');
 const logger = require('./logger');
 const userAgent = 'branch-bookkeeper';
-let privateKey = '';
 
-const getInstallationAccessToken = (appId, privateKey, installationId) => {
-    if (privateKey === '') {
-        return Promise.reject(new Error('Missing private key'));
-    }
-
+const getInstallationAccessToken = installationId => {
     const token = JWT.sign({
         iat: Math.floor(Date.now() / 1000),
         exp: (Math.floor(Date.now() / 1000) + (10 * 60)),
-        iss: appId,
-    }, privateKey, { algorithm: 'RS256' });
+        iss: process.env.APP_ID,
+    }, process.env.PRIVATE_KEY, { algorithm: 'RS256' });
 
     return request.post(`https://api.github.com/installations/${installationId}/access_tokens`, {
         auth: {
@@ -30,7 +25,7 @@ const getInstallationAccessToken = (appId, privateKey, installationId) => {
 
 class Github {
     static updatePullRequestStatus(options) {
-        return Github.getInstallationAccessToken(options.installationId)
+        return getInstallationAccessToken(options.installationId)
             .then(accessToken => {
                 return request.post(options.statusUrl, {
                     headers: {
@@ -45,10 +40,6 @@ class Github {
                     },
                 });
             });
-    }
-
-    static getInstallationAccessToken(installationId) {
-        return getInstallationAccessToken(process.env.APP_ID, privateKey, installationId);
     }
 
     static getUserInfo(token) {
