@@ -5,9 +5,7 @@ const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
 const Rollbar = require('rollbar');
-const postal = require('postal');
 const queueEventHandler = require('./queue-event-handler');
-const applicationEventHandler = require('./application-event-handler');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
 const pullRequest = require('./routes-pullrequest');
@@ -73,12 +71,4 @@ app.get('/', (req, res) => {
     res.send('');
 });
 
-module.exports = app.listen(app.get('port'), () => {
-    postal.publish({
-        channel: 'application',
-        topic: 'started',
-        data: {
-            port: app.get('port'),
-        },
-    });
-});
+module.exports = app.listen(app.get('port'));
