@@ -11,28 +11,6 @@ const manager = require('./manager-queue');
 const installationManager = require('./manager-installation');
 const pullRequestManager = require('./manager-pullrequest');
 const logger = require('./logger');
-const postal = require('postal');
-
-const isGithubKeyReady = new Promise((resolve, reject) => {
-    postal.subscribe({
-        channel: 'github',
-        topic: 'key.not_available',
-        callback: () => reject(createError.ServiceUnavailable('Github private key not available')),
-    });
-
-    postal.subscribe({
-        channel: 'github',
-        topic: 'key.ready',
-        callback: resolve,
-    });
-});
-
-// Wait for GitHub key to be ready before proceeding with handling requests.
-router.use((req, res, next) => {
-    isGithubKeyReady
-        .then(() => next())
-        .catch(e => next(e));
-});
 
 router.post('/', (req, res, next) => {
     if (!pullRequestManager.enabled()) {

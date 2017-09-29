@@ -2,7 +2,6 @@ const JWT = require('jsonwebtoken');
 const { prop } = require('ramda');
 const request = require('request-promise').defaults({ json: true });
 const fs = require('fs');
-const postal = require('postal');
 const logger = require('./logger');
 const userAgent = 'branch-bookkeeper';
 let privateKey = '';
@@ -28,22 +27,6 @@ const getInstallationAccessToken = (appId, privateKey, installationId) => {
         },
     }).then(prop('token'));
 };
-
-const readPrivateKey = ({ path: privateKeyPath }) => {
-    privateKey = fs.readFileSync(privateKeyPath);
-    logger.info(`${ privateKeyPath } saved`);
-
-    postal.publish({
-        channel: 'github',
-        topic: 'key.ready',
-    });
-};
-
-postal.subscribe({
-    channel: 'github',
-    topic: 'key.saved',
-    callback: readPrivateKey,
-});
 
 class Github {
     static updatePullRequestStatus(options) {
