@@ -1,9 +1,22 @@
 const JWT = require('jsonwebtoken');
-const { prop } = require('ramda');
+const {
+    prop,
+    map,
+    path,
+    head,
+    flatten,
+} = require('ramda');
 const request = require('request-promise').defaults({ json: true });
+const RequestAllPages = require('request-all-pages');
 const fs = require('fs');
 const logger = require('./logger');
 const userAgent = 'branch-bookkeeper';
+
+const requestAllPages = (opts) => {
+    return new Promise((resolve, reject) => {
+        RequestAllPages(opts, { perPage: 100 }, (err, pages) => err ? reject(err) : resolve(pages));
+    });
+};
 
 const getInstallationAccessToken = installationId => {
     const token = JWT.sign({
@@ -59,18 +72,21 @@ class Github {
     }
 
     static getInstallationInfo(token, installationId) {
-        return request.get(`https://api.github.com/user/installations/${installationId}/repositories`, {
+        return requestAllPages({
+            uri: `https://api.github.com/user/installations/${installationId}/repositories`,
+            json: true,
             headers: {
                 'user-agent': userAgent,
                 authorization: `token ${token}`,
                 accept: 'application/vnd.github.machine-man-preview+json',
             },
-            resolveWithFullResponse: true,
         })
             .then(response => {
+                const firstPage = head(response);
                 return {
-                    ...response.body,
-                    client_id: response.headers['x-oauth-client-id'],
+                    total_count: path(['body', 'total_count'], firstPage),
+                    repositories: flatten(map(path(['body', 'repositories']), response)),
+                    client_id: path(['headers', 'x-oauth-client-id'], firstPage),
                 };
             });
     }
