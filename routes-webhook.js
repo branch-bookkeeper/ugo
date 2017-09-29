@@ -102,8 +102,7 @@ const _handleClosed = (req, res, next) => {
         },
         merged_by: mergeUser,
     } = pullRequest;
-    const { owner: { login: owner } } = baseRepo;
-    const { name: repo } = baseRepo;
+    const { name: repo, owner: { login: owner } } = baseRepo;
     const meta = {
         mergedByUsername: mergeUser ? mergeUser.login : null,
     };
