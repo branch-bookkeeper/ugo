@@ -17,7 +17,7 @@ router.route('/:owner/:repository/:branch/:pullrequest')
     })
     .get((req, res, next) => {
         manager.getPullRequestInfo(req.params.owner, req.params.repository, req.params.pullrequest)
-            .then(data => res.send(data))
+            .then(data => data ? res.send(data) : next(createError.NotFound()))
             .catch(next);
     });
 
