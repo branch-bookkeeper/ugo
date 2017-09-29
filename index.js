@@ -50,6 +50,8 @@ app.disable('x-powered-by');
 app.disable('etag');
 app.enable('trust proxy');
 
+app.use(req => newrelic.addCustomParameter('username', req.username));
+
 // error handlers
 app.use((err, req, res, next) => {
     const status = err.status || 500;
