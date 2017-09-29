@@ -11,6 +11,7 @@ const applicationEventHandler = require('./application-event-handler');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
 const pullRequest = require('./routes-pullrequest');
+const analytics = require('./analytics');
 const logger = require('./logger');
 
 const app = express();
@@ -35,6 +36,10 @@ app.use(cors({ origin: process.env.APP_ORIGIN || 'http://localhost:4000' }));
 if (!test) {
     morgan.token('remote-user', req => req.username);
     app.use(morgan('combined', { stream: logger }));
+}
+
+if (process.env['UA']) {
+    app.use(analytics.trackRequest);
 }
 
 app.use('/queue', queue);
