@@ -4,7 +4,7 @@ const Github = require('./github');
 const prefix = 'installation';
 const infoPrefix = 'info';
 
-class QueueManager {
+class InstallationManager {
     static getInstallationId(owner) {
         return redis.hget(prefix, owner);
     }
@@ -47,12 +47,12 @@ class QueueManager {
             return redis.get(`${prefix}:${infoPrefix}:${installationId}:${token}`)
                 .then(installationInfo => {
                     if (!installationInfo) {
-                        return QueueManager._getInstallationInfoFromGithub(token, installationId);
+                        return InstallationManager._getInstallationInfoFromGithub(token, installationId);
                     }
                     return installationInfo;
                 });
         }
-        return QueueManager._getInstallationInfoFromGithub(token, installationId);
+        return InstallationManager._getInstallationInfoFromGithub(token, installationId);
     }
 
     static deleteInstallationInfos(installationId) {
@@ -74,7 +74,7 @@ class QueueManager {
 
     static _getInstallationInfoFromGithub(token, installationId) {
         return Github.getInstallationInfo(token, installationId)
-            .then(installationInfo => QueueManager._setInstallationInfo(installationId, installationInfo, token));
+            .then(installationInfo => InstallationManager._setInstallationInfo(installationId, installationInfo, token));
     }
 
     static _setInstallationInfo(installationId, installationInfo, token) {
@@ -97,4 +97,4 @@ class QueueManager {
     }
 }
 
-module.exports = QueueManager;
+module.exports = InstallationManager;

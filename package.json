@@ -33,6 +33,7 @@
     "ramda": "^0.24.1",
     "redis": "^2.8.0",
     "request": "^2.81.0",
+    "request-all-pages": "^0.3.1",
     "request-promise": "^4.2.1",
     "rollbar": "^2.2.7",
     "universal-analytics": "^0.4.15",
