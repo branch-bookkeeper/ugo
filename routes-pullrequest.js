@@ -3,7 +3,7 @@ const createError = require('http-errors');
 const manager = require('./manager-pullrequest');
 const authenticator = require('./authenticator-github');
 
-router.route('/:owner/:repository/:branch/:pullrequest')
+router.route('/:owner/:repository/:pullrequest')
     .all(authenticator)
     .all((req, res, next) => {
         if (!manager.enabled()) {
