@@ -17,7 +17,9 @@ router.route('/:owner/:repository/:branch')
     })
     .get((req, res, next) => {
         manager.getItems(req.params.key)
-            .then(data => res.send(data))
+            .then(data => res
+                .set({ 'Cache-Control': 'no-cache' })
+                .send(data))
             .catch(next);
     })
     .post((req, res, next) => {
