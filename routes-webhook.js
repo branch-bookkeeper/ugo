@@ -25,6 +25,20 @@ router.post('/', (req, res, next) => {
     next();
 });
 
+// Installation repositories
+router.post('/', (req, res, next) => {
+    if (req.event !== 'repository') {
+        next();
+        return;
+    }
+
+    const { repository: { owner: { login: owner } } } = req.body;
+
+    installationManager.getInstallationId(owner)
+        .then(installationManager.deleteInstallationInfos)
+        .then(() => res.send(`Installation infos of ${owner} deleted`));
+});
+
 // PR
 router.post('/', (req, res, next) => {
     if (req.event !== 'pull_request') {
