@@ -21,12 +21,27 @@ router.post('/', (req, res, next) => {
     const { sender: { login: username } } = req.body;
 
     req.username = username;
+    req.event = req.get('X-GitHub-Event');
     next();
+});
+
+// Installation repositories
+router.post('/', (req, res, next) => {
+    if (req.event !== 'repository') {
+        next();
+        return;
+    }
+
+    const { repository: { owner: { login: owner } } } = req.body;
+
+    installationManager.getInstallationId(owner)
+        .then(installationManager.deleteInstallationInfos)
+        .then(() => res.send(`Installation infos of ${owner} deleted`));
 });
 
 // PR
 router.post('/', (req, res, next) => {
-    if (req.get('X-GitHub-Event') !== 'pull_request') {
+    if (req.event !== 'pull_request') {
         next();
         return;
     }
@@ -42,7 +57,7 @@ router.post('/', (req, res, next) => {
 
 // Installation
 router.post('/', (req, res, next) => {
-    if (req.get('X-GitHub-Event') !== 'installation') {
+    if (req.event !== 'installation') {
         next();
         return;
     }
@@ -74,7 +89,7 @@ router.post('/', (req, res, next) => {
 
 // Installation repositories
 router.post('/', (req, res, next) => {
-    if (req.get('X-GitHub-Event') !== 'installation_repositories') {
+    if (req.event !== 'installation_repositories') {
         next();
         return;
     }
