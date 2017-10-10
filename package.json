@@ -34,7 +34,7 @@
     "redis": "^2.8.0",
     "request": "^2.81.0",
     "request-all-pages": "^0.3.1",
-    "request-promise": "^4.2.1",
+    "request-promise-native": "^1.0.5",
     "rollbar": "^2.2.7",
     "universal-analytics": "^0.4.15",
     "winston": "^2.3.1"
