@@ -11,7 +11,12 @@ const manager = require('./manager-queue');
 const installationManager = require('./manager-installation');
 const pullRequestManager = require('./manager-pullrequest');
 const logger = require('./logger');
+const validator = require('./validator-signature-github');
 
+// Validator
+router.post('/', validator);
+
+// Username
 router.post('/', (req, res, next) => {
     if (!pullRequestManager.enabled()) {
         next(createError.ServiceUnavailable('queue not available'));
