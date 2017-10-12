@@ -1,6 +1,7 @@
 const redis = require('./redis');
 const postal = require('postal');
 const Github = require('./github');
+const { evolve, map, pick } = require('ramda');
 const prefix = 'installation';
 const infoPrefix = 'info';
 
@@ -74,6 +75,7 @@ class InstallationManager {
 
     static _getInstallationInfoFromGithub(token, installationId) {
         return Github.getInstallationInfo(token, installationId)
+            .then(evolve({ repositories: map(pick(['full_name', 'permissions'])) }))
             .then(installationInfo => InstallationManager._setInstallationInfo(installationId, installationInfo, token));
     }
 

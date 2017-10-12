@@ -6,7 +6,7 @@ const {
     head,
     flatten,
 } = require('ramda');
-const request = require('request-promise').defaults({ json: true });
+const request = require('request-promise-native').defaults({ json: true });
 const RequestAllPages = require('request-all-pages');
 const fs = require('fs');
 const logger = require('./logger');
