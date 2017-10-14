@@ -1,23 +1,13 @@
 /* globals test, suiteTeardown, suiteSetup, suite */
 const assert = require('chai').assert;
 const redis = require('../redis');
-let server;
 let randomKey;
 let randomObject;
 
 suite('Redis not available', () => {
     suiteSetup(function () {
-        delete require.cache[require.resolve('../index')];
         randomKey = Math.random().toString(36).substr(2, 7);
         randomObject = { data: randomKey };
-        server = require('../index');
-        if (redis.enabled()) {
-            this.skip();
-        }
-    });
-
-    suiteTeardown(done => {
-        server.close(done);
     });
 
     test('redis enabled', () => {
