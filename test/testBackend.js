@@ -1,6 +1,7 @@
 /* globals test, suiteTeardown, suiteSetup, suite */
 const request = require('supertest');
 const assert = require('chai').assert;
+const redis = require('../redis');
 let server;
 let randomKey;
 let randomObject;
@@ -14,7 +15,6 @@ suite('Backend', () => {
         randomObject = { data: randomKey };
         url = '/queue/branch-bookkeeper/branch-bookkeeper/master' + randomKey;
         server = require('../index');
-        const redis = require('../redis');
         if (!redis.enabled()) {
             this.skip();
         } else {
