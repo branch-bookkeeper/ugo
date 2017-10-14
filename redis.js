@@ -103,6 +103,17 @@ const redis = Object.assign({
             }
         });
     },
+    sadd(key, data) {
+        return rejectIfNotConnected((resolve, reject) => {
+            redisClient.sadd(key, JSON.stringify(data), (err, reply) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(reply);
+                }
+            });
+        });
+    },
     lrange(key, numberOfItems) {
         return rejectIfNotConnected((resolve, reject) => {
             if (numberOfItems) {
