@@ -31,7 +31,7 @@ suite('Redis not available', () => {
     });
 
     test('redis hget', (done) => {
-        redis.hget(randomKey)
+        redis.hget(randomKey, randomKey)
             .catch(err => {
                 assert.isNotNull(err);
                 done();
@@ -55,7 +55,7 @@ suite('Redis not available', () => {
     });
 
     test('redis hset', (done) => {
-        redis.hset(randomKey, randomObject)
+        redis.hset(randomKey, randomKey, randomObject)
             .catch(err => {
                 assert.isNotNull(err);
                 done();
@@ -63,7 +63,7 @@ suite('Redis not available', () => {
     });
 
     test('redis hdel', (done) => {
-        redis.hdel(randomKey, randomObject)
+        redis.hdel(randomKey, randomKey)
             .catch(err => {
                 assert.isNotNull(err);
                 done();
