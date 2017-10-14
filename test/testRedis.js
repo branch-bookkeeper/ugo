@@ -72,6 +72,19 @@ suite('Redis', () => {
             });
     });
 
+    test('redis srem', (done) => {
+        redis.srem(randomKey, randomKey)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
+            .catch(err => {
+                assert.isNotNull(err);
+                done();
+            });
+    });
+
     test('redis lrange', (done) => {
         redis.lrange(randomKey)
             .then(data => {
