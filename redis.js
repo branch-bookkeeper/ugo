@@ -125,6 +125,17 @@ const redis = Object.assign({
             });
         });
     },
+    sismember(key, data) {
+        return rejectIfNotConnected((resolve, reject) => {
+            redisClient.sismember(key, JSON.stringify(data), (err, reply) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(reply === 1);
+                }
+            });
+        });
+    },
     lrange(key, numberOfItems) {
         return rejectIfNotConnected((resolve, reject) => {
             if (numberOfItems) {

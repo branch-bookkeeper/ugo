@@ -85,6 +85,19 @@ suite('Redis', () => {
             });
     });
 
+    test('redis sismember', (done) => {
+        redis.sismember(randomKey, randomObject)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
+            .catch(err => {
+                assert.isNotNull(err);
+                done();
+            });
+    });
+
     test('redis lrange', (done) => {
         redis.lrange(randomKey)
             .then(data => {
