@@ -1,5 +1,6 @@
 const postal = require('postal');
 const onesignal = require('simple-onesignal');
+const logger = require('./logger');
 const environment = process.env['NODE_ENV'] || 'production';
 const development = environment === 'development';
 

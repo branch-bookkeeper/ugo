@@ -16,7 +16,21 @@ const addItem = ({ queue }) => {
         .then(([, queueItems]) => {
             if (queueItems.length > 0) {
                 const [first] = queueItems;
-                const { pullRequestNumber } = first;
+                const { pullRequestNumber, username } = first;
+
+                if (queueItems.length === 1) {
+                    postal.publish({
+                        channel: 'notification',
+                        topic: 'send.rebased',
+                        data: {
+                            owner,
+                            repo,
+                            pullRequestNumber,
+                            username,
+                        },
+                    });
+                }
+
                 return Promise.all([
                     pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber),
                     Promise.resolve(pullRequestNumber),
@@ -40,7 +54,7 @@ const addItem = ({ queue }) => {
 };
 
 const removeItem = ({ queue, item, meta = {} }) => {
-    const { mergedByUsername } = meta;
+    const { mergedByUsername, firstItemChanged } = meta;
     const [owner, repo, branch] = queue.split(':');
     const { pullRequestNumber } = item;
 
@@ -65,7 +79,21 @@ const removeItem = ({ queue, item, meta = {} }) => {
         .then(queueItems => {
             if (queueItems.length > 0) {
                 const [first] = queueItems;
-                const { pullRequestNumber } = first;
+                const { pullRequestNumber, username } = first;
+
+                if (firstItemChanged) {
+                    postal.publish({
+                        channel: 'notification',
+                        topic: 'send.rebased',
+                        data: {
+                            owner,
+                            repo,
+                            pullRequestNumber,
+                            username,
+                        },
+                    });
+                }
+
                 return Promise.all([
                     pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber),
                     Promise.resolve(pullRequestNumber),
