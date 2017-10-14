@@ -1,21 +1,32 @@
-/* globals test, suiteTeardown, suiteSetup, suite */
+/* globals test, suiteSetup, setup, suite */
 const assert = require('chai').assert;
 const redis = require('../redis');
 let randomKey;
 let randomObject;
 
-suite('Redis not available', () => {
+suite('Redis', () => {
     suiteSetup(function () {
         randomKey = Math.random().toString(36).substr(2, 7);
         randomObject = { data: randomKey };
     });
 
-    test('redis enabled', () => {
-        assert.isFalse(redis.enabled());
+    setup(function (done) {
+        if (redis.enabled()) {
+            redis.reset()
+                .then(() => done())
+                .catch(done);
+        } else {
+            done();
+        }
     });
 
     test('redis keys', (done) => {
         redis.keys(randomKey)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
             .catch(err => {
                 assert.isNotNull(err);
                 done();
@@ -24,6 +35,11 @@ suite('Redis not available', () => {
 
     test('redis get', (done) => {
         redis.get(randomKey)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
             .catch(err => {
                 assert.isNotNull(err);
                 done();
@@ -32,6 +48,11 @@ suite('Redis not available', () => {
 
     test('redis hget', (done) => {
         redis.hget(randomKey, randomKey)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
             .catch(err => {
                 assert.isNotNull(err);
                 done();
@@ -40,6 +61,11 @@ suite('Redis not available', () => {
 
     test('redis lrange', (done) => {
         redis.lrange(randomKey)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
             .catch(err => {
                 assert.isNotNull(err);
                 done();
@@ -48,6 +74,11 @@ suite('Redis not available', () => {
 
     test('redis set', (done) => {
         redis.set(randomKey, randomObject)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
             .catch(err => {
                 assert.isNotNull(err);
                 done();
@@ -56,6 +87,11 @@ suite('Redis not available', () => {
 
     test('redis hset', (done) => {
         redis.hset(randomKey, randomKey, randomObject)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
             .catch(err => {
                 assert.isNotNull(err);
                 done();
@@ -64,6 +100,11 @@ suite('Redis not available', () => {
 
     test('redis hdel', (done) => {
         redis.hdel(randomKey, randomKey)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
             .catch(err => {
                 assert.isNotNull(err);
                 done();
@@ -72,6 +113,11 @@ suite('Redis not available', () => {
 
     test('redis push', (done) => {
         redis.push(randomKey, randomObject)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
             .catch(err => {
                 assert.isNotNull(err);
                 done();
@@ -80,6 +126,11 @@ suite('Redis not available', () => {
 
     test('redis lrem', (done) => {
         redis.lrem(randomKey, randomObject)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
             .catch(err => {
                 assert.isNotNull(err);
                 done();
