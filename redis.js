@@ -27,7 +27,6 @@ const redis = Object.assign({
     lrem(key, data) {
         return rejectIfNotConnected((resolve, reject) => {
             redisClient.lrem(key, 0, JSON.stringify(data), (err, reply) => {
-                redis.emit('lrem', { data: data, key: key });
                 if (err) {
                     reject(err);
                 } else {
