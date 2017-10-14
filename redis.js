@@ -136,6 +136,17 @@ const redis = Object.assign({
             });
         });
     },
+    reset() {
+        return rejectIfNotConnected((resolve, reject) => {
+            redisClient.flushall((err, reply) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(reply);
+                }
+            });
+        });
+    },
 }, EventEmitter.prototype);
 
 if (process.env['REDIS_URL'] && redisClient) {
