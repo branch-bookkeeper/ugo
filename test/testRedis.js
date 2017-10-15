@@ -137,6 +137,19 @@ suite('Redis', () => {
             });
     });
 
+    test('redis del', (done) => {
+        redis.del(randomKey, randomKey, randomObject)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
+            .catch(err => {
+                assert.isNotNull(err);
+                done();
+            });
+    });
+
     test('redis hdel', (done) => {
         redis.hdel(randomKey, randomKey)
             .then(data => {
