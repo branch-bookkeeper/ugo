@@ -3,22 +3,23 @@ const request = require('supertest');
 const assert = require('chai').assert;
 const redis = require('../redis');
 let server;
-let randomKey;
-let randomObject;
-let url;
+let randomNumber = Math.round(Math.random() * 100);
+const randomObject = {};
+const url = '/queue/branch-bookkeeper/branch-bookkeeper/master';
 
 suite('Backend', () => {
     suiteSetup(function (done) {
         delete require.cache[require.resolve('../index')];
         delete require.cache[require.resolve('../redis')];
-        randomKey = Math.random().toString(36).substr(2, 7);
-        randomObject = { data: randomKey };
-        url = '/queue/branch-bookkeeper/branch-bookkeeper/master' + randomKey;
         server = require('../index');
         if (!redis.enabled()) {
             this.skip();
         } else {
-            redis.on('ready', done);
+            redis.on('ready', () => {
+                redis.reset()
+                    .then(() => done())
+                    .catch(done);
+            });
         }
     });
 
@@ -36,7 +37,7 @@ suite('Backend', () => {
     });
 
     test('POST first item', (done) => {
-        randomObject.data = '1-' + randomKey;
+        randomObject.pullRequestNumber = randomNumber + 1;
         request(server)
             .post(url)
             .send(randomObject)
@@ -48,7 +49,7 @@ suite('Backend', () => {
     });
 
     test('POST second item', (done) => {
-        randomObject.data = '2-' + randomKey;
+        randomObject.pullRequestNumber = randomNumber + 2;
         request(server)
             .post(url)
             .send(randomObject)
@@ -60,7 +61,7 @@ suite('Backend', () => {
     });
 
     test('POST third item', (done) => {
-        randomObject.data = '3-' + randomKey;
+        randomObject.pullRequestNumber = randomNumber + 3;
         request(server)
             .post(url)
             .send(randomObject)
@@ -75,17 +76,17 @@ suite('Backend', () => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '64')
+            .expect('content-length', '76')
             .expect(res => {
-                assert.equal(res.body[0].data, '1-' + randomKey);
-                assert.equal(res.body[1].data, '2-' + randomKey);
-                assert.equal(res.body[2].data, '3-' + randomKey);
+                assert.equal(res.body[0].pullRequestNumber, randomNumber + 1);
+                assert.equal(res.body[1].pullRequestNumber, randomNumber + 2);
+                assert.equal(res.body[2].pullRequestNumber, randomNumber + 3);
             })
             .expect(200, done);
     });
 
     test('DELETE second item', (done) => {
-        randomObject.data = '2-' + randomKey;
+        randomObject.pullRequestNumber = randomNumber + 2;
         request(server)
             .delete(url)
             .send(randomObject)
@@ -99,16 +100,16 @@ suite('Backend', () => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '43')
+            .expect('content-length', '51')
             .expect(res => {
-                assert.equal(res.body[0].data, '1-' + randomKey);
-                assert.equal(res.body[1].data, '3-' + randomKey);
+                assert.equal(res.body[0].pullRequestNumber, randomNumber + 1);
+                assert.equal(res.body[1].pullRequestNumber, randomNumber + 3);
             })
             .expect(200, done);
     });
 
     test('DELETE first item', (done) => {
-        randomObject.data = '1-' + randomKey;
+        randomObject.pullRequestNumber = randomNumber + 1;
         request(server)
             .delete(url)
             .send(randomObject)
@@ -122,10 +123,30 @@ suite('Backend', () => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '22')
+            .expect('content-length', '26')
             .expect(res => {
-                assert.equal(res.body[0].data, '3-' + randomKey);
+                assert.equal(res.body[0].pullRequestNumber, randomNumber + 3);
             })
+            .expect(200, done);
+    });
+
+    test('DELETE third item', (done) => {
+        randomObject.pullRequestNumber = randomNumber + 3;
+        request(server)
+            .delete(url)
+            .send(randomObject)
+            .expect(res => {
+                assert.empty(res.body);
+            })
+            .expect(204, done);
+    });
+
+    test('GET empty list', (done) => {
+        request(server)
+            .get(url)
+            .expect('content-type', /application\/json/)
+            .expect('content-length', '2')
+            .expect([])
             .expect(200, done);
     });
 });
