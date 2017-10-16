@@ -4,8 +4,13 @@ const prefix = 'booking';
 
 class QueueManager {
     static addItem(queue, item) {
-        return redis.push(`${prefix}:${queue}`, item)
-            .then(data => {
+        const [owner, repo] = queue.split(':');
+        const { pullRequestNumber } = item;
+
+        return redis.sismember(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber })
+            .then(isPresent => redis.sadd(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber })
+                .then(() => isPresent ? '' : redis.push(`${prefix}:${queue}`, item)))
+            .then(() => {
                 postal.publish({
                     channel: 'queue',
                     topic: 'item.add',
@@ -14,12 +19,15 @@ class QueueManager {
                         item,
                     },
                 });
-                return data;
             });
     }
 
     static removeItem(queue, item, meta) {
+        const [owner, repo] = queue.split(':');
+        const { pullRequestNumber } = item;
+
         return redis.lrem(`${prefix}:${queue}`, item)
+            .then(() => redis.srem(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber }))
             .then(() => {
                 postal.publish({
                     channel: 'queue',

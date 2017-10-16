@@ -27,7 +27,6 @@ const redis = Object.assign({
     lrem(key, data) {
         return rejectIfNotConnected((resolve, reject) => {
             redisClient.lrem(key, 0, JSON.stringify(data), (err, reply) => {
-                redis.emit('lrem', { data: data, key: key });
                 if (err) {
                     reject(err);
                 } else {
@@ -104,6 +103,39 @@ const redis = Object.assign({
             }
         });
     },
+    sadd(key, data) {
+        return rejectIfNotConnected((resolve, reject) => {
+            redisClient.sadd(key, JSON.stringify(data), (err, reply) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(reply);
+                }
+            });
+        });
+    },
+    srem(key, data) {
+        return rejectIfNotConnected((resolve, reject) => {
+            redisClient.srem(key, JSON.stringify(data), (err, reply) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(reply);
+                }
+            });
+        });
+    },
+    sismember(key, data) {
+        return rejectIfNotConnected((resolve, reject) => {
+            redisClient.sismember(key, JSON.stringify(data), (err, reply) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(reply === 1);
+                }
+            });
+        });
+    },
     lrange(key, numberOfItems) {
         return rejectIfNotConnected((resolve, reject) => {
             if (numberOfItems) {
@@ -132,6 +164,17 @@ const redis = Object.assign({
                     reject(err);
                 } else {
                     resolve(rows.map(row => row.replace(redisClient.options.prefix, '')));
+                }
+            });
+        });
+    },
+    reset() {
+        return rejectIfNotConnected((resolve, reject) => {
+            redisClient.flushall((err, reply) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(reply);
                 }
             });
         });
