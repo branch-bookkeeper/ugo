@@ -5,12 +5,13 @@ const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
 const Rollbar = require('rollbar');
-const queueEventHandler = require('./queue-event-handler');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
 const pullRequest = require('./routes-pullrequest');
 const analytics = require('./analytics');
 const logger = require('./logger');
+require('./queue-event-handler');
+require('./manager-notification-push');
 
 const app = express();
 

@@ -22,13 +22,14 @@ class QueueManager {
             });
     }
 
-    static removeItem(queue, item, meta) {
+    static removeItem(queue, item, meta = {}) {
         const [owner, repo] = queue.split(':');
         const { pullRequestNumber } = item;
 
-        return redis.lrem(`${prefix}:${queue}`, item)
-            .then(() => redis.srem(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber }))
-            .then(() => {
+        return redis.lrange(`${prefix}:${queue}`, 1)
+            .then(([queueFirstItem]) => {
+                meta.firstItemChanged = queueFirstItem.pullRequestNumber === item.pullRequestNumber;
+
                 postal.publish({
                     channel: 'queue',
                     topic: 'item.remove',
@@ -38,6 +39,9 @@ class QueueManager {
                         meta,
                     },
                 });
+
+                return redis.lrem(`${prefix}:${queue}`, item)
+                    .then(() => redis.srem(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber }));
             });
     }
 
