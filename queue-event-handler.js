@@ -9,7 +9,7 @@ const addItem = ({ queue }) => {
     const [owner, repo, branch] = queue.split(':');
 
     Promise.all([
-        _blockAllPullRequests(queue),
+        blockAllPullRequests(queue),
         queueManager.getItems(queue, 2),
     ])
         .then(([, queueItems]) => {
@@ -39,7 +39,7 @@ const addItem = ({ queue }) => {
         })
         .then(([pullRequestData, pullRequestNumber]) => {
             if (pullRequestData) {
-                return _unblockPullRequest({
+                return unblockPullRequest({
                     ...pullRequestData,
                     owner,
                     repo,
@@ -60,7 +60,7 @@ const removeItem = ({ queue, item, meta = {} }) => {
     pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
         .then(pullRequestData => {
             if (pullRequestData) {
-                const blockOrUnblock = mergedByUsername ? _unblockPullRequest : _blockPullRequest;
+                const blockOrUnblock = mergedByUsername ? unblockPullRequest : blockPullRequest;
                 const description = mergedByUsername ? `Merged by ${mergedByUsername}` : 'Book to merge';
 
                 return blockOrUnblock({
@@ -102,7 +102,7 @@ const removeItem = ({ queue, item, meta = {} }) => {
         })
         .then(([pullRequestData, pullRequestNumber]) => {
             if (pullRequestData) {
-                return _unblockPullRequest({
+                return unblockPullRequest({
                     ...pullRequestData,
                     owner,
                     repo,
@@ -111,11 +111,11 @@ const removeItem = ({ queue, item, meta = {} }) => {
                 });
             }
         })
-        .then(() => _blockAllPullRequests(queue))
+        .then(() => blockAllPullRequests(queue))
         .catch(logger.error);
 };
 
-const _blockAllPullRequests = (queue) => {
+const blockAllPullRequests = (queue) => {
     return queueManager.getItems(queue)
         .then(items => {
             const [owner, repo, branch] = queue.split(':');
@@ -123,7 +123,7 @@ const _blockAllPullRequests = (queue) => {
                 return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
                     .then(pullRequestData => {
                         if (pullRequestData) {
-                            return _blockPullRequest({
+                            return blockPullRequest({
                                 ...pullRequestData,
                                 owner,
                                 repo,
@@ -138,7 +138,7 @@ const _blockAllPullRequests = (queue) => {
         });
 };
 
-const _updatePullRequestStatus = (options) => {
+const updatePullRequestStatus = (options) => {
     const {
         owner, repo, branch, pullRequestNumber,
     } = options;
@@ -151,16 +151,16 @@ const _updatePullRequestStatus = (options) => {
     });
 };
 
-const _blockPullRequest = (options) => {
-    return _updatePullRequestStatus({
+const blockPullRequest = (options) => {
+    return updatePullRequestStatus({
         status: Github.STATUS_FAILURE,
         description: 'It\'s not your turn',
         ...options,
     });
 };
 
-const _unblockPullRequest = (options) => {
-    return _updatePullRequestStatus({
+const unblockPullRequest = (options) => {
+    return updatePullRequestStatus({
         status: Github.STATUS_SUCCESS,
         description: 'It\'s your turn',
         ...options,
