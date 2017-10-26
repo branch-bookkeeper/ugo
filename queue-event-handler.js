@@ -1,6 +1,5 @@
 const postal = require('postal');
 const Github = require('./github');
-const redis = require('./redis');
 const logger = require('./logger');
 const { tail } = require('ramda');
 const pullRequestManager = require('./manager-pullrequest');
