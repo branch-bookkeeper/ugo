@@ -1,5 +1,6 @@
 const redis = require('./redis');
 const { unpackQueueName } = require('./helpers/queue-helpers');
+const logger = require('./logger');
 const postal = require('postal');
 const prefix = 'booking';
 
@@ -9,17 +10,24 @@ class QueueManager {
         const { pullRequestNumber } = item;
 
         return redis.sismember(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber })
-            .then(isPresent => redis.sadd(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber })
-                .then(() => isPresent ? '' : redis.push(`${prefix}:${queue}`, item)))
-            .then(() => {
-                postal.publish({
-                    channel: 'queue',
-                    topic: 'item.add',
-                    data: {
-                        queue,
-                        item,
-                    },
-                });
+            .then(isPresent => {
+                if (!isPresent) {
+                    return redis.sadd(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber })
+                        .then(() => redis.push(`${prefix}:${queue}`, item))
+                        .then(queueLength => {
+                            postal.publish({
+                                channel: 'queue',
+                                topic: 'item.add',
+                                data: {
+                                    queue,
+                                    item,
+                                    index: queueLength - 1,
+                                },
+                            });
+                        });
+                }
+
+                logger.error(`PR #${pullRequestNumber} already present in queue ${queue}`);
             });
     }
 
