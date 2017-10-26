@@ -33,18 +33,17 @@ class QueueManager {
                     meta.firstItemChanged = queueFirstItem.pullRequestNumber === item.pullRequestNumber;
                 }
 
-                postal.publish({
-                    channel: 'queue',
-                    topic: 'item.remove',
-                    data: {
-                        queue,
-                        item,
-                        meta,
-                    },
-                });
-
                 return redis.lrem(`${prefix}:${queue}`, item)
-                    .then(() => redis.srem(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber }));
+                    .then(() => redis.srem(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber }))
+                    .then(() => postal.publish({
+                        channel: 'queue',
+                        topic: 'item.remove',
+                        data: {
+                            queue,
+                            item,
+                            meta,
+                        },
+                    }));
             });
     }
 
