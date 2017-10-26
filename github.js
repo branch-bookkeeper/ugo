@@ -8,8 +8,6 @@ const {
 } = require('ramda');
 const request = require('request-promise-native').defaults({ json: true });
 const RequestAllPages = require('request-all-pages');
-const fs = require('fs');
-const logger = require('./logger');
 const userAgent = 'branch-bookkeeper';
 
 const requestAllPages = (opts) => {
