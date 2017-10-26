@@ -4,9 +4,10 @@ const logger = require('./logger');
 const { tail } = require('ramda');
 const pullRequestManager = require('./manager-pullrequest');
 const queueManager = require('./manager-queue');
+const { unpackQueueName } = require('./helpers/queue-helpers');
 
 const addItem = ({ queue }) => {
-    const [owner, repo, branch] = queue.split(':');
+    const { owner, repo, branch } = unpackQueueName(queue);
 
     Promise.all([
         blockAllPullRequests(queue),
@@ -54,7 +55,7 @@ const addItem = ({ queue }) => {
 
 const removeItem = ({ queue, item, meta = {} }) => {
     const { mergedByUsername, firstItemChanged } = meta;
-    const [owner, repo, branch] = queue.split(':');
+    const { owner, repo, branch } = unpackQueueName(queue);
     const { pullRequestNumber } = item;
 
     pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
@@ -118,7 +119,7 @@ const removeItem = ({ queue, item, meta = {} }) => {
 const blockAllPullRequests = (queue) => {
     return queueManager.getItems(queue)
         .then(items => {
-            const [owner, repo, branch] = queue.split(':');
+            const { owner, repo, branch } = unpackQueueName(queue);
             return Promise.all(tail(items).map(({ pullRequestNumber }, index) => {
                 return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
                     .then(pullRequestData => {

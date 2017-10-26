@@ -1,10 +1,11 @@
 const redis = require('./redis');
+const { unpackQueueName } = require('./helpers/queue-helpers');
 const postal = require('postal');
 const prefix = 'booking';
 
 class QueueManager {
     static addItem(queue, item) {
-        const [owner, repo] = queue.split(':');
+        const { owner, repo } = unpackQueueName(queue);
         const { pullRequestNumber } = item;
 
         return redis.sismember(`${prefix}-index:${owner}:${repo}`, { pullRequestNumber })
@@ -23,7 +24,7 @@ class QueueManager {
     }
 
     static removeItem(queue, item, meta = {}) {
-        const [owner, repo] = queue.split(':');
+        const { owner, repo } = unpackQueueName(queue);
         const { pullRequestNumber } = item;
 
         return redis.lrange(`${prefix}:${queue}`, 1)
