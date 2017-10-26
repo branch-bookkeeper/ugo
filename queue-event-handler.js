@@ -31,21 +31,17 @@ const addItem = ({ queue }) => {
                     });
                 }
 
-                return Promise.all([
-                    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber),
-                    Promise.resolve(pullRequestNumber),
-                ]);
+                return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber);
             }
-            return Promise.resolve([null, null]);
+            return Promise.resolve(null);
         })
-        .then(([pullRequestData, pullRequestNumber]) => {
+        .then(pullRequestData => {
             if (pullRequestData) {
                 return unblockPullRequest({
                     ...pullRequestData,
                     owner,
                     repo,
                     branch,
-                    pullRequestNumber,
                 });
             }
             return Promise.resolve(null);
@@ -94,21 +90,17 @@ const removeItem = ({ queue, item, meta = {} }) => {
                     });
                 }
 
-                return Promise.all([
-                    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber),
-                    Promise.resolve(pullRequestNumber),
-                ]);
+                return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber);
             }
-            return Promise.resolve([null, null]);
+            return Promise.resolve(null);
         })
-        .then(([pullRequestData, pullRequestNumber]) => {
+        .then(pullRequestData => {
             if (pullRequestData) {
                 return unblockPullRequest({
                     ...pullRequestData,
                     owner,
                     repo,
                     branch,
-                    pullRequestNumber,
                 });
             }
         })
