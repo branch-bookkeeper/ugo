@@ -64,10 +64,13 @@ const redis = Object.assign({
             }
         });
     },
-    del(key) {
+    del(keyOrKeys) {
         return rejectIfNotConnected((resolve, reject) => {
-            if (key) {
-                redisClient.del(key, (e, d) => e ? reject(e) : resolve(d));
+            const keys = Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys];
+            if (keys.length > 0) {
+                redisClient.del(keys, (e, d) => e ? reject(e) : resolve(d));
+            } else {
+                resolve(0);
             }
         });
     },
@@ -198,7 +201,9 @@ const redis = Object.assign({
     scan(pattern) {
         return rejectIfNotConnected((resolve, reject) => {
             let rows = [];
-            const scanPattern = `${redisClient.options.prefix}${pattern}:*`;
+            const scanPattern = pattern && pattern.length
+                ? `${redisClient.options.prefix}${pattern}:*`
+                : `${redisClient.options.prefix}*`;
 
             const cb = (err, reply) => {
                 if (err) {
@@ -222,13 +227,10 @@ const redis = Object.assign({
     },
     reset() {
         return rejectIfNotConnected((resolve, reject) => {
-            redisClient.flushall((err, reply) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(reply);
-                }
-            });
+            this.scan()
+                .then(keys => this.del(keys))
+                .then(resolve)
+                .catch(reject);
         });
     },
 }, EventEmitter.prototype);
