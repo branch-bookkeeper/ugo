@@ -12,6 +12,7 @@ const analytics = require('./analytics');
 const logger = require('./logger');
 require('./queue-event-handler');
 require('./manager-notification-push');
+require('./manager-metrics');
 
 const app = express();
 
