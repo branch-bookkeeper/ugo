@@ -7,11 +7,23 @@ const {
 } = require('ramda');
 const request = require('request-promise-native').defaults({ json: true, resolveWithFullResponse: true });
 const RequestAllPages = require('request-all-pages');
+const postal = require('postal');
 const userAgent = 'branch-bookkeeper';
 
 const requestAllPages = (opts) => {
     return new Promise((resolve, reject) => {
         RequestAllPages(opts, { perPage: 100 }, (err, pages) => err ? reject(err) : resolve(pages));
+    });
+};
+
+const trackRateLimit = remaining => {
+    postal.publish({
+        channel: 'metrics',
+        topic: 'gauge',
+        data: {
+            name: 'github.api.ratelimit',
+            value: remaining,
+        },
     });
 };
 
@@ -50,6 +62,7 @@ class Github {
                     },
                 })
                     .then(response => {
+                        trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
                         return response.body;
                     });
             });
@@ -63,6 +76,7 @@ class Github {
             },
         })
             .then(response => {
+                trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
                 return {
                     ...response.body,
                     client_id: response.headers['x-oauth-client-id'],
@@ -82,6 +96,7 @@ class Github {
         })
             .then(response => {
                 const lastPage = last(response);
+                trackRateLimit(path(['headers', 'x-ratelimit-remaining'], lastPage));
                 return {
                     total_count: path(['body', 'total_count'], lastPage),
                     repositories: flatten(map(path(['body', 'repositories']), response)),
