@@ -3,7 +3,7 @@ const {
     prop,
     map,
     path,
-    head,
+    last,
     flatten,
 } = require('ramda');
 const request = require('request-promise-native').defaults({ json: true });
@@ -80,11 +80,11 @@ class Github {
             },
         })
             .then(response => {
-                const firstPage = head(response);
+                const lastPage = last(response);
                 return {
-                    total_count: path(['body', 'total_count'], firstPage),
+                    total_count: path(['body', 'total_count'], lastPage),
                     repositories: flatten(map(path(['body', 'repositories']), response)),
-                    client_id: path(['headers', 'x-oauth-client-id'], firstPage),
+                    client_id: path(['headers', 'x-oauth-client-id'], lastPage),
                 };
             });
     }
