@@ -1,12 +1,11 @@
 const JWT = require('jsonwebtoken');
 const {
-    prop,
     map,
     path,
     last,
     flatten,
 } = require('ramda');
-const request = require('request-promise-native').defaults({ json: true });
+const request = require('request-promise-native').defaults({ json: true, resolveWithFullResponse: true });
 const RequestAllPages = require('request-all-pages');
 const userAgent = 'branch-bookkeeper';
 
@@ -31,7 +30,7 @@ const getInstallationAccessToken = installationId => {
             'user-agent': userAgent,
             accept: 'application/vnd.github.machine-man-preview+json',
         },
-    }).then(prop('token'));
+    }).then(path(['body', 'token']));
 };
 
 class Github {
@@ -49,7 +48,10 @@ class Github {
                         target_url: options.targetUrl,
                         context: 'Branch Bookkeeper',
                     },
-                });
+                })
+                    .then(response => {
+                        return response.body;
+                    });
             });
     }
 
@@ -59,7 +61,6 @@ class Github {
                 'user-agent': userAgent,
                 authorization: `token ${token}`,
             },
-            resolveWithFullResponse: true,
         })
             .then(response => {
                 return {
