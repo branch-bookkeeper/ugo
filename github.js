@@ -79,7 +79,7 @@ class Github {
                 trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
                 return {
                     ...response.body,
-                    client_id: response.headers['x-oauth-client-id'],
+                    client_id: path(['x-oauth-client-id'], response.headers),
                 };
             });
     }
