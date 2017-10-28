@@ -168,10 +168,27 @@ const _unblockPullRequest = (options) => {
     });
 };
 
+const reportAddItem = ({ queue }) => {
+    postal.publish({
+        channel: 'metrics',
+        topic: 'increment',
+        data: {
+            name: 'queue.item.add',
+            tags: [`queue:${queue}`],
+        },
+    });
+};
+
 postal.subscribe({
     channel: 'queue',
     topic: 'item.add',
     callback: addItem,
+});
+
+postal.subscribe({
+    channel: 'queue',
+    topic: 'item.add',
+    callback: reportAddItem,
 });
 
 postal.subscribe({
