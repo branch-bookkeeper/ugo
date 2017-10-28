@@ -179,6 +179,17 @@ const reportAddItem = ({ queue }) => {
     });
 };
 
+const reportRemoveItem = ({ queue }) => {
+    postal.publish({
+        channel: 'metrics',
+        topic: 'increment',
+        data: {
+            name: 'queue.item.remove',
+            tags: [`queue:${queue}`],
+        },
+    });
+};
+
 postal.subscribe({
     channel: 'queue',
     topic: 'item.add',
@@ -195,4 +206,10 @@ postal.subscribe({
     channel: 'queue',
     topic: 'item.remove',
     callback: removeItem,
+});
+
+postal.subscribe({
+    channel: 'queue',
+    topic: 'item.remove',
+    callback: reportRemoveItem,
 });
