@@ -27,6 +27,17 @@ const trackRateLimit = remaining => {
     });
 };
 
+const trackApiRequest = (value = 1) => {
+    postal.publish({
+        channel: 'metrics',
+        topic: 'increment',
+        data: {
+            name: 'github.api.request',
+            value,
+        },
+    });
+};
+
 const getInstallationAccessToken = installationId => {
     const token = JWT.sign({
         iat: Math.floor(Date.now() / 1000),
@@ -63,6 +74,7 @@ class Github {
                 })
                     .then(response => {
                         trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
+                        trackApiRequest();
                         return response.body;
                     });
             });
@@ -77,6 +89,7 @@ class Github {
         })
             .then(response => {
                 trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
+                trackApiRequest();
                 return {
                     ...response.body,
                     client_id: path(['x-oauth-client-id'], response.headers),
@@ -97,6 +110,7 @@ class Github {
             .then(response => {
                 const lastPage = last(response);
                 trackRateLimit(path(['headers', 'x-ratelimit-remaining'], lastPage));
+                trackApiRequest(response.length);
                 return {
                     total_count: path(['body', 'total_count'], lastPage),
                     repositories: flatten(map(path(['body', 'repositories']), response)),
