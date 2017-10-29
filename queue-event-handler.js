@@ -1,7 +1,6 @@
 const postal = require('postal');
 const Github = require('./github');
 const logger = require('./logger');
-const { tail } = require('ramda');
 const pullRequestManager = require('./manager-pullrequest');
 const queueManager = require('./manager-queue');
 const { unpackQueueName } = require('./helpers/queue-helpers');
@@ -53,7 +52,7 @@ const removeItem = ({ queue, item, meta = {} }) => {
             }
         });
 
-    const notifyAndUnlockFirstItemIfChanged = firstItemChanged
+    const notifyOnFirstItemChanged = firstItemChanged
         ? queueManager.getItems(queue, 1)
             .then(queueItems => {
                 if (queueItems.length > 0) {
@@ -70,52 +69,33 @@ const removeItem = ({ queue, item, meta = {} }) => {
                             username,
                         },
                     });
-
-                    return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber);
-                }
-                return Promise.resolve(null);
-            })
-            .then(pullRequestData => {
-                if (pullRequestData) {
-                    return unblockPullRequest({
-                        ...pullRequestData,
-                        owner,
-                        repo,
-                        branch,
-                    });
                 }
             })
         : Promise.resolve(null);
 
     return Promise.all([
         blockOrUnblockRemovedItem,
-        notifyAndUnlockFirstItemIfChanged,
-        blockAllPullRequests(queue),
+        notifyOnFirstItemChanged,
+        setAllPullRequestsStatuses(queue),
     ]).catch(logger.error);
 };
 
-const blockAllPullRequests = (queue) => {
-    return queueManager.getItems(queue)
+const setAllPullRequestsStatuses = queue => (
+    queueManager.getItems(queue)
         .then(items => {
             const { owner, repo, branch } = unpackQueueName(queue);
-            return Promise.all(tail(items).map(({ pullRequestNumber }, index) => {
-                return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
-                    .then(pullRequestData => {
-                        if (pullRequestData) {
-                            return blockPullRequest({
-                                ...pullRequestData,
-                                owner,
-                                repo,
-                                branch,
-                                pullRequestNumber,
-                                description: `${index + 1} PR before you`,
-                            });
-                        }
-                        return Promise.resolve(null);
-                    });
-            }));
-        });
-};
+
+            return Promise.all(items.map(({ pullRequestNumber }, index) => (
+                setPullRequestStatusByPosition({
+                    owner,
+                    repo,
+                    branch,
+                    pullRequestNumber,
+                    index,
+                })
+            )));
+        })
+);
 
 const setPullRequestStatusByPosition = ({
     owner,
