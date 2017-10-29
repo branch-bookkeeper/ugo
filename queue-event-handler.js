@@ -1,9 +1,12 @@
 const postal = require('postal');
 const Github = require('./github');
 const logger = require('./logger');
+const { slice } = require('ramda');
 const pullRequestManager = require('./manager-pullrequest');
 const queueManager = require('./manager-queue');
 const { unpackQueueName } = require('./helpers/queue-helpers');
+
+const MAX_REPORTED_QUEUE_POSITION = 5;
 
 const addItem = ({ queue, item, index }) => {
     const { owner, repo, branch } = unpackQueueName(queue);
@@ -85,7 +88,7 @@ const setAllPullRequestsStatuses = queue => (
         .then(items => {
             const { owner, repo, branch } = unpackQueueName(queue);
 
-            return Promise.all(items.map(({ pullRequestNumber }, index) => (
+            return Promise.all(slice(0, MAX_REPORTED_QUEUE_POSITION + 1, items).map(({ pullRequestNumber }, index) => (
                 setPullRequestStatusByPosition({
                     owner,
                     repo,
@@ -114,12 +117,16 @@ const setPullRequestStatusByPosition = ({
             });
         }
 
+        const description = (index <= MAX_REPORTED_QUEUE_POSITION)
+            ? `${index} PR${index === 1 ? '' : 's'} before you`
+            : `More than ${MAX_REPORTED_QUEUE_POSITION} PRs before you`;
+
         return blockPullRequest({
             ...pullRequestData,
             owner,
             repo,
             branch,
-            description: `${index} PR${index === 1 ? '' : 's'} before you`,
+            description,
         });
     };
 
