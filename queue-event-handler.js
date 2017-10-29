@@ -6,47 +6,30 @@ const pullRequestManager = require('./manager-pullrequest');
 const queueManager = require('./manager-queue');
 const { unpackQueueName } = require('./helpers/queue-helpers');
 
-const addItem = ({ queue }) => {
+const addItem = ({ queue, item, index }) => {
     const { owner, repo, branch } = unpackQueueName(queue);
+    const { pullRequestNumber, username } = item;
 
-    Promise.all([
-        blockAllPullRequests(queue),
-        queueManager.getItems(queue, 2),
-    ])
-        .then(([, queueItems]) => {
-            if (queueItems.length > 0) {
-                const [first] = queueItems;
-                const { pullRequestNumber, username } = first;
+    if (index === 0) {
+        postal.publish({
+            channel: 'notification',
+            topic: 'send.rebased',
+            data: {
+                owner,
+                repo,
+                pullRequestNumber,
+                username,
+            },
+        });
+    }
 
-                if (queueItems.length === 1) {
-                    postal.publish({
-                        channel: 'notification',
-                        topic: 'send.rebased',
-                        data: {
-                            owner,
-                            repo,
-                            pullRequestNumber,
-                            username,
-                        },
-                    });
-                }
-
-                return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber);
-            }
-            return Promise.resolve(null);
-        })
-        .then(pullRequestData => {
-            if (pullRequestData) {
-                return unblockPullRequest({
-                    ...pullRequestData,
-                    owner,
-                    repo,
-                    branch,
-                });
-            }
-            return Promise.resolve(null);
-        })
-        .catch(logger.error);
+    return setPullRequestStatusByPosition({
+        owner,
+        repo,
+        branch,
+        pullRequestNumber,
+        index,
+    }).catch(logger.error);
 };
 
 const removeItem = ({ queue, item, meta = {} }) => {
@@ -129,6 +112,36 @@ const blockAllPullRequests = (queue) => {
                     });
             }));
         });
+};
+
+const setPullRequestStatusByPosition = ({
+    owner,
+    repo,
+    branch,
+    pullRequestNumber,
+    index,
+}) => {
+    const blockOrUnblock = pullRequestData => {
+        if (index === 0) {
+            return unblockPullRequest({
+                ...pullRequestData,
+                owner,
+                repo,
+                branch,
+            });
+        }
+
+        return blockPullRequest({
+            ...pullRequestData,
+            owner,
+            repo,
+            branch,
+            description: `${index} PR${index === 1 ? '' : 's'} before you`,
+        });
+    };
+
+    return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
+        .then(pullRequestData => pullRequestData && blockOrUnblock(pullRequestData));
 };
 
 const updatePullRequestStatus = (options) => {
