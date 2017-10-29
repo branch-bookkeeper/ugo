@@ -190,6 +190,21 @@ const reportRemoveItem = ({ queue }) => {
     });
 };
 
+const reportQueueSize = ({ queue }) => {
+    queueManager.getLength(queue)
+        .then(length => {
+            postal.publish({
+                channel: 'metrics',
+                topic: 'gauge',
+                data: {
+                    name: 'queue.length',
+                    value: length,
+                    tags: [`queue:${queue}`],
+                },
+            });
+        });
+};
+
 postal.subscribe({
     channel: 'queue',
     topic: 'item.add',
@@ -212,4 +227,10 @@ postal.subscribe({
     channel: 'queue',
     topic: 'item.remove',
     callback: reportRemoveItem,
+});
+
+postal.subscribe({
+    channel: 'queue',
+    topic: 'item.*',
+    callback: reportQueueSize,
 });
