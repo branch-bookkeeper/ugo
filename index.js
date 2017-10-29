@@ -61,6 +61,9 @@ app.use((err, req, res, next) => {
     if (status >= 500 && !development) {
         rollbar.error(err, req);
     }
+    if (development) {
+        logger.error(err.stack);
+    }
     res.status(status).json({
         stack: development ? err.stack : undefined,
         error: err.message,
