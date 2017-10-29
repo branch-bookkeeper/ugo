@@ -35,9 +35,9 @@ const addItem = ({ queue, item, index }) => {
 const removeItem = ({ queue, item, meta = {} }) => {
     const { mergedByUsername, firstItemChanged } = meta;
     const { owner, repo, branch } = unpackQueueName(queue);
-    const { pullRequestNumber } = item;
+    const { pullRequestNumber: removedPullRequestNumber } = item;
 
-    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
+    const blockOrUnblockRemovedItem = pullRequestManager.getPullRequestInfo(owner, repo, removedPullRequestNumber)
         .then(pullRequestData => {
             if (pullRequestData) {
                 const blockOrUnblock = mergedByUsername ? unblockPullRequest : blockPullRequest;
@@ -49,18 +49,17 @@ const removeItem = ({ queue, item, meta = {} }) => {
                     repo,
                     branch,
                     description,
-                    pullRequestNumber: item.pullRequestNumber,
                 });
             }
-            return Promise.resolve(null);
-        })
-        .then(() => queueManager.getItems(queue, 1))
-        .then(queueItems => {
-            if (queueItems.length > 0) {
-                const [first] = queueItems;
-                const { pullRequestNumber, username } = first;
+        });
 
-                if (firstItemChanged) {
+    const notifyAndUnlockFirstItemIfChanged = firstItemChanged
+        ? queueManager.getItems(queue, 1)
+            .then(queueItems => {
+                if (queueItems.length > 0) {
+                    const [first] = queueItems;
+                    const { pullRequestNumber, username } = first;
+
                     postal.publish({
                         channel: 'notification',
                         topic: 'send.rebased',
@@ -71,24 +70,28 @@ const removeItem = ({ queue, item, meta = {} }) => {
                             username,
                         },
                     });
-                }
 
-                return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber);
-            }
-            return Promise.resolve(null);
-        })
-        .then(pullRequestData => {
-            if (pullRequestData) {
-                return unblockPullRequest({
-                    ...pullRequestData,
-                    owner,
-                    repo,
-                    branch,
-                });
-            }
-        })
-        .then(() => blockAllPullRequests(queue))
-        .catch(logger.error);
+                    return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber);
+                }
+                return Promise.resolve(null);
+            })
+            .then(pullRequestData => {
+                if (pullRequestData) {
+                    return unblockPullRequest({
+                        ...pullRequestData,
+                        owner,
+                        repo,
+                        branch,
+                    });
+                }
+            })
+        : Promise.resolve(null);
+
+    return Promise.all([
+        blockOrUnblockRemovedItem,
+        notifyAndUnlockFirstItemIfChanged,
+        blockAllPullRequests(queue),
+    ]).catch(logger.error);
 };
 
 const blockAllPullRequests = (queue) => {
