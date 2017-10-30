@@ -49,6 +49,10 @@ class QueueManager {
         return redis.lrange(`${prefix}:${queue}`, numberOfItems);
     }
 
+    static getLength(queue) {
+        return redis.llen(`${prefix}:${queue}`);
+    }
+
     static enabled() {
         return redis.enabled();
     }
