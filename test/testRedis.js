@@ -137,6 +137,19 @@ suite('Redis', () => {
             });
     });
 
+    test('redis scan', (done) => {
+        redis.scan(randomKey)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
+            .catch(err => {
+                assert.isNotNull(err);
+                done();
+            });
+    });
+
     test('redis set', (done) => {
         redis.set(randomKey, randomObject)
             .then(data => {

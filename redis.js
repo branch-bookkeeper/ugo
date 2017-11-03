@@ -195,6 +195,31 @@ const redis = Object.assign({
             });
         });
     },
+    scan(pattern) {
+        return rejectIfNotConnected((resolve, reject) => {
+            let rows = [];
+            const scanPattern = `${redisClient.options.prefix}${pattern}:*`;
+
+            const cb = (err, reply) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                const [cursor, data] = reply;
+                rows = rows.concat(data);
+
+                if (cursor === '0') {
+                    return resolve(rows.map(row => row.replace(redisClient.options.prefix, '')));
+                }
+
+                getData(cursor);
+            };
+
+            const getData = cursor => redisClient.scan(cursor, 'match', scanPattern, cb);
+
+            getData('0');
+        });
+    },
     reset() {
         return rejectIfNotConnected((resolve, reject) => {
             redisClient.flushall((err, reply) => {
