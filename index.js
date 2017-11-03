@@ -12,6 +12,7 @@ const analytics = require('./analytics');
 const logger = require('./logger');
 require('./queue-event-handler');
 require('./manager-notification-push');
+require('./manager-metrics');
 
 const app = express();
 
@@ -59,6 +60,9 @@ app.use((err, req, res, next) => {
     const status = err.status || 500;
     if (status >= 500 && !development) {
         rollbar.error(err, req);
+    }
+    if (development) {
+        logger.error(err.stack);
     }
     res.status(status).json({
         stack: development ? err.stack : undefined,

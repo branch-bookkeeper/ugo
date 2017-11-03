@@ -1,6 +1,5 @@
 const postal = require('postal');
 const Github = require('./github');
-const redis = require('./redis');
 const logger = require('./logger');
 const { tail } = require('ramda');
 const pullRequestManager = require('./manager-pullrequest');
@@ -168,6 +167,43 @@ const _unblockPullRequest = (options) => {
     });
 };
 
+const reportAddItem = ({ queue }) => {
+    postal.publish({
+        channel: 'metrics',
+        topic: 'increment',
+        data: {
+            name: 'queue.item.add',
+            tags: [`queue:${queue}`],
+        },
+    });
+};
+
+const reportRemoveItem = ({ queue }) => {
+    postal.publish({
+        channel: 'metrics',
+        topic: 'increment',
+        data: {
+            name: 'queue.item.remove',
+            tags: [`queue:${queue}`],
+        },
+    });
+};
+
+const reportQueueSize = ({ queue }) => {
+    queueManager.getLength(queue)
+        .then(length => {
+            postal.publish({
+                channel: 'metrics',
+                topic: 'gauge',
+                data: {
+                    name: 'queue.length',
+                    value: length,
+                    tags: [`queue:${queue}`],
+                },
+            });
+        });
+};
+
 postal.subscribe({
     channel: 'queue',
     topic: 'item.add',
@@ -176,6 +212,24 @@ postal.subscribe({
 
 postal.subscribe({
     channel: 'queue',
+    topic: 'item.add',
+    callback: reportAddItem,
+});
+
+postal.subscribe({
+    channel: 'queue',
     topic: 'item.remove',
     callback: removeItem,
+});
+
+postal.subscribe({
+    channel: 'queue',
+    topic: 'item.remove',
+    callback: reportRemoveItem,
+});
+
+postal.subscribe({
+    channel: 'queue',
+    topic: 'item.*',
+    callback: reportQueueSize,
 });

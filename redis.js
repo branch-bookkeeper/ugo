@@ -157,6 +157,17 @@ const redis = Object.assign({
             });
         });
     },
+    llen(queue) {
+        return rejectIfNotConnected((resolve, reject) => {
+            redisClient.llen(queue, (err, length) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(length);
+                }
+            });
+        });
+    },
     keys(pattern) {
         return rejectIfNotConnected((resolve, reject) => {
             redisClient.keys(`${redisClient.options.prefix}${pattern}:*`, (err, rows) => {

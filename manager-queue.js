@@ -28,7 +28,9 @@ class QueueManager {
 
         return redis.lrange(`${prefix}:${queue}`, 1)
             .then(([queueFirstItem]) => {
-                meta.firstItemChanged = queueFirstItem.pullRequestNumber === item.pullRequestNumber;
+                if (queueFirstItem) {
+                    meta.firstItemChanged = queueFirstItem.pullRequestNumber === item.pullRequestNumber;
+                }
 
                 postal.publish({
                     channel: 'queue',
@@ -47,6 +49,10 @@ class QueueManager {
 
     static getItems(queue, numberOfItems) {
         return redis.lrange(`${prefix}:${queue}`, numberOfItems);
+    }
+
+    static getLength(queue) {
+        return redis.llen(`${prefix}:${queue}`);
     }
 
     static enabled() {
