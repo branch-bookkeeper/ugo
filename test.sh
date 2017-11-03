@@ -6,6 +6,7 @@ export NEW_RELIC_ENABLED=false
 export NEW_RELIC_APP_NAME=ugo
 export NEW_RELIC_LOG=stdout
 export NEW_RELIC_NO_CONFIG_FILE=true
+export DATADOG_API_KEY=fake
 if [ -z "$REDIS_URL" ]; then
     export REDIS_URL=redis://localhost
 fi
