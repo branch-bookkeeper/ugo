@@ -1,6 +1,7 @@
 const redisLib = require('redis');
 const logger = require('./logger');
 const EventEmitter = require('events');
+const { identity } = require('ramda');
 let redisClient;
 
 if (process.env['REDIS_URL']) {
@@ -100,6 +101,21 @@ const redis = Object.assign({
                         resolve(JSON.parse(data));
                     }
                 });
+            }
+        });
+    },
+    mget(keys) {
+        return rejectIfNotConnected((resolve, reject) => {
+            if (keys && keys.length > 0) {
+                redisClient.mget(keys, (err, data) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(data.filter(identity).map(JSON.parse));
+                    }
+                });
+            } else {
+                resolve([]);
             }
         });
     },

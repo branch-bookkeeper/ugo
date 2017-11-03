@@ -59,6 +59,19 @@ suite('Redis', () => {
             });
     });
 
+    test('redis mget', (done) => {
+        redis.mget(randomKey, randomKey)
+            .then(data => {
+                assert.isArray(data);
+                assert.empty(data);
+                done();
+            })
+            .catch(err => {
+                assert.isNotNull(err);
+                done();
+            });
+    });
+
     test('redis sadd', (done) => {
         redis.sadd(randomKey, randomKey)
             .then(data => {
