@@ -24,6 +24,11 @@ class PullRequestManager {
         return redis.get(`${prefix}:${owner}:${repo}:${number}`);
     }
 
+    static getRepositoryPullRequestsInfo(owner, repo) {
+        return redis.scan(`${prefix}:${owner}:${repo}`)
+            .then(redis.mget);
+    }
+
     static deletePullRequestInfo(owner, repo, number) {
         return redis.del(`${prefix}:${owner}:${repo}:${number}`)
             .then(() => {

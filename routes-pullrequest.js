@@ -21,4 +21,19 @@ router.route('/:owner/:repository/:pullrequest')
             .catch(next);
     });
 
+router.route('/:owner/:repository')
+    .all(authenticator)
+    .all((req, res, next) => {
+        if (!manager.enabled()) {
+            next(createError.ServiceUnavailable('queue not available'));
+            return;
+        }
+        next();
+    })
+    .get((req, res, next) => {
+        manager.getRepositoryPullRequestsInfo(req.params.owner, req.params.repository)
+            .then(data => res.send(data))
+            .catch(next);
+    });
+
 module.exports = router;

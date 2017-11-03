@@ -1,6 +1,7 @@
 const redisLib = require('redis');
 const logger = require('./logger');
 const EventEmitter = require('events');
+const { identity } = require('ramda');
 let redisClient;
 
 if (process.env['REDIS_URL']) {
@@ -103,6 +104,21 @@ const redis = Object.assign({
             }
         });
     },
+    mget(keys) {
+        return rejectIfNotConnected((resolve, reject) => {
+            if (keys && keys.length > 0) {
+                redisClient.mget(keys, (err, data) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(data.filter(identity).map(JSON.parse));
+                    }
+                });
+            } else {
+                resolve([]);
+            }
+        });
+    },
     sadd(key, data) {
         return rejectIfNotConnected((resolve, reject) => {
             redisClient.sadd(key, JSON.stringify(data), (err, reply) => {
@@ -177,6 +193,31 @@ const redis = Object.assign({
                     resolve(rows.map(row => row.replace(redisClient.options.prefix, '')));
                 }
             });
+        });
+    },
+    scan(pattern) {
+        return rejectIfNotConnected((resolve, reject) => {
+            let rows = [];
+            const scanPattern = `${redisClient.options.prefix}${pattern}:*`;
+
+            const cb = (err, reply) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                const [cursor, data] = reply;
+                rows = rows.concat(data);
+
+                if (cursor === '0') {
+                    return resolve(rows.map(row => row.replace(redisClient.options.prefix, '')));
+                }
+
+                getData(cursor);
+            };
+
+            const getData = cursor => redisClient.scan(cursor, 'match', scanPattern, cb);
+
+            getData('0');
         });
     },
     reset() {
