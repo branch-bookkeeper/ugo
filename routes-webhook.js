@@ -25,6 +25,24 @@ router.post('/', (req, res, next) => {
     next();
 });
 
+// Statuses
+router.post('/', (req, res, next) => {
+    if (req.event !== 'status') {
+        next();
+        return;
+    }
+
+    const { state, sha, repository: { name: repo, owner: { login: owner } } } = req.body;
+
+    pullRequestHandler.handleStatusChange({
+        owner,
+        repo,
+        sha,
+        state,
+    })
+        .then(() => res.json(`Status of ${sha} ${state}`));
+});
+
 // Repositories
 router.post('/', (req, res, next) => {
     if (req.event !== 'repository') {
