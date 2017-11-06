@@ -56,6 +56,15 @@ const getInstallationAccessToken = installationId => {
     }).then(path(['body', 'token']));
 };
 
+const trackApiUsageAndReturnBody = response => {
+    trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
+    trackApiRequest();
+    return {
+        ...response.body,
+        client_id: path(['x-oauth-client-id'], response.headers),
+    };
+};
+
 class Github {
     static updatePullRequestStatus(options) {
         return getInstallationAccessToken(options.installationId)
@@ -72,11 +81,7 @@ class Github {
                         context: 'Branch Bookkeeper',
                     },
                 })
-                    .then(response => {
-                        trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
-                        trackApiRequest();
-                        return response.body;
-                    });
+                    .then(trackApiUsageAndReturnBody);
             });
     }
 
@@ -87,14 +92,7 @@ class Github {
                 authorization: `token ${token}`,
             },
         })
-            .then(response => {
-                trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
-                trackApiRequest();
-                return {
-                    ...response.body,
-                    client_id: path(['x-oauth-client-id'], response.headers),
-                };
-            });
+            .then(trackApiUsageAndReturnBody);
     }
 
     static getInstallationInfo(token, installationId) {
