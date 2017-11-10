@@ -1,11 +1,26 @@
-const redis = require('./redis');
+const mongoManager = require('./manager-mongo');
 const postal = require('postal');
-const prefix = 'pullrequest';
+const COLLECTION_NAME = 'pullRequest';
 
 class PullRequestManager {
     static setPullRequestInfo(owner, repo, number, info) {
-        return redis.set(`${prefix}:${owner}:${repo}:${number}`, info)
-            .then(data => {
+        return mongoManager.getCollection(COLLECTION_NAME)
+            .then(collection => collection.updateOne(
+                {
+                    _id: `${owner}-${repo}-${number}`,
+                },
+                {
+                    $set: {
+                        ...info,
+                        owner,
+                        repo,
+                    },
+                },
+                {
+                    upsert: true,
+                }
+            ))
+            .then(() => {
                 postal.publish({
                     channel: 'pullRequest',
                     topic: 'info.set',
@@ -16,21 +31,30 @@ class PullRequestManager {
                         info,
                     },
                 });
-                return data;
-            });
+            })
+            .then(() => info);
     }
 
     static getPullRequestInfo(owner, repo, number) {
-        return redis.get(`${prefix}:${owner}:${repo}:${number}`);
+        return mongoManager.getCollection(COLLECTION_NAME)
+            .then(collection => collection.findOne(
+                { _id: `${owner}-${repo}-${number}` },
+                { fields: { _id: false, owner: false, repo: false } }
+            ));
     }
 
     static getRepositoryPullRequestsInfo(owner, repo) {
-        return redis.scan(`${prefix}:${owner}:${repo}`)
-            .then(redis.mget);
+        return mongoManager.getCollection(COLLECTION_NAME)
+            .then(collection => collection.find(
+                { owner, repo },
+                { fields: { _id: false, owner: false, repo: false } }
+            ))
+            .then(cursor => cursor.toArray());
     }
 
     static deletePullRequestInfo(owner, repo, number) {
-        return redis.del(`${prefix}:${owner}:${repo}:${number}`)
+        return mongoManager.getCollection(COLLECTION_NAME)
+            .then(collection => collection.deleteOne({ _id: `${owner}-${repo}-${number}` }))
             .then(() => {
                 postal.publish({
                     channel: 'pullRequest',
@@ -45,24 +69,21 @@ class PullRequestManager {
     }
 
     static deletePullRequestInfos(owner) {
-        if (redis.enabled()) {
-            return redis.keys(`${prefix}:${owner}`)
-                .then(keys => Promise.all(keys.map(redis.del)))
-                .then(() => {
-                    postal.publish({
-                        channel: 'pullRequest',
-                        topic: 'info.delete',
-                        data: {
-                            owner,
-                        },
-                    });
+        return mongoManager.getCollection(COLLECTION_NAME)
+            .then(collection => collection.deleteMany({ owner }))
+            .then(() => {
+                postal.publish({
+                    channel: 'pullRequest',
+                    topic: 'info.delete',
+                    data: {
+                        owner,
+                    },
                 });
-        }
-        return Promise.resolve();
+            });
     }
 
     static enabled() {
-        return redis.enabled();
+        return mongoManager.enabled();
     }
 }
 

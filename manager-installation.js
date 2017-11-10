@@ -1,43 +1,61 @@
-const redis = require('./redis');
+const mongoManager = require('./manager-mongo');
 const postal = require('postal');
-const prefix = 'installation';
+const { path } = require('ramda');
+const COLLECTION_NAME = 'installation';
 
 class InstallationManager {
     static getInstallationId(owner) {
-        return redis.hget(prefix, owner);
+        return mongoManager.getCollection(COLLECTION_NAME)
+            .then(collection => collection.find({ owner }))
+            .then(cursor => cursor.toArray())
+            .then(path([0, 'installationId']));
     }
 
     static setInstallationId(owner, installationId) {
-        if (redis.enabled()) {
-            return redis.hset(prefix, `${owner}`, installationId)
-                .then(() => {
-                    postal.publish({
-                        channel: 'installation',
-                        topic: 'id.set',
-                        data: {
-                            owner,
-                            installationId,
-                        },
-                    });
+        return mongoManager.getCollection(COLLECTION_NAME)
+            .then(collection => collection.updateOne(
+                {
+                    _id: installationId,
+                },
+                {
+                    $set: {
+                        installationId,
+                        owner,
+                    },
+                },
+                {
+                    upsert: true,
+                }
+            ))
+            .then(() => {
+                postal.publish({
+                    channel: COLLECTION_NAME,
+                    topic: 'id.set',
+                    data: {
+                        owner,
+                        installationId,
+                    },
                 });
-        }
-        return Promise.resolve();
+            })
+            .then(() => installationId);
     }
 
     static deleteInstallationId(owner) {
-        if (redis.enabled()) {
-            return redis.hdel(prefix, owner)
-                .then(() => {
-                    postal.publish({
-                        channel: 'installation',
-                        topic: 'id.delete',
-                        data: {
-                            owner,
-                        },
-                    });
+        return mongoManager.getCollection(COLLECTION_NAME)
+            .then(collection => collection.deleteMany({ owner }))
+            .then(() => {
+                postal.publish({
+                    channel: 'installation',
+                    topic: 'id.delete',
+                    data: {
+                        owner,
+                    },
                 });
-        }
-        return Promise.resolve();
+            });
+    }
+
+    static enabled() {
+        return mongoManager.enabled();
     }
 }
 

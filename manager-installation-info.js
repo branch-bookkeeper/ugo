@@ -1,15 +1,24 @@
-const redis = require('./redis');
+const mongoManager = require('./manager-mongo');
 const postal = require('postal');
 const Github = require('./github');
-const { evolve, map, pick } = require('ramda');
-const prefix = 'installation:info';
+const {
+    evolve,
+    map,
+    pick,
+    isNil,
+} = require('ramda');
+const COLLECTION_NAME = 'installationInfo';
 
 class InstallationInfoManager {
     static getInstallationInfo(token, installationId) {
-        if (redis.enabled()) {
-            return redis.get(`${prefix}:${installationId}:${token}`)
+        if (mongoManager.enabled()) {
+            return mongoManager.getCollection(COLLECTION_NAME)
+                .then(collection => collection.findOne(
+                    { _id: `${installationId}-${token}` },
+                    { fields: { _id: false, created_at: false, installationId: false } }
+                ))
                 .then(installationInfo => {
-                    if (!installationInfo) {
+                    if (isNil(installationInfo)) {
                         return InstallationInfoManager._getInstallationInfoFromGithub(token, installationId);
                     }
                     return installationInfo;
@@ -19,9 +28,9 @@ class InstallationInfoManager {
     }
 
     static deleteInstallationInfos(installationId) {
-        if (redis.enabled()) {
-            return redis.keys(`${prefix}:${installationId}`)
-                .then(keys => Promise.all(keys.map(redis.del)))
+        if (mongoManager.enabled()) {
+            return mongoManager.getCollection(COLLECTION_NAME)
+                .then(collection => collection.deleteMany({ installationId }))
                 .then(() => {
                     postal.publish({
                         channel: 'installation',
@@ -42,8 +51,23 @@ class InstallationInfoManager {
     }
 
     static _setInstallationInfo(installationId, installationInfo, token) {
-        if (redis.enabled() && installationInfo) {
-            redis.set(`${prefix}:info:${installationId}:${token}`, installationInfo, 86400)
+        if (mongoManager.enabled() && installationInfo) {
+            return mongoManager.getCollection(COLLECTION_NAME)
+                .then(collection => collection.updateOne(
+                    {
+                        _id: `${installationId}-${token}`,
+                    },
+                    {
+                        $set: {
+                            ...installationInfo,
+                            installationId,
+                            created_at: new Date(),
+                        },
+                    },
+                    {
+                        upsert: true,
+                    }
+                ))
                 .then(() => {
                     postal.publish({
                         channel: 'installation',

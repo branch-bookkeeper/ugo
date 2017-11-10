@@ -4,12 +4,16 @@ const logger = require('./logger');
 const { slice } = require('ramda');
 const pullRequestManager = require('./manager-pullrequest');
 const queueManager = require('./manager-queue');
-const { unpackQueueName } = require('./helpers/queue-helpers');
 
 const MAX_REPORTED_QUEUE_POSITION = 5;
 
-const addItem = ({ queue, item, index }) => {
-    const { owner, repo, branch } = unpackQueueName(queue);
+const addItem = ({
+    owner,
+    repo,
+    branch,
+    item,
+    index,
+}) => {
     const { pullRequestNumber, username } = item;
 
     if (index === 0) {
@@ -34,9 +38,14 @@ const addItem = ({ queue, item, index }) => {
     }).catch(logger.error);
 };
 
-const removeItem = ({ queue, item, meta = {} }) => {
+const removeItem = ({
+    owner,
+    repo,
+    branch,
+    item,
+    meta = {},
+}) => {
     const { mergedByUsername, firstItemChanged } = meta;
-    const { owner, repo, branch } = unpackQueueName(queue);
     const { pullRequestNumber: removedPullRequestNumber } = item;
 
     const blockOrUnblockRemovedItem = pullRequestManager.getPullRequestInfo(owner, repo, removedPullRequestNumber)
@@ -56,7 +65,7 @@ const removeItem = ({ queue, item, meta = {} }) => {
         });
 
     const notifyOnFirstItemChanged = firstItemChanged
-        ? queueManager.getItems(queue, 1)
+        ? queueManager.getItems(owner, repo, branch, 1)
             .then(queueItems => {
                 if (queueItems.length > 0) {
                     const [first] = queueItems;
@@ -79,15 +88,13 @@ const removeItem = ({ queue, item, meta = {} }) => {
     return Promise.all([
         blockOrUnblockRemovedItem,
         notifyOnFirstItemChanged,
-        setAllPullRequestsStatuses(queue),
+        setAllPullRequestsStatuses(owner, repo, branch),
     ]).catch(logger.error);
 };
 
-const setAllPullRequestsStatuses = queue => (
-    queueManager.getItems(queue)
+const setAllPullRequestsStatuses = (owner, repo, branch) => (
+    queueManager.getItems(owner, repo, branch)
         .then(items => {
-            const { owner, repo, branch } = unpackQueueName(queue);
-
             return Promise.all(slice(0, MAX_REPORTED_QUEUE_POSITION + 1, items).map(({ pullRequestNumber }, index) => (
                 setPullRequestStatusByPosition({
                     owner,
@@ -138,7 +145,6 @@ const updatePullRequestStatus = (options) => {
     const {
         owner, repo, branch, pullRequestNumber,
     } = options;
-
     const targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
 
     return Github.updatePullRequestStatus({
@@ -163,30 +169,42 @@ const unblockPullRequest = (options) => {
     });
 };
 
-const reportAddItem = ({ queue }) => {
+const reportAddItem = ({
+    owner,
+    repo,
+    branch,
+}) => {
     postal.publish({
         channel: 'metrics',
         topic: 'increment',
         data: {
             name: 'queue.item.add',
-            tags: [`queue:${queue}`],
+            tags: [`queue:${owner}:${repo}:${branch}`],
         },
     });
 };
 
-const reportRemoveItem = ({ queue }) => {
+const reportRemoveItem = ({
+    owner,
+    repo,
+    branch,
+}) => {
     postal.publish({
         channel: 'metrics',
         topic: 'increment',
         data: {
             name: 'queue.item.remove',
-            tags: [`queue:${queue}`],
+            tags: [`queue:${owner}:${repo}:${branch}`],
         },
     });
 };
 
-const reportQueueSize = ({ queue }) => {
-    queueManager.getLength(queue)
+const reportQueueSize = ({
+    owner,
+    repo,
+    branch,
+}) => {
+    queueManager.getLength(owner, repo, branch)
         .then(length => {
             postal.publish({
                 channel: 'metrics',
@@ -194,7 +212,7 @@ const reportQueueSize = ({ queue }) => {
                 data: {
                     name: 'queue.length',
                     value: length,
-                    tags: [`queue:${queue}`],
+                    tags: [`queue:${owner}:${repo}:${branch}`],
                 },
             });
         });
