@@ -9,6 +9,7 @@ const {
 } = require('ramda');
 const manager = require('./manager-queue');
 const installationManager = require('./manager-installation');
+const installationInfoManager = require('./manager-installation-info');
 const pullRequestManager = require('./manager-pullrequest');
 const logger = require('./logger');
 const validator = require('./validator-signature-github');
@@ -40,7 +41,7 @@ router.post('/', (req, res, next) => {
     const { repository: { owner: { login: owner } } } = req.body;
 
     installationManager.getInstallationId(owner)
-        .then(installationManager.deleteInstallationInfos)
+        .then(installationInfoManager.deleteInstallationInfos)
         .then(() => res.send(`Installation infos of ${owner} deleted`));
 });
 
@@ -78,7 +79,7 @@ router.post('/', (req, res, next) => {
     } else if (action === 'deleted') {
         pendingPromise = Promise.all([
             installationManager.deleteInstallationId(owner),
-            installationManager.deleteInstallationInfos(id),
+            installationInfoManager.deleteInstallationInfos(id),
             pullRequestManager.deletePullRequestInfos(owner),
         ]);
     }
@@ -103,7 +104,7 @@ router.post('/', (req, res, next) => {
     const { id } = installation;
     const { account: { login: owner } } = installation;
 
-    installationManager.deleteInstallationInfos(id)
+    installationInfoManager.deleteInstallationInfos(id)
         .then(() => res.send(`Installation repositories of installation ${id} for ${owner} ${action}`))
         .catch(error => {
             logger.error(error);
