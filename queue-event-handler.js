@@ -1,66 +1,48 @@
 const postal = require('postal');
 const Github = require('./github');
 const logger = require('./logger');
-const { tail } = require('ramda');
+const { slice } = require('ramda');
 const pullRequestManager = require('./manager-pullrequest');
 const queueManager = require('./manager-queue');
+const { unpackQueueName } = require('./helpers/queue-helpers');
 
-const addItem = ({ queue }) => {
-    const [owner, repo, branch] = queue.split(':');
+const MAX_REPORTED_QUEUE_POSITION = 5;
 
-    Promise.all([
-        _blockAllPullRequests(queue),
-        queueManager.getItems(queue, 2),
-    ])
-        .then(([, queueItems]) => {
-            if (queueItems.length > 0) {
-                const [first] = queueItems;
-                const { pullRequestNumber, username } = first;
+const addItem = ({ queue, item, index }) => {
+    const { owner, repo, branch } = unpackQueueName(queue);
+    const { pullRequestNumber, username } = item;
 
-                if (queueItems.length === 1) {
-                    postal.publish({
-                        channel: 'notification',
-                        topic: 'send.rebased',
-                        data: {
-                            owner,
-                            repo,
-                            pullRequestNumber,
-                            username,
-                        },
-                    });
-                }
+    if (index === 0) {
+        postal.publish({
+            channel: 'notification',
+            topic: 'send.rebased',
+            data: {
+                owner,
+                repo,
+                pullRequestNumber,
+                username,
+            },
+        });
+    }
 
-                return Promise.all([
-                    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber),
-                    Promise.resolve(pullRequestNumber),
-                ]);
-            }
-            return Promise.resolve([null, null]);
-        })
-        .then(([pullRequestData, pullRequestNumber]) => {
-            if (pullRequestData) {
-                return _unblockPullRequest({
-                    ...pullRequestData,
-                    owner,
-                    repo,
-                    branch,
-                    pullRequestNumber,
-                });
-            }
-            return Promise.resolve(null);
-        })
-        .catch(logger.error);
+    return setPullRequestStatusByPosition({
+        owner,
+        repo,
+        branch,
+        pullRequestNumber,
+        index,
+    }).catch(logger.error);
 };
 
 const removeItem = ({ queue, item, meta = {} }) => {
     const { mergedByUsername, firstItemChanged } = meta;
-    const [owner, repo, branch] = queue.split(':');
-    const { pullRequestNumber } = item;
+    const { owner, repo, branch } = unpackQueueName(queue);
+    const { pullRequestNumber: removedPullRequestNumber } = item;
 
-    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
+    const blockOrUnblockRemovedItem = pullRequestManager.getPullRequestInfo(owner, repo, removedPullRequestNumber)
         .then(pullRequestData => {
             if (pullRequestData) {
-                const blockOrUnblock = mergedByUsername ? _unblockPullRequest : _blockPullRequest;
+                const blockOrUnblock = mergedByUsername ? unblockPullRequest : blockPullRequest;
                 const description = mergedByUsername ? `Merged by ${mergedByUsername}` : 'Book to merge';
 
                 return blockOrUnblock({
@@ -69,18 +51,17 @@ const removeItem = ({ queue, item, meta = {} }) => {
                     repo,
                     branch,
                     description,
-                    pullRequestNumber: item.pullRequestNumber,
                 });
             }
-            return Promise.resolve(null);
-        })
-        .then(() => queueManager.getItems(queue, 1))
-        .then(queueItems => {
-            if (queueItems.length > 0) {
-                const [first] = queueItems;
-                const { pullRequestNumber, username } = first;
+        });
 
-                if (firstItemChanged) {
+    const notifyOnFirstItemChanged = firstItemChanged
+        ? queueManager.getItems(queue, 1)
+            .then(queueItems => {
+                if (queueItems.length > 0) {
+                    const [first] = queueItems;
+                    const { pullRequestNumber, username } = first;
+
                     postal.publish({
                         channel: 'notification',
                         topic: 'send.rebased',
@@ -92,53 +73,68 @@ const removeItem = ({ queue, item, meta = {} }) => {
                         },
                     });
                 }
+            })
+        : Promise.resolve(null);
 
-                return Promise.all([
-                    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber),
-                    Promise.resolve(pullRequestNumber),
-                ]);
-            }
-            return Promise.resolve([null, null]);
-        })
-        .then(([pullRequestData, pullRequestNumber]) => {
-            if (pullRequestData) {
-                return _unblockPullRequest({
-                    ...pullRequestData,
+    return Promise.all([
+        blockOrUnblockRemovedItem,
+        notifyOnFirstItemChanged,
+        setAllPullRequestsStatuses(queue),
+    ]).catch(logger.error);
+};
+
+const setAllPullRequestsStatuses = queue => (
+    queueManager.getItems(queue)
+        .then(items => {
+            const { owner, repo, branch } = unpackQueueName(queue);
+
+            return Promise.all(slice(0, MAX_REPORTED_QUEUE_POSITION + 1, items).map(({ pullRequestNumber }, index) => (
+                setPullRequestStatusByPosition({
                     owner,
                     repo,
                     branch,
                     pullRequestNumber,
-                });
-            }
+                    index,
+                })
+            )));
         })
-        .then(() => _blockAllPullRequests(queue))
-        .catch(logger.error);
-};
+);
 
-const _blockAllPullRequests = (queue) => {
-    return queueManager.getItems(queue)
-        .then(items => {
-            const [owner, repo, branch] = queue.split(':');
-            return Promise.all(tail(items).map(({ pullRequestNumber }, index) => {
-                return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
-                    .then(pullRequestData => {
-                        if (pullRequestData) {
-                            return _blockPullRequest({
-                                ...pullRequestData,
-                                owner,
-                                repo,
-                                branch,
-                                pullRequestNumber,
-                                description: `${index + 1} PR before you`,
-                            });
-                        }
-                        return Promise.resolve(null);
-                    });
-            }));
+const setPullRequestStatusByPosition = ({
+    owner,
+    repo,
+    branch,
+    pullRequestNumber,
+    index,
+}) => {
+    const blockOrUnblock = pullRequestData => {
+        if (index === 0) {
+            return unblockPullRequest({
+                ...pullRequestData,
+                owner,
+                repo,
+                branch,
+            });
+        }
+
+        const description = (index <= MAX_REPORTED_QUEUE_POSITION)
+            ? `${index} PR${index === 1 ? '' : 's'} before you`
+            : `More than ${MAX_REPORTED_QUEUE_POSITION} PRs before you`;
+
+        return blockPullRequest({
+            ...pullRequestData,
+            owner,
+            repo,
+            branch,
+            description,
         });
+    };
+
+    return pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
+        .then(pullRequestData => pullRequestData && blockOrUnblock(pullRequestData));
 };
 
-const _updatePullRequestStatus = (options) => {
+const updatePullRequestStatus = (options) => {
     const {
         owner, repo, branch, pullRequestNumber,
     } = options;
@@ -151,16 +147,16 @@ const _updatePullRequestStatus = (options) => {
     });
 };
 
-const _blockPullRequest = (options) => {
-    return _updatePullRequestStatus({
+const blockPullRequest = (options) => {
+    return updatePullRequestStatus({
         status: Github.STATUS_FAILURE,
         description: 'It\'s not your turn',
         ...options,
     });
 };
 
-const _unblockPullRequest = (options) => {
-    return _updatePullRequestStatus({
+const unblockPullRequest = (options) => {
+    return updatePullRequestStatus({
         status: Github.STATUS_SUCCESS,
         description: 'It\'s your turn',
         ...options,
