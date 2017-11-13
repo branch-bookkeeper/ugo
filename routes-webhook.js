@@ -11,6 +11,7 @@ const manager = require('./manager-queue');
 const installationManager = require('./manager-installation');
 const installationInfoManager = require('./manager-installation-info');
 const pullRequestManager = require('./manager-pullrequest');
+const queueManager = require('./manager-queue');
 const logger = require('./logger');
 const validator = require('./validator-signature-github');
 
@@ -81,6 +82,7 @@ router.post('/', (req, res, next) => {
             installationManager.deleteInstallationId(owner),
             installationInfoManager.deleteInstallationInfos(id),
             pullRequestManager.deletePullRequestInfos(owner),
+            queueManager.deleteQueue(owner),
         ]);
     }
 
