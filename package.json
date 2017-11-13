@@ -33,7 +33,6 @@
     "nodemon": "^1.11.0",
     "postal": "^2.0.5",
     "ramda": "^0.24.1",
-    "redis": "^2.8.0",
     "request": "^2.81.0",
     "request-all-pages": "^0.3.1",
     "request-promise-native": "^1.0.5",
