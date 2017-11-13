@@ -128,11 +128,11 @@ const _handleClosed = (req, res, next) => {
         mergedByUsername: mergeUser ? mergeUser.login : null,
     };
 
-    manager.getItems(`${owner}:${repo}:${branch}`)
+    manager.getItems(owner, repo, branch)
         .then(bookingData => {
             const item = find(propEq('pullRequestNumber', pullRequestNumber))(bookingData);
             if (item) {
-                return manager.removeItem(`${owner}:${repo}:${branch}`, item, meta);
+                return manager.removeItem(owner, repo, branch, item, meta);
             }
         })
         .then(() => pullRequestManager.deletePullRequestInfo(owner, repo, pullRequestNumber))
@@ -169,7 +169,7 @@ const _handleOpened = (req, res, next) => {
         humanUrl,
         assignees: pluck('login', assignees),
     })
-        .then(() => manager.getItems(`${owner}:${repo}:${branch}`))
+        .then(() => manager.getItems(owner, repo, branch))
         .then(bookingData => {
             targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
             const index = findIndex(propEq('pullRequestNumber', pullRequestNumber))(bookingData);

@@ -11,25 +11,23 @@ router.route('/:owner/:repository/:branch')
             return;
         }
 
-        req.params.key = `${req.params.owner}:${req.params.repository}:${req.params.branch}`;
-
         next();
     })
     .get((req, res, next) => {
-        manager.getItems(req.params.key)
+        manager.getItems(req.params.owner, req.params.repository, req.params.branch)
             .then(data => res
                 .set({ 'Cache-Control': 'no-cache' })
                 .send(data))
             .catch(next);
     })
     .post((req, res, next) => {
-        manager.addItem(req.params.key, req.body)
+        manager.addItem(req.params.owner, req.params.repository, req.params.branch, req.body)
             .then(res.status(201).json())
             .catch(next);
     })
     .delete((req, res, next) => {
         if (Object.keys(req.body).length > 0) {
-            manager.removeItem(req.params.key, req.body)
+            manager.removeItem(req.params.owner, req.params.repository, req.params.branch, req.body)
                 .then(res.status(204).json())
                 .catch(next);
         } else {
