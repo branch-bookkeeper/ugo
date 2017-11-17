@@ -15,9 +15,7 @@ router.route('/:owner/:repository/:branch')
     })
     .get((req, res, next) => {
         manager.getItems(req.params.owner, req.params.repository, req.params.branch)
-            .then(data => res
-                .set({ 'Cache-Control': 'no-cache' })
-                .send(data))
+            .then(data => res.set({ 'Cache-Control': 'no-cache' }).json(data))
             .catch(next);
     })
     .post((req, res, next) => {
