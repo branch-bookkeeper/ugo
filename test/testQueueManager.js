@@ -1,34 +1,35 @@
 /* globals test, setup, suiteSetup, suite */
-const assert = require('chai').assert;
+const { assert } = require('chai');
 const queueManager = require('../manager-queue');
-const redis = require('../redis');
-let randomQueue;
-let randomObject;
+const mongoManager = require('../manager-mongo');
+const owner = 'branch-bookkeeper';
+const repo = 'branch-bookkeeper';
+const branch = 'master';
+const randomObject = { username: 'branch-bookkeeper' };
 
 suite('QueueManager', () => {
     suiteSetup(function () {
-        randomQueue = Math.random().toString(36).substr(2, 7);
-        randomObject = { pullRequestNumber: Math.round(Math.random() * 100) };
-
-        if (!redis.enabled()) {
+        if (!queueManager.enabled()) {
             this.skip();
         }
     });
 
-    setup(done => {
-        redis.reset()
-            .then(() => done())
-            .catch(done);
+    setup(() => {
+        randomObject.pullRequestNumber = Math.round(Math.random() * 100);
+        return mongoManager.reset();
     });
 
-    test('Add item', () => {
-        return queueManager.getItems(randomQueue)
+    test('Get items', () => {
+        return queueManager.getItems(owner, repo, branch)
             .then(items => {
                 assert.isArray(items);
                 assert.empty(items);
-            })
-            .then(() => queueManager.addItem(randomQueue, randomObject))
-            .then(() => queueManager.getItems(randomQueue))
+            });
+    });
+
+    test('Add item', () => {
+        return queueManager.addItem(owner, repo, branch, randomObject)
+            .then(() => queueManager.getItems(owner, repo, branch))
             .then(items => {
                 assert.isArray(items);
                 assert.notEmpty(items);
@@ -37,20 +38,15 @@ suite('QueueManager', () => {
     });
 
     test('Remove item', () => {
-        return queueManager.getItems(randomQueue)
-            .then(items => {
-                assert.isArray(items);
-                assert.empty(items);
-            })
-            .then(() => queueManager.addItem(randomQueue, randomObject))
-            .then(() => queueManager.getItems(randomQueue))
+        return queueManager.addItem(owner, repo, branch, randomObject)
+            .then(() => queueManager.getItems(owner, repo, branch))
             .then(items => {
                 assert.isArray(items);
                 assert.notEmpty(items);
                 assert.lengthOf(items, 1);
             })
-            .then(() => queueManager.removeItem(randomQueue, randomObject))
-            .then(() => queueManager.getItems(randomQueue))
+            .then(() => queueManager.removeItem(owner, repo, branch, randomObject))
+            .then(() => queueManager.getItems(owner, repo, branch))
             .then(items => {
                 assert.isArray(items);
                 assert.empty(items);
@@ -58,14 +54,9 @@ suite('QueueManager', () => {
     });
 
     test('Add duplicate item', () => {
-        return queueManager.getItems(randomQueue)
-            .then(items => {
-                assert.isArray(items);
-                assert.empty(items);
-            })
-            .then(() => queueManager.addItem(randomQueue, randomObject))
-            .then(() => queueManager.addItem(randomQueue, randomObject))
-            .then(() => queueManager.getItems(randomQueue))
+        return queueManager.addItem(owner, repo, branch, randomObject)
+            .then(() => queueManager.addItem(owner, repo, branch, randomObject))
+            .then(() => queueManager.getItems(owner, repo, branch))
             .then(items => {
                 assert.isArray(items);
                 assert.notEmpty(items);

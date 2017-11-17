@@ -1,25 +1,20 @@
 /* globals test, suiteTeardown, suiteSetup, suite */
 const request = require('supertest');
-const assert = require('chai').assert;
-const redis = require('../redis');
+const { assert } = require('chai');
+const mongoManager = require('../manager-mongo');
 let server;
 let randomNumber = Math.round(Math.random() * 100);
 const randomObject = {};
 const url = '/queue/branch-bookkeeper/branch-bookkeeper/master';
 
 suite('Backend', () => {
-    suiteSetup(function (done) {
+    suiteSetup(function () {
         delete require.cache[require.resolve('../index')];
-        delete require.cache[require.resolve('../redis')];
         server = require('../index');
-        if (!redis.enabled()) {
+        if (!mongoManager.enabled()) {
             this.skip();
         } else {
-            redis.on('ready', () => {
-                redis.reset()
-                    .then(() => done())
-                    .catch(done);
-            });
+            return mongoManager.reset();
         }
     });
 
@@ -76,7 +71,7 @@ suite('Backend', () => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '76')
+            .expect('content-length', '169')
             .expect(res => {
                 assert.equal(res.body[0].pullRequestNumber, randomNumber + 1);
                 assert.equal(res.body[1].pullRequestNumber, randomNumber + 2);
@@ -100,7 +95,7 @@ suite('Backend', () => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '51')
+            .expect('content-length', '113')
             .expect(res => {
                 assert.equal(res.body[0].pullRequestNumber, randomNumber + 1);
                 assert.equal(res.body[1].pullRequestNumber, randomNumber + 3);
@@ -123,7 +118,7 @@ suite('Backend', () => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '26')
+            .expect('content-length', '57')
             .expect(res => {
                 assert.equal(res.body[0].pullRequestNumber, randomNumber + 3);
             })
