@@ -9,7 +9,7 @@ require('le_node');
 if (!development && !test && logentriesToken) {
     winston.exitOnError = false;
     logger.add(winston.transports.Logentries, { token: logentriesToken, withStack: true, secure: true });
-} else {
+} else if (!test) {
     logger.add(winston.transports.Console, {}, false);
 }
 
