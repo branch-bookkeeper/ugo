@@ -1,6 +1,7 @@
 /* globals test, suiteTeardown, suiteSetup, suite */
 const request = require('supertest');
 const { assert } = require('chai');
+const { pathOr } = require('ramda');
 const mongoManager = require('../manager-mongo');
 let server;
 let randomNumber = Math.round(Math.random() * 100);
@@ -73,9 +74,9 @@ suite('Backend', () => {
             .expect('content-type', /application\/json/)
             .expect('content-length', '169')
             .expect(res => {
-                assert.equal(res.body[0].pullRequestNumber, randomNumber + 1);
-                assert.equal(res.body[1].pullRequestNumber, randomNumber + 2);
-                assert.equal(res.body[2].pullRequestNumber, randomNumber + 3);
+                assert.equal(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 1);
+                assert.equal(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 2);
+                assert.equal(pathOr(0, ['body', 2, 'pullRequestNumber'], res), randomNumber + 3);
             })
             .expect(200, done);
     });
@@ -97,8 +98,8 @@ suite('Backend', () => {
             .expect('content-type', /application\/json/)
             .expect('content-length', '113')
             .expect(res => {
-                assert.equal(res.body[0].pullRequestNumber, randomNumber + 1);
-                assert.equal(res.body[1].pullRequestNumber, randomNumber + 3);
+                assert.equal(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 1);
+                assert.equal(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 3);
             })
             .expect(200, done);
     });
@@ -120,7 +121,7 @@ suite('Backend', () => {
             .expect('content-type', /application\/json/)
             .expect('content-length', '57')
             .expect(res => {
-                assert.equal(res.body[0].pullRequestNumber, randomNumber + 3);
+                assert.equal(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 3);
             })
             .expect(200, done);
     });
