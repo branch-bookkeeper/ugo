@@ -5,7 +5,7 @@ const { pathOr } = require('ramda');
 const mongoManager = require('../manager-mongo');
 let server;
 let randomNumber = Math.round(Math.random() * 100);
-const randomObject = {};
+const randomObject = { username: 'branch-bookkeeper' };
 const url = '/queue/branch-bookkeeper/branch-bookkeeper/master';
 
 suite('Backend', () => {
