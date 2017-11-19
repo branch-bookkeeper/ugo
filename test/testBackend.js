@@ -8,7 +8,7 @@ const randomNumber = Math.floor(Math.random() * 89) + 10;
 const randomObject = { username: 'branch-bookkeeper' };
 const url = '/queue/branch-bookkeeper/branch-bookkeeper/master';
 
-suite('Backend', () => {
+suite('Route queue', () => {
     suiteSetup(function () {
         delete require.cache[require.resolve('../index')];
         server = require('../index');
