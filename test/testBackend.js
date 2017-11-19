@@ -23,7 +23,7 @@ suite('Backend', () => {
         server.close(done);
     });
 
-    test('GET empty list', (done) => {
+    test('Get empty list', done => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
@@ -32,7 +32,7 @@ suite('Backend', () => {
             .expect(200, done);
     });
 
-    test('POST first item', (done) => {
+    test('Add first item', done => {
         randomObject.pullRequestNumber = randomNumber + 1;
         request(server)
             .post(url)
@@ -44,7 +44,7 @@ suite('Backend', () => {
             .expect(201, done);
     });
 
-    test('POST second item', (done) => {
+    test('Add second item', done => {
         randomObject.pullRequestNumber = randomNumber + 2;
         request(server)
             .post(url)
@@ -56,7 +56,7 @@ suite('Backend', () => {
             .expect(201, done);
     });
 
-    test('POST third item', (done) => {
+    test('Add third item', done => {
         randomObject.pullRequestNumber = randomNumber + 3;
         request(server)
             .post(url)
@@ -68,7 +68,7 @@ suite('Backend', () => {
             .expect(201, done);
     });
 
-    test('GET list with three items', (done) => {
+    test('Get list with three items', done => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
@@ -81,7 +81,7 @@ suite('Backend', () => {
             .expect(200, done);
     });
 
-    test('DELETE second item', (done) => {
+    test('Remove second item', done => {
         randomObject.pullRequestNumber = randomNumber + 2;
         request(server)
             .delete(url)
@@ -92,7 +92,7 @@ suite('Backend', () => {
             .expect(204, done);
     });
 
-    test('GET list with first and third item', (done) => {
+    test('Get list with first and third item', done => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
@@ -104,7 +104,7 @@ suite('Backend', () => {
             .expect(200, done);
     });
 
-    test('DELETE first item', (done) => {
+    test('Remove first item', done => {
         randomObject.pullRequestNumber = randomNumber + 1;
         request(server)
             .delete(url)
@@ -115,7 +115,7 @@ suite('Backend', () => {
             .expect(204, done);
     });
 
-    test('GET list with item three', (done) => {
+    test('Get list with item three', done => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
@@ -126,7 +126,7 @@ suite('Backend', () => {
             .expect(200, done);
     });
 
-    test('DELETE third item', (done) => {
+    test('Remove third item', done => {
         randomObject.pullRequestNumber = randomNumber + 3;
         request(server)
             .delete(url)
@@ -137,7 +137,7 @@ suite('Backend', () => {
             .expect(204, done);
     });
 
-    test('GET empty list', (done) => {
+    test('Get empty list', done => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
