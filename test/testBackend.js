@@ -4,7 +4,7 @@ const { assert } = require('chai');
 const { pathOr } = require('ramda');
 const mongoManager = require('../manager-mongo');
 let server;
-let randomNumber = Math.round(Math.random() * 100);
+const randomNumber = Math.floor(Math.random() * 89) + 10;
 const randomObject = { username: 'branch-bookkeeper' };
 const url = '/queue/branch-bookkeeper/branch-bookkeeper/master';
 

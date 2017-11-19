@@ -15,7 +15,7 @@ suite('QueueManager', () => {
     });
 
     setup(() => {
-        randomObject.pullRequestNumber = Math.round(Math.random() * 100);
+        randomObject.pullRequestNumber = Math.floor(Math.random() * 89) + 10;
         return mongoManager.reset();
     });
 
