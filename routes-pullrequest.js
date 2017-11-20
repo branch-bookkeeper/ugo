@@ -32,7 +32,7 @@ router.route('/:owner/:repository')
     })
     .get((req, res, next) => {
         manager.getRepositoryPullRequestsInfo(req.params.owner, req.params.repository)
-            .then(data => res.send(data))
+            .then(data => data.length > 0 ? res.send(data) : next(createError.NotFound()))
             .catch(next);
     });
 
