@@ -1,0 +1,14 @@
+{
+  "total_count": 1,
+  "repositories": [
+    {
+      "full_name": "branch-bookkeeper",
+      "permissions": {
+        "admin": true,
+        "push": true,
+        "pull": true
+      }
+    }
+  ],
+  "client_id": 123
+}
