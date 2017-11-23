@@ -7,6 +7,7 @@ export NEW_RELIC_APP_NAME=ugo
 export NEW_RELIC_LOG=stdout
 export NEW_RELIC_NO_CONFIG_FILE=true
 export DATADOG_API_KEY=fake
+export APP_ORIGIN=fake
 if [ -z "$MONGO_URL" ]; then
     export MONGO_URL=mongodb://localhost/branch-bookkeeper-test
 fi
