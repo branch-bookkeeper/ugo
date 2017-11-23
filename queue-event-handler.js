@@ -249,3 +249,11 @@ postal.subscribe({
     topic: 'item.*',
     callback: reportQueueSize,
 });
+
+module.exports = {
+    addItem,
+    reportAddItem,
+    removeItem,
+    reportRemoveItem,
+    reportQueueSize,
+};
