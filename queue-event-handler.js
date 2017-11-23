@@ -141,14 +141,16 @@ const setPullRequestStatusByPosition = ({
         .then(pullRequestData => pullRequestData && blockOrUnblock(pullRequestData));
 };
 
-const updatePullRequestStatus = (options) => {
-    const {
-        owner, repo, branch, pullRequestNumber,
-    } = options;
+const updatePullRequestStatus = ({
+    owner, repo, branch, pullRequestNumber, status, description, statusUrl, installationId,
+}) => {
     const targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
 
     return Github.updatePullRequestStatus({
-        ...options,
+        installationId,
+        statusUrl,
+        description,
+        status,
         targetUrl,
     });
 };
