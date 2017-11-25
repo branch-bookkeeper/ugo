@@ -32,7 +32,7 @@ router.post('/', (req, res, next) => {
     next();
 });
 
-// Installation repositories
+// Repositories
 router.post('/', (req, res, next) => {
     if (req.event !== 'repository') {
         next();
@@ -43,7 +43,7 @@ router.post('/', (req, res, next) => {
 
     installationManager.getInstallationId(owner)
         .then(installationInfoManager.deleteInstallationInfos)
-        .then(() => res.send(`Installation infos of ${owner} deleted`));
+        .then(() => res.json(`Installation infos of ${owner} deleted`));
 });
 
 // PR
@@ -87,7 +87,7 @@ router.post('/', (req, res, next) => {
     }
 
     pendingPromise
-        .then(() => res.send(`Installation ${id} for ${owner} ${action}`))
+        .then(() => res.json(`Installation ${id} for ${owner} ${action}`))
         .catch(error => {
             logger.error(error);
             next(error);
@@ -107,7 +107,7 @@ router.post('/', (req, res, next) => {
     const { account: { login: owner } } = installation;
 
     installationInfoManager.deleteInstallationInfos(id)
-        .then(() => res.send(`Installation repositories of installation ${id} for ${owner} ${action}`))
+        .then(() => res.json(`Installation repositories of installation ${id} for ${owner} ${action}`))
         .catch(error => {
             logger.error(error);
             next(error);
@@ -138,7 +138,7 @@ const _handleClosed = (req, res, next) => {
             }
         })
         .then(() => pullRequestManager.deletePullRequestInfo(owner, repo, pullRequestNumber))
-        .then(() => res.send(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} closed`))
+        .then(() => res.json(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} closed`))
         .catch(error => {
             logger.error(error);
             next(error);
@@ -208,6 +208,6 @@ const _handleOpened = (req, res, next) => {
 };
 
 // Catch all
-router.all('/', (req, res) => res.send(''));
+router.all('/', (req, res) => res.json(''));
 
 module.exports = router;
