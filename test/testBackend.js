@@ -74,9 +74,9 @@ suite('Route queue', () => {
             .expect('content-type', /application\/json/)
             .expect('content-length', '169')
             .expect(res => {
-                assert.equal(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 1);
-                assert.equal(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 2);
-                assert.equal(pathOr(0, ['body', 2, 'pullRequestNumber'], res), randomNumber + 3);
+                assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 1);
+                assert.deepEqual(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 2);
+                assert.deepEqual(pathOr(0, ['body', 2, 'pullRequestNumber'], res), randomNumber + 3);
             })
             .expect(200, done);
     });
@@ -98,8 +98,8 @@ suite('Route queue', () => {
             .expect('content-type', /application\/json/)
             .expect('content-length', '113')
             .expect(res => {
-                assert.equal(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 1);
-                assert.equal(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 3);
+                assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 1);
+                assert.deepEqual(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 3);
             })
             .expect(200, done);
     });
@@ -121,7 +121,7 @@ suite('Route queue', () => {
             .expect('content-type', /application\/json/)
             .expect('content-length', '57')
             .expect(res => {
-                assert.equal(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 3);
+                assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 3);
             })
             .expect(200, done);
     });
