@@ -10,9 +10,6 @@ router.route('/:owner/:repository/:pullrequest')
             next(createError.ServiceUnavailable('queue not available'));
             return;
         }
-
-        req.params.key = `${req.params.owner}:${req.params.repository}:${req.params.pullrequest}`;
-
         next();
     })
     .get((req, res, next) => {
