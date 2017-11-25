@@ -14,8 +14,7 @@ const validator = (req, res, next) => {
     const headerSignature = req.get('X-Hub-Signature');
 
     if (!headerSignature || headerSignature.indexOf('sha1=') !== 0) {
-        next(createError.Unauthorized('Unauthorized'));
-        return;
+        return next(createError.Unauthorized('Unauthorized'));
     }
 
     const hmac = crypto.createHmac('sha1', token);
@@ -27,7 +26,7 @@ const validator = (req, res, next) => {
         return next(createError.Unauthorized('Unauthorized'));
     }
 
-    next();
+    return next();
 };
 
 module.exports = validator;
