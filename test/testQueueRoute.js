@@ -34,6 +34,7 @@ suite('Route queue', () => {
 
     test('Add first item', done => {
         randomObject.pullRequestNumber = randomNumber + 1;
+        randomObject.createdAt = new Date();
         request(server)
             .post(url)
             .send(randomObject)
@@ -46,6 +47,7 @@ suite('Route queue', () => {
 
     test('Add second item', done => {
         randomObject.pullRequestNumber = randomNumber + 2;
+        randomObject.createdAt = new Date();
         request(server)
             .post(url)
             .send(randomObject)
@@ -58,6 +60,7 @@ suite('Route queue', () => {
 
     test('Add third item', done => {
         randomObject.pullRequestNumber = randomNumber + 3;
+        randomObject.createdAt = new Date();
         request(server)
             .post(url)
             .send(randomObject)
@@ -72,7 +75,7 @@ suite('Route queue', () => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '169')
+            .expect('content-length', '286')
             .expect(res => {
                 assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 1);
                 assert.deepEqual(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 2);
@@ -96,7 +99,7 @@ suite('Route queue', () => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '113')
+            .expect('content-length', '191')
             .expect(res => {
                 assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 1);
                 assert.deepEqual(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 3);
@@ -119,7 +122,7 @@ suite('Route queue', () => {
         request(server)
             .get(url)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '57')
+            .expect('content-length', '96')
             .expect(res => {
                 assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 3);
             })
