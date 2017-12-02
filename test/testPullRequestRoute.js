@@ -37,24 +37,6 @@ suite('Route pull-request', () => {
         pullRequestManagerRepositoryPullRequestInfoSpy.restore();
     });
 
-    test('Get a single PR', done => {
-        request(server)
-            .get(`${url}/${owner}/${repo}/${randomNumber}`)
-            .expect('content-type', /application\/json/)
-            .expect('content-length', '308')
-            .expect(pullRequestInfoFixture)
-            .expect(200, done);
-    });
-
-    test('Get a single not existing PR', done => {
-        request(server)
-            .get(`${url}/${owner}/${repo}/${randomNumber + 1}`)
-            .expect('content-type', /application\/json/)
-            .expect('content-length', '21')
-            .expect({ error: 'Not Found' })
-            .expect(404, done);
-    });
-
     test('Get all PR of a repository', done => {
         request(server)
             .get(`${url}/${owner}/${repo}`)
