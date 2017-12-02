@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const logger = require('./logger');
 const installationManager = require('./manager-installation');
+const installationInfoManager = require('./manager-installation-info');
 const tokenManager = require('./manager-token');
 const {
     propEq,
@@ -48,7 +49,7 @@ const authenticator = (req, res, next) => {
         })
         .then(() => installationManager.getInstallationId(req.params.owner))
         .then(throwErrorIfNil(new Error('No installation id')))
-        .then(installationId => installationManager.getInstallationInfo(token, installationId))
+        .then(installationId => installationInfoManager.getInstallationInfo(token, installationId))
         .then(installationInfo => {
             if (!installationInfo) {
                 throw new Error('No installation found');

@@ -1,0 +1,74 @@
+{
+  "action": "added",
+  "installation": {
+    "id": 123456,
+    "account": {
+      "login": "branch-bookkeeper",
+      "id": 12345,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/12345?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/branch-bookkeeper",
+      "html_url": "https://github.com/branch-bookkeeper",
+      "followers_url": "https://api.github.com/users/branch-bookkeeper/followers",
+      "following_url": "https://api.github.com/users/branch-bookkeeper/following{/other_user}",
+      "gists_url": "https://api.github.com/users/branch-bookkeeper/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/branch-bookkeeper/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/branch-bookkeeper/subscriptions",
+      "organizations_url": "https://api.github.com/users/branch-bookkeeper/orgs",
+      "repos_url": "https://api.github.com/users/branch-bookkeeper/repos",
+      "events_url": "https://api.github.com/users/branch-bookkeeper/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/branch-bookkeeper/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "repository_selection": "selected",
+    "access_tokens_url": "https://api.github.com/installations/123456/access_tokens",
+    "repositories_url": "https://api.github.com/installation/repositories",
+    "html_url": "https://github.com/settings/installations/123456",
+    "app_id": 4567,
+    "target_id": 12345,
+    "target_type": "User",
+    "permissions": {
+      "statuses": "write",
+      "metadata": "read",
+      "pull_requests": "read"
+    },
+    "events": [
+      "pull_request",
+      "status"
+    ],
+    "created_at": 1504355132,
+    "updated_at": 1504355132,
+    "single_file_name": null
+  },
+  "repository_selection": "selected",
+  "repositories_added": [
+    {
+      "id": 12345678,
+      "name": "karma-sourcemap-loader",
+      "full_name": "branch-bookkeeper/branch-bookkeeper"
+    }
+  ],
+  "repositories_removed": [
+
+  ],
+  "sender": {
+    "login": "branch-bookkeeper",
+    "id": 12345,
+    "avatar_url": "https://avatars1.githubusercontent.com/u/12345?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/branch-bookkeeper",
+    "html_url": "https://github.com/branch-bookkeeper",
+    "followers_url": "https://api.github.com/users/branch-bookkeeper/followers",
+    "following_url": "https://api.github.com/users/branch-bookkeeper/following{/other_user}",
+    "gists_url": "https://api.github.com/users/branch-bookkeeper/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/branch-bookkeeper/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/branch-bookkeeper/subscriptions",
+    "organizations_url": "https://api.github.com/users/branch-bookkeeper/orgs",
+    "repos_url": "https://api.github.com/users/branch-bookkeeper/repos",
+    "events_url": "https://api.github.com/users/branch-bookkeeper/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/branch-bookkeeper/received_events",
+    "type": "User",
+    "site_admin": false
+  }
+}

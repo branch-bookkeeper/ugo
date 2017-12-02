@@ -27,12 +27,12 @@
     "http-errors": "^1.6.2",
     "jsonwebtoken": "^7.4.3",
     "le_node": "^1.7.1",
+    "mongodb": "^2.2.33",
     "morgan": "^1.8.2",
     "newrelic": "^2.2.0",
     "nodemon": "^1.11.0",
     "postal": "^2.0.5",
     "ramda": "^0.24.1",
-    "redis": "^2.8.0",
     "request": "^2.81.0",
     "request-all-pages": "^0.3.1",
     "request-promise-native": "^1.0.5",
@@ -51,6 +51,7 @@
     "eslint-plugin-import": "^2.7.0",
     "istanbul": "^0.4.5",
     "mocha": "^3.5.0",
+    "sinon": "^4.1.2",
     "supertest": "^3.0.0"
   }
 }

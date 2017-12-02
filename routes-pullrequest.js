@@ -10,9 +10,6 @@ router.route('/:owner/:repository/:pullrequest')
             next(createError.ServiceUnavailable('queue not available'));
             return;
         }
-
-        req.params.key = `${req.params.owner}:${req.params.repository}:${req.params.pullrequest}`;
-
         next();
     })
     .get((req, res, next) => {
@@ -32,7 +29,7 @@ router.route('/:owner/:repository')
     })
     .get((req, res, next) => {
         manager.getRepositoryPullRequestsInfo(req.params.owner, req.params.repository)
-            .then(data => res.send(data))
+            .then(data => data.length > 0 ? res.send(data) : next(createError.NotFound()))
             .catch(next);
     });
 

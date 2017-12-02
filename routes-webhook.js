@@ -9,7 +9,9 @@ const {
 } = require('ramda');
 const manager = require('./manager-queue');
 const installationManager = require('./manager-installation');
+const installationInfoManager = require('./manager-installation-info');
 const pullRequestManager = require('./manager-pullrequest');
+const queueManager = require('./manager-queue');
 const logger = require('./logger');
 const validator = require('./validator-signature-github');
 
@@ -30,7 +32,7 @@ router.post('/', (req, res, next) => {
     next();
 });
 
-// Installation repositories
+// Repositories
 router.post('/', (req, res, next) => {
     if (req.event !== 'repository') {
         next();
@@ -40,8 +42,8 @@ router.post('/', (req, res, next) => {
     const { repository: { owner: { login: owner } } } = req.body;
 
     installationManager.getInstallationId(owner)
-        .then(installationManager.deleteInstallationInfos)
-        .then(() => res.send(`Installation infos of ${owner} deleted`));
+        .then(installationInfoManager.deleteInstallationInfos)
+        .then(() => res.json(`Installation infos of ${owner} deleted`));
 });
 
 // PR
@@ -78,13 +80,14 @@ router.post('/', (req, res, next) => {
     } else if (action === 'deleted') {
         pendingPromise = Promise.all([
             installationManager.deleteInstallationId(owner),
-            installationManager.deleteInstallationInfos(id),
+            installationInfoManager.deleteInstallationInfos(id),
             pullRequestManager.deletePullRequestInfos(owner),
+            queueManager.deleteQueue(owner),
         ]);
     }
 
     pendingPromise
-        .then(() => res.send(`Installation ${id} for ${owner} ${action}`))
+        .then(() => res.json(`Installation ${id} for ${owner} ${action}`))
         .catch(error => {
             logger.error(error);
             next(error);
@@ -103,8 +106,8 @@ router.post('/', (req, res, next) => {
     const { id } = installation;
     const { account: { login: owner } } = installation;
 
-    installationManager.deleteInstallationInfos(id)
-        .then(() => res.send(`Installation repositories of installation ${id} for ${owner} ${action}`))
+    installationInfoManager.deleteInstallationInfos(id)
+        .then(() => res.json(`Installation repositories of installation ${id} for ${owner} ${action}`))
         .catch(error => {
             logger.error(error);
             next(error);
@@ -127,15 +130,15 @@ const _handleClosed = (req, res, next) => {
         mergedByUsername: mergeUser ? mergeUser.login : null,
     };
 
-    manager.getItems(`${owner}:${repo}:${branch}`)
+    manager.getItems(owner, repo, branch)
         .then(bookingData => {
             const item = find(propEq('pullRequestNumber', pullRequestNumber))(bookingData);
             if (item) {
-                return manager.removeItem(`${owner}:${repo}:${branch}`, item, meta);
+                return manager.removeItem(owner, repo, branch, item, meta);
             }
         })
         .then(() => pullRequestManager.deletePullRequestInfo(owner, repo, pullRequestNumber))
-        .then(() => res.send(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} closed`))
+        .then(() => res.json(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} closed`))
         .catch(error => {
             logger.error(error);
             next(error);
@@ -168,7 +171,7 @@ const _handleOpened = (req, res, next) => {
         humanUrl,
         assignees: pluck('login', assignees),
     })
-        .then(() => manager.getItems(`${owner}:${repo}:${branch}`))
+        .then(() => manager.getItems(owner, repo, branch))
         .then(bookingData => {
             targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
             const index = findIndex(propEq('pullRequestNumber', pullRequestNumber))(bookingData);
@@ -205,6 +208,6 @@ const _handleOpened = (req, res, next) => {
 };
 
 // Catch all
-router.all('/', (req, res) => res.send(''));
+router.all('/', (req, res) => res.json(''));
 
 module.exports = router;

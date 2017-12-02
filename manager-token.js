@@ -1,12 +1,16 @@
-const redis = require('./redis');
+const mongoManager = require('./manager-mongo');
 const postal = require('postal');
 const Github = require('./github');
-const prefix = 'authentication:token:github';
+const COLLECTION_NAME = 'githubToken';
 
 class TokenManager {
     static getTokenInfo(token) {
-        if (redis.enabled()) {
-            return redis.get(`${prefix}:${token}`)
+        if (mongoManager.enabled()) {
+            return mongoManager.getCollection(COLLECTION_NAME)
+                .then(collection => collection.findOne(
+                    { _id: token },
+                    { fields: { _id: false, created_at: false, updated_at: false } }
+                ))
                 .then(tokenInfo => {
                     if (!tokenInfo) {
                         return TokenManager.getTokenInfoFromGithub(token);
@@ -23,9 +27,24 @@ class TokenManager {
     }
 
     static setTokenInfo(token, tokenInfo) {
-        if (redis.enabled() && tokenInfo) {
-            redis.set(`${prefix}:${token}`, tokenInfo, 86400)
-                .then(data => {
+        if (mongoManager.enabled() && tokenInfo) {
+            return mongoManager.getCollection(COLLECTION_NAME)
+                .then(collection => collection.updateOne(
+                    {
+                        _id: token,
+                    },
+                    {
+                        $set: {
+                            ...tokenInfo,
+                            updated_at: new Date(tokenInfo.updated_at),
+                            created_at: new Date(),
+                        },
+                    },
+                    {
+                        upsert: true,
+                    }
+                ))
+                .then(() => {
                     postal.publish({
                         channel: 'token',
                         topic: 'info.add',
@@ -34,11 +53,10 @@ class TokenManager {
                             tokenInfo,
                         },
                     });
-                    return data;
                 })
                 .then(() => tokenInfo);
         }
-        return tokenInfo;
+        return Promise.resolve(tokenInfo);
     }
 }
 

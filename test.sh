@@ -7,19 +7,24 @@ export NEW_RELIC_APP_NAME=ugo
 export NEW_RELIC_LOG=stdout
 export NEW_RELIC_NO_CONFIG_FILE=true
 export DATADOG_API_KEY=fake
-if [ -z "$REDIS_URL" ]; then
-    export REDIS_URL=redis://localhost
+export APP_ORIGIN=fake
+if [ -z "$MONGO_URL" ]; then
+    export MONGO_URL=mongodb://localhost/branch-bookkeeper-test
 fi
 
-echo Testing with redis
+./resetdb.sh
+
+echo
+printf "\033[33mTesting with mongo\n\033[0m"
 
 node_modules/.bin/babel-istanbul cover --report clover node_modules/.bin/_mocha -- test/test* --ui tdd --reporter dot --timeout 10000
 
-mv coverage/coverage.{json,redis.json}
+mv coverage/coverage.{json,mongo.json}
 
-echo Testing without redis
+echo
+printf "\033[33mTesting without mongo\n\033[0m"
 
-unset REDIS_URL
+unset MONGO_URL
 
 node_modules/.bin/babel-istanbul cover --report clover node_modules/.bin/_mocha -- test/test* --ui tdd --reporter dot --timeout 10000
 
