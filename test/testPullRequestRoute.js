@@ -1,6 +1,5 @@
 /* globals test, suiteTeardown, suiteSetup, suite */
 const request = require('supertest');
-const { assert } = require('chai');
 const sinon = require('sinon');
 const pullRequestManager = require('../manager-pullrequest');
 const pullRequestInfoFixture = require('./fixtures/pull_request.info.json');
