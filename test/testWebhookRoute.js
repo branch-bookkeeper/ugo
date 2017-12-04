@@ -6,6 +6,10 @@ const mongoManager = require('../manager-mongo');
 const GitHub = require('../github');
 let server;
 const url = '/webhook';
+const owner = 'branch-bookkeeper';
+const repo = 'branch-bookkeeper';
+const branch = 'master';
+const pullRequestNumber = 1;
 const installationInfoFixture = require('./fixtures/installation.info.json');
 
 const installationCreatedPayload = require('./fixtures/installation.created.json');
@@ -27,7 +31,12 @@ suite('Route webhook', () => {
             this.skip();
         } else {
             sinon.stub(GitHub, 'getInstallationInfo').resolves(installationInfoFixture);
-            sinon.stub(GitHub, 'updatePullRequestStatus');
+            sinon.stub(GitHub, 'updatePullRequestStatus').resolves({
+                owner,
+                repo,
+                branch,
+                pullRequestNumber,
+            });
             return mongoManager.reset();
         }
     });
@@ -99,8 +108,8 @@ suite('Route webhook', () => {
             .send(pullRequestOpenedPayload)
             .expect(res => {
                 assert.notEmpty(res.body);
-                assert.isObject(res.body);
-                assert.include(res.body, { status: 'failure' });
+                assert.isString(res.body);
+                assert.include(res.body, 'opened');
             })
             .expect(200, done);
     });
@@ -125,8 +134,8 @@ suite('Route webhook', () => {
             .send(pullRequestSynchronizePayload)
             .expect(res => {
                 assert.notEmpty(res.body);
-                assert.isObject(res.body);
-                assert.include(res.body, { status: 'failure' });
+                assert.isString(res.body);
+                assert.include(res.body, 'synchronize');
             })
             .expect(200, done);
     });

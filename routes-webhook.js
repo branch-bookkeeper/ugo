@@ -1,16 +1,9 @@
 const router = require('express').Router();
-const Github = require('./github');
 const createError = require('http-errors');
-const {
-    findIndex,
-    propEq,
-    find,
-    pluck,
-} = require('ramda');
-const manager = require('./manager-queue');
 const installationManager = require('./manager-installation');
 const installationInfoManager = require('./manager-installation-info');
 const pullRequestManager = require('./manager-pullrequest');
+const pullRequestHandler = require('./handler-pullrequest');
 const queueManager = require('./manager-queue');
 const logger = require('./logger');
 const validator = require('./validator-signature-github');
@@ -53,13 +46,29 @@ router.post('/', (req, res, next) => {
         return;
     }
 
-    const { action } = req.body;
+    const { action, installation: { id: installationId }, pull_request: pullRequest } = req.body;
+
+    let pendingPromise;
 
     if (action === 'closed') {
-        _handleClosed(req, res, next);
+        pendingPromise = pullRequestHandler.handleClosed(pullRequest);
+    } else if (action === 'opened') {
+        pendingPromise = pullRequestHandler.handleOpened(pullRequest, installationId);
     } else {
-        _handleOpened(req, res, next);
+        pendingPromise = pullRequestHandler.handleSync(pullRequest, installationId);
     }
+
+    pendingPromise
+        .then(({
+            owner,
+            repo,
+            branch,
+            pullRequestNumber,
+        }) => res.json(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} ${action}`))
+        .catch(error => {
+            logger.error(error);
+            next(error);
+        });
 });
 
 // Installation
@@ -113,99 +122,6 @@ router.post('/', (req, res, next) => {
             next(error);
         });
 });
-
-const _handleClosed = (req, res, next) => {
-    const body = req.body;
-    const { pull_request: pullRequest } = body;
-    const {
-        number: pullRequestNumber,
-        base: {
-            repo: baseRepo,
-            ref: branch,
-        },
-        merged_by: mergeUser,
-    } = pullRequest;
-    const { name: repo, owner: { login: owner } } = baseRepo;
-    const meta = {
-        mergedByUsername: mergeUser ? mergeUser.login : null,
-    };
-
-    manager.getItems(owner, repo, branch)
-        .then(bookingData => {
-            const item = find(propEq('pullRequestNumber', pullRequestNumber))(bookingData);
-            if (item) {
-                return manager.removeItem(owner, repo, branch, item, meta);
-            }
-        })
-        .then(() => pullRequestManager.deletePullRequestInfo(owner, repo, pullRequestNumber))
-        .then(() => res.json(`PR ${owner}/${repo}/${branch} #${pullRequestNumber} closed`))
-        .catch(error => {
-            logger.error(error);
-            next(error);
-        });
-};
-
-const _handleOpened = (req, res, next) => {
-    const body = req.body;
-    const { installation: { id: installationId }, pull_request: pullRequest } = body;
-    const {
-        statuses_url: statusUrl,
-        title,
-        html_url: humanUrl,
-        assignees,
-        number: pullRequestNumber,
-        base: { repo: baseRepo, ref: branch },
-        user: { login: author },
-    } = pullRequest;
-    const { owner: { login: owner }, name: repo } = baseRepo;
-    let status;
-    let description;
-    let targetUrl;
-
-    pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {
-        statusUrl,
-        installationId,
-        pullRequestNumber,
-        title,
-        author,
-        humanUrl,
-        assignees: pluck('login', assignees),
-    })
-        .then(() => manager.getItems(owner, repo, branch))
-        .then(bookingData => {
-            targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
-            const index = findIndex(propEq('pullRequestNumber', pullRequestNumber))(bookingData);
-
-            if (bookingData.length === 0 || index < 0) {
-                description = 'Book to merge';
-                status = Github.STATUS_FAILURE;
-            } else if (index === 0) {
-                description = 'It\'s your turn';
-                status = Github.STATUS_SUCCESS;
-            } else {
-                description = `${index} PR before you`;
-                status = Github.STATUS_FAILURE;
-            }
-
-            return Github.updatePullRequestStatus({
-                installationId,
-                statusUrl,
-                status,
-                description,
-                targetUrl,
-            });
-        })
-        .then(() => res.json({
-            pullRequestNumber,
-            status,
-            description,
-            targetUrl,
-        }))
-        .catch(error => {
-            logger.error(error);
-            next(error);
-        });
-};
 
 // Catch all
 router.all('/', (req, res) => res.json(''));
