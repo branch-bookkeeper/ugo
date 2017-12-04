@@ -37,6 +37,18 @@ suite('QueueManager', () => {
             });
     });
 
+    test('Get item', () => {
+        return queueManager.addItem(owner, repo, branch, randomObject)
+            .then(() => queueManager.getItem(owner, repo, branch, randomObject.pullRequestNumber))
+            .then(item => assert.deepEqual(item, randomObject));
+    });
+
+    test('Get not existing item', () => {
+        return queueManager.addItem(owner, repo, branch, randomObject)
+            .then(() => queueManager.getItem(owner, repo, randomObject.pullRequestNumber + 1))
+            .then(item => assert.isUndefined(item));
+    });
+
     test('Remove item', () => {
         return queueManager.addItem(owner, repo, branch, randomObject)
             .then(() => queueManager.getItems(owner, repo, branch))
