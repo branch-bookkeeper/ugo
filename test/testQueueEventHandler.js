@@ -6,12 +6,17 @@ const GitHub = require('../github');
 const queueManager = require('../manager-queue');
 const pullRequestManager = require('../manager-pullrequest');
 const queueEventHandler = require('../queue-event-handler');
-const queueItemFixture = require('./fixtures/queue.item.json');
-const pullRequestInfoFixture = require('./fixtures/pull_request.info.json');
+const queueItemFixture = {
+    ...require('./fixtures/queue.item.json'),
+    pullRequestNumber: Math.floor(Math.random() * 89) + 10,
+};
+const pullRequestInfoFixture = {
+    ...require('./fixtures/pull_request.info.json'),
+    pullRequestNumber: queueItemFixture.pullRequestNumber,
+};
 const owner = 'branch-bookkeeper';
 const repo = 'branch-bookkeeper';
 const branch = 'master';
-const item = { username: 'branch-bookkeeper' };
 let gitHubSpy;
 let pullRequestManagerSpy;
 let queueManagerItemsSpy;
@@ -22,8 +27,6 @@ sinon.assert.expose(assert, { prefix: '' });
 
 suite('QueueEventHandler', () => {
     setup(() => {
-        item.pullRequestNumber =  Math.floor(Math.random() * 89) + 10;
-        pullRequestInfoFixture.pullRequestNumber =  item.pullRequestNumber;
         postalSpy = sinon.stub(postal, 'publish');
         gitHubSpy = sinon.stub(GitHub, 'updatePullRequestStatus').resolves('');
         pullRequestManagerSpy = sinon.stub(pullRequestManager, 'getPullRequestInfo').resolves(pullRequestInfoFixture);
@@ -44,11 +47,11 @@ suite('QueueEventHandler', () => {
             owner,
             repo,
             branch,
-            item,
+            item: queueItemFixture,
             index: 0,
         })
             .then(() => {
-                const { pullRequestNumber, username } = item;
+                const { pullRequestNumber, username } = queueItemFixture;
 
                 assert.calledWith(postalSpy, {
                     channel: 'notification',
@@ -76,9 +79,9 @@ suite('QueueEventHandler', () => {
             owner,
             repo,
             branch,
-            item,
+            item: queueItemFixture,
         }).then(() => {
-            const { pullRequestNumber } = item;
+            const { pullRequestNumber } = queueItemFixture;
 
             assert.calledWith(gitHubSpy, {
                 status: GitHub.STATUS_FAILURE,
@@ -96,7 +99,14 @@ suite('QueueEventHandler', () => {
             repo,
             branch,
         });
-
+        assert.calledWith(postalSpy, {
+            channel: 'metrics',
+            topic: 'increment',
+            data: {
+                name: 'queue.item.remove',
+                tags: [`queue:${owner}:${repo}:${branch}`],
+            },
+        });
         done();
     });
 
@@ -106,17 +116,33 @@ suite('QueueEventHandler', () => {
             repo,
             branch,
         });
-
+        assert.calledWith(postalSpy, {
+            channel: 'metrics',
+            topic: 'increment',
+            data: {
+                name: 'queue.item.add',
+                tags: [`queue:${owner}:${repo}:${branch}`],
+            },
+        });
         done();
     });
 
-    test('Report queue size', (done) => {
-        queueEventHandler.reportQueueSize({
+    test('Report queue size', () => {
+        return queueEventHandler.reportQueueSize({
             owner,
             repo,
             branch,
-        });
-
-        done();
+        })
+            .then(() => {
+                assert.calledWith(postalSpy, {
+                    channel: 'metrics',
+                    topic: 'gauge',
+                    data: {
+                        name: 'queue.length',
+                        value: 3,
+                        tags: [`queue:${owner}:${repo}:${branch}`],
+                    },
+                });
+            });
     });
 });

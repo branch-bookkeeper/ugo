@@ -5,7 +5,7 @@ const { pathOr } = require('ramda');
 const mongoManager = require('../manager-mongo');
 let server;
 const randomNumber = Math.floor(Math.random() * 89) + 10;
-const randomObject = { username: 'branch-bookkeeper' };
+const queueItemFixture = require('./fixtures/queue.item.json');
 const url = '/queue/branch-bookkeeper/branch-bookkeeper/master';
 
 suite('Route queue', () => {
@@ -32,43 +32,18 @@ suite('Route queue', () => {
             .expect(200, done);
     });
 
-    test('Add first item', done => {
-        randomObject.pullRequestNumber = randomNumber + 1;
-        randomObject.createdAt = new Date();
-        request(server)
-            .post(url)
-            .send(randomObject)
-            .expect('content-type', /application\/json/)
-            .expect(res => {
-                assert.empty(res.body);
-            })
-            .expect(201, done);
-    });
-
-    test('Add second item', done => {
-        randomObject.pullRequestNumber = randomNumber + 2;
-        randomObject.createdAt = new Date();
-        request(server)
-            .post(url)
-            .send(randomObject)
-            .expect('content-type', /application\/json/)
-            .expect(res => {
-                assert.empty(res.body);
-            })
-            .expect(201, done);
-    });
-
-    test('Add third item', done => {
-        randomObject.pullRequestNumber = randomNumber + 3;
-        randomObject.createdAt = new Date();
-        request(server)
-            .post(url)
-            .send(randomObject)
-            .expect('content-type', /application\/json/)
-            .expect(res => {
-                assert.empty(res.body);
-            })
-            .expect(201, done);
+    [0, 1, 2].forEach(i => {
+        test(`Add item ${i}`, done => {
+            request(server)
+                .post(url)
+                .send({
+                    ...queueItemFixture,
+                    pullRequestNumber: randomNumber + i,
+                })
+                .expect('content-type', /application\/json/)
+                .expect(res => assert.empty(res.body))
+                .expect(201, done);
+        });
     });
 
     test('Get list with three items', done => {
@@ -76,22 +51,19 @@ suite('Route queue', () => {
             .get(url)
             .expect('content-type', /application\/json/)
             .expect('content-length', '286')
-            .expect(res => {
-                assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 1);
-                assert.deepEqual(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 2);
-                assert.deepEqual(pathOr(0, ['body', 2, 'pullRequestNumber'], res), randomNumber + 3);
-            })
+            .expect(res =>
+                [0, 1, 2].forEach(i => assert.deepEqual(pathOr(0, ['body', i, 'pullRequestNumber'], res), randomNumber + i)))
             .expect(200, done);
     });
 
     test('Remove second item', done => {
-        randomObject.pullRequestNumber = randomNumber + 2;
         request(server)
             .delete(url)
-            .send(randomObject)
-            .expect(res => {
-                assert.empty(res.body);
+            .send({
+                ...queueItemFixture,
+                pullRequestNumber: randomNumber + 1,
             })
+            .expect(res => assert.empty(res.body))
             .expect(204, done);
     });
 
@@ -101,17 +73,19 @@ suite('Route queue', () => {
             .expect('content-type', /application\/json/)
             .expect('content-length', '191')
             .expect(res => {
-                assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 1);
-                assert.deepEqual(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 3);
+                assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber);
+                assert.deepEqual(pathOr(0, ['body', 1, 'pullRequestNumber'], res), randomNumber + 2);
             })
             .expect(200, done);
     });
 
     test('Remove first item', done => {
-        randomObject.pullRequestNumber = randomNumber + 1;
         request(server)
             .delete(url)
-            .send(randomObject)
+            .send({
+                ...queueItemFixture,
+                pullRequestNumber: randomNumber,
+            })
             .expect(res => {
                 assert.empty(res.body);
             })
@@ -124,19 +98,19 @@ suite('Route queue', () => {
             .expect('content-type', /application\/json/)
             .expect('content-length', '96')
             .expect(res => {
-                assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 3);
+                assert.deepEqual(pathOr(0, ['body', 0, 'pullRequestNumber'], res), randomNumber + 2);
             })
             .expect(200, done);
     });
 
     test('Remove third item', done => {
-        randomObject.pullRequestNumber = randomNumber + 3;
         request(server)
             .delete(url)
-            .send(randomObject)
-            .expect(res => {
-                assert.empty(res.body);
+            .send({
+                ...queueItemFixture,
+                pullRequestNumber: randomNumber + 2,
             })
+            .expect(res => assert.empty(res.body))
             .expect(204, done);
     });
 
