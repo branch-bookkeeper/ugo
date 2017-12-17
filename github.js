@@ -66,18 +66,24 @@ const trackApiUsageAndReturnBody = response => {
 };
 
 class Github {
-    static updatePullRequestStatus(options) {
-        return getInstallationAccessToken(options.installationId)
+    static updatePullRequestStatus({
+        installationId,
+        statusUrl,
+        status,
+        description,
+        targetUrl,
+    }) {
+        return getInstallationAccessToken(installationId)
             .then(accessToken => {
-                return request.post(options.statusUrl, {
+                return request.post(statusUrl, {
                     headers: {
                         'user-agent': userAgent,
                         authorization: `token ${accessToken}`,
                     },
                     body: {
-                        state: options.status,
-                        description: options.description,
-                        target_url: options.targetUrl,
+                        state: status,
+                        description: description,
+                        target_url: targetUrl,
                         context: 'Branch Bookkeeper',
                     },
                 })
