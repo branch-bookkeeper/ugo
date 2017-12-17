@@ -127,6 +127,22 @@ class Github {
                 resolveWithFullResponse: false,
             }));
     }
+
+    static getHashStatus({
+        installationId,
+        owner,
+        repo,
+        sha,
+    }) {
+        return getInstallationAccessToken(installationId)
+            .then(accessToken => request.get(`https://api.github.com/repos/${owner}/${repo}/commits/${sha}/status`, {
+                headers: {
+                    'user-agent': userAgent,
+                    authorization: `token ${accessToken}`,
+                },
+            })
+                .then(trackApiUsageAndReturnBody));
+    }
 }
 
 Github.STATUS_SUCCESS = 'success';
