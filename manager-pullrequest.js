@@ -52,6 +52,14 @@ class PullRequestManager {
             .then(cursor => cursor.toArray());
     }
 
+    static getPullRequestInfoBySha(owner, repo, sha) {
+        return mongoManager.getCollection(COLLECTION_NAME)
+            .then(collection => collection.findOne(
+                { owner, repo, sha },
+                { fields: { _id: false, owner: false, repo: false } }
+            ));
+    }
+
     static deletePullRequestInfo(owner, repo, number) {
         return mongoManager.getCollection(COLLECTION_NAME)
             .then(collection => collection.deleteOne({ _id: `${owner}-${repo}-${number}` }))
