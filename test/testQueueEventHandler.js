@@ -5,7 +5,7 @@ const postal = require('postal');
 const GitHub = require('../github');
 const queueManager = require('../manager-queue');
 const pullRequestManager = require('../manager-pullrequest');
-const queueEventHandler = require('../queue-event-handler');
+const queueEventHandler = require('../handler-event-queue');
 const queueItemFixture = {
     ...require('./fixtures/queue.item.json'),
     pullRequestNumber: Math.floor(Math.random() * 89) + 10,
