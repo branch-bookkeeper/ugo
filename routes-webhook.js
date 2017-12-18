@@ -11,13 +11,17 @@ const validator = require('./validator-signature-github');
 // Validator
 router.post('/', validator);
 
-// Username
+// Service availability
 router.post('/', (req, res, next) => {
     if (!pullRequestManager.enabled()) {
         next(createError.ServiceUnavailable('queue not available'));
         return;
     }
+    next();
+});
 
+// Username
+router.post('/', (req, res, next) => {
     const { sender: { login: username } } = req.body;
 
     req.username = username;
