@@ -55,7 +55,7 @@
     "head": {
       "label": "branch-bookkeeper:branch-bookkeeper",
       "ref": "branch-bookkeeper",
-      "sha": "a3483075c6efc384b63e0f2e887413832f7b6fea",
+      "sha": "31337",
       "user": {
         "login": "branch-bookkeeper",
         "id": 4567,

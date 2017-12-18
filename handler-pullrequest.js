@@ -59,6 +59,7 @@ const _updatePullRequestInfo = (pullRequest, installationId) => {
         number: pullRequestNumber,
         base: { repo: { owner: { login: owner }, name: repo }, ref: branch },
         user: { login: author },
+        head: { sha },
     } = pullRequest;
 
     return pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {
@@ -70,6 +71,7 @@ const _updatePullRequestInfo = (pullRequest, installationId) => {
         humanUrl,
         branch,
         assignees: pluck('login', assignees),
+        sha,
     })
         .then(() => ({
             owner,
