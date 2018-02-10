@@ -39,7 +39,9 @@
     "merge_commit_sha": null,
     "assignee": null,
     "assignees": [
-
+      {
+        "login": "branch-bookkeeper"
+      }
     ],
     "requested_reviewers": [
 
@@ -49,7 +51,7 @@
     "review_comments_url": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/pulls/1/comments",
     "review_comment_url": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/pulls/comments{/number}",
     "comments_url": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/issues/1/comments",
-    "statuses_url": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/a3483075c6efc384b63e0f2e887413832f7b6fea",
+    "statuses_url": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef",
     "head": {
       "label": "branch-bookkeeper:branch-bookkeeper",
       "ref": "branch-bookkeeper",
@@ -425,6 +427,6 @@
     "site_admin": false
   },
   "installation": {
-    "id": 50148
+    "id": 1234
   }
 }

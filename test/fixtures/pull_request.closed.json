@@ -307,6 +307,7 @@
     "mergeable": null,
     "rebaseable": null,
     "mergeable_state": "unknown",
+    "merged_by": null,
     "comments": 0,
     "review_comments": 0,
     "maintainer_can_modify": false,
@@ -424,6 +425,6 @@
     "site_admin": false
   },
   "installation": {
-    "id": 50165
+    "id": 1234
   }
 }
