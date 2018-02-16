@@ -1,6 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
 const logger = require('./logger');
-const MongoLogger = require('mongodb').Logger;
 const { isNil } = require('ramda');
 const environment = process.env['NODE_ENV'] || 'production';
 const { MONGO_URL } = process.env;
@@ -14,13 +13,6 @@ const getDb = new Promise(resolve => {
             });
     }
 });
-
-if (development) {
-    MongoLogger.setLevel('info');
-    MongoLogger.setCurrentLogger((msg, context) => {
-        logger.info(msg, context);
-    });
-}
 
 class MongoManager {
     static getCollection(collection) {

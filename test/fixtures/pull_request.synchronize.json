@@ -49,11 +49,11 @@
     "review_comments_url": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/pulls/1/comments",
     "review_comment_url": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/pulls/comments{/number}",
     "comments_url": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/issues/1/comments",
-    "statuses_url": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/98d7b7ca1cde81b804d9254e1ae8d112660ee827",
+    "statuses_url": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/31337",
     "head": {
       "label": "branch-bookkeeper:branch-bookkeeper",
       "ref": "branch-bookkeeper",
-      "sha": "98d7b7ca1cde81b804d9254e1ae8d112660ee827",
+      "sha": "31337",
       "user": {
         "login": "branch-bookkeeper",
         "id": 1234567,
@@ -299,7 +299,7 @@
         "href": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/pulls/1/commits"
       },
       "statuses": {
-        "href": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/98d7b7ca1cde81b804d9254e1ae8d112660ee827"
+        "href": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/31337"
       }
     },
     "author_association": "OWNER",
@@ -317,7 +317,7 @@
     "changed_files": 1
   },
   "before": "3e19e12f24f31a0a32242f7f0914eeea6084fb6c",
-  "after": "98d7b7ca1cde81b804d9254e1ae8d112660ee827",
+  "after": "31337",
   "repository": {
     "id": 1234567,
     "name": "branch-bookkeeper",

@@ -1,11 +1,12 @@
 ﻿{
   "statusUrl": "https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef",
   "installationId": 1234,
-  "pullRequestNumber": 0,
-  "title": "Switch to MongoDB",
+  "pullRequestNumber": 1,
+  "title": "Update README.md",
   "author": "branch-bookkeeper",
-  "humanUrl": "https://github.com/branch-bookkeeper/branch-bookkeeper/pull/0",
+  "humanUrl": "https://github.com/branch-bookkeeper/branch-bookkeeper/pull/1",
   "assignees": [
     "branch-bookkeeper"
-  ]
+  ],
+  "branch": "master"
 }

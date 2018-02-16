@@ -37,6 +37,7 @@ const authenticator = (req, res, next) => {
     }
 
     const token = authHeader.replace('token ', '');
+    const { params: { owner, repository } } = req;
 
     tokenManager.getTokenInfo(token)
         .then(tokenInfo => {
@@ -47,7 +48,7 @@ const authenticator = (req, res, next) => {
                 throw new Error('Wrong client id');
             }
         })
-        .then(() => installationManager.getInstallationId(req.params.owner))
+        .then(() => installationManager.getInstallationId(owner))
         .then(throwErrorIfNil(new Error('No installation id')))
         .then(installationId => installationInfoManager.getInstallationInfo(token, installationId))
         .then(installationInfo => {
@@ -55,7 +56,7 @@ const authenticator = (req, res, next) => {
                 throw new Error('No installation found');
             }
             const { repositories } = installationInfo;
-            const item = find(propEq('full_name', `${req.params.owner}/${req.params.repository}`))(repositories);
+            const item = find(propEq('full_name', `${owner}/${repository}`), repositories);
 
             if (!item) {
                 throw new Error('Repository not found');

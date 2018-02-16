@@ -115,6 +115,22 @@ class QueueManager {
             .then(pathOr([], ['queue']));
     }
 
+    static getItem(owner, repo, branch, pullRequestNumber) {
+        return mongoManager.getCollection(COLLECTION_NAME)
+            .then(collection => collection.findOne(
+                {
+                    _id: `${owner}-${repo}-${branch}`,
+                },
+                {
+                    _id: false,
+                    queue: {
+                        $elemMatch: { pullRequestNumber },
+                    },
+                }
+            ))
+            .then(pathOr(undefined, ['queue', 0]));
+    }
+
     static getLength(owner, repo, branch) {
         return mongoManager.getCollection(COLLECTION_NAME)
             .then(collection => collection.aggregate([

@@ -118,6 +118,17 @@ class Github {
                 };
             });
     }
+
+    static getPullRequestInfo(owner, repo, number, installationId) {
+        return getInstallationAccessToken(installationId)
+            .then(accessToken => request.get(`https://api.github.com/repos/${owner}/${repo}/pulls/${number}`, {
+                headers: {
+                    'user-agent': userAgent,
+                    authorization: `token ${accessToken}`,
+                },
+                resolveWithFullResponse: false,
+            }));
+    }
 }
 
 Github.STATUS_SUCCESS = 'success';
