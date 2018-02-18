@@ -49,10 +49,9 @@ const removeItem = ({
     });
 
     const notifyOnFirstItemChanged = firstItemChanged
-        ? queueManager.getItems(owner, repo, branch, 1)
-            .then(queueItems => {
-                if (queueItems.length > 0) {
-                    const [first] = queueItems;
+        ? queueManager.getFirstItem(owner, repo, branch)
+            .then(first => {
+                if (first) {
                     const { pullRequestNumber, username } = first;
 
                     postal.publish({
