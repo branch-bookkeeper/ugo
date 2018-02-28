@@ -13,6 +13,7 @@ class PushNotificationManager {
         const {
             owner,
             repo,
+            branch,
             pullRequestNumber,
             username,
         } = options;
@@ -20,7 +21,7 @@ class PushNotificationManager {
         return PushNotificationManager._sendNotification({
             ...options,
             title: 'Your PR can be rebased',
-            message: `${owner}/${repo} #${pullRequestNumber} can be rebased`,
+            message: `${owner}/${repo} #${pullRequestNumber} can be rebased from ${branch}`,
             url: _buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
         });
