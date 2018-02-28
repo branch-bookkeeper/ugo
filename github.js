@@ -153,5 +153,7 @@ class Github {
 
 Github.STATUS_SUCCESS = 'success';
 Github.STATUS_FAILURE = 'failure';
+Github.STATUS_ERROR = 'error';
+Github.STATUS_PENDING = 'pending';
 
 module.exports = Github;
