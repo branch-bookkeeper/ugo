@@ -6,6 +6,8 @@ const development = environment === 'development';
 
 onesignal.configure(process.env.ONESIGNAL_APP_ID, process.env.ONESIGNAL_KEY, development);
 
+const _buildPullRequesturl = ({ owner, repo, pullRequestNumber }) => `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`;
+
 class PushNotificationManager {
     static sendRebasedNotification(options) {
         const {
@@ -19,7 +21,7 @@ class PushNotificationManager {
             ...options,
             title: 'Your PR can be rebased',
             message: `${owner}/${repo} #${pullRequestNumber} can be rebased`,
-            url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
+            url: _buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
         });
     }
