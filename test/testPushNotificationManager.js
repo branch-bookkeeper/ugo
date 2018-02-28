@@ -40,7 +40,7 @@ suite('PushNotificationManager', () => {
         return pushNotificationManager.sendRebasedNotification(options)
             .then(data => {
                 assert.calledWith(oneSignalSpy, {
-                    contents: { en: `${owner}/${repo} #${pullRequestNumber} can be rebased` },
+                    contents: { en: `${owner}/${repo} #${pullRequestNumber} can be rebased from ${branch}` },
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],

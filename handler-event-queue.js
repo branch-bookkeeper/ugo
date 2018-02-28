@@ -6,6 +6,7 @@ const queueManager = require('./manager-queue');
 const addItem = ({
     owner,
     repo,
+    branch,
     item,
     index,
 }) => {
@@ -18,6 +19,7 @@ const addItem = ({
             data: {
                 owner,
                 repo,
+                branch,
                 pullRequestNumber,
                 username,
             },
@@ -60,6 +62,7 @@ const removeItem = ({
                         data: {
                             owner,
                             repo,
+                            branch,
                             pullRequestNumber,
                             username,
                         },
