@@ -1,7 +1,6 @@
 const newrelic = require('newrelic');
 const express = require('express');
 const morgan = require('morgan');
-const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
 const Rollbar = require('rollbar');
@@ -29,7 +28,7 @@ const rollbar = new Rollbar({
 
 app.set('port', process.env.PORT || 3000);
 
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(compression());
 app.use(cors({ origin: process.env.APP_ORIGIN || 'http://localhost:4000' }));
 
