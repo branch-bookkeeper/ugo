@@ -28,7 +28,7 @@ class PushNotificationManager {
         });
     }
 
-    static sendMergedNotification(options) {
+    static sendChecksNotification(options) {
         const {
             owner,
             repo,
@@ -93,8 +93,8 @@ class PushNotificationManager {
 
 postal.subscribe({
     channel: 'notification',
-    topic: 'send.merged',
-    callback: PushNotificationManager.sendMergedNotification,
+    topic: 'send.checks',
+    callback: PushNotificationManager.sendChecksNotification,
 });
 
 postal.subscribe({
