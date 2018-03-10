@@ -1,6 +1,7 @@
 const postal = require('postal');
 const onesignal = require('simple-onesignal');
 const logger = require('./logger');
+const GitHub = require('./github');
 const environment = process.env['NODE_ENV'] || 'production';
 const development = environment === 'development';
 
@@ -34,13 +35,21 @@ class PushNotificationManager {
             branch,
             pullRequestNumber,
             username,
+            state,
         } = options;
 
-        return PushNotificationManager._sendNotification({
+        const title = state === GitHub.STATUS_SUCCESS
+            ? 'All checks have passed'
+            : 'Some checks were not successful';
+        const message = state === GitHub.STATUS_SUCCESS
+            ? `${owner}/${repo} #${pullRequestNumber} can be merged into ${branch}`
+            : `${owner}/${repo} #${pullRequestNumber} failed its checks`;
+
+        return _sendNotification({
             ...options,
-            title: 'All checks passed',
-            message: `${owner}/${repo} #${pullRequestNumber} can be merged on ${branch}`,
-            url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
+            title,
+            message,
+            url: _buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
         });
     }
