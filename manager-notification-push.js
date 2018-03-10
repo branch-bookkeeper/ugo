@@ -7,7 +7,43 @@ const development = environment === 'development';
 
 onesignal.configure(process.env.ONESIGNAL_APP_ID, process.env.ONESIGNAL_KEY, development);
 
-const _buildPullRequesturl = ({ owner, repo, pullRequestNumber }) => `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`;
+const buildPullRequesturl = ({ owner, repo, pullRequestNumber }) => `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`;
+
+const sendNotification = (options) => {
+    const {
+        title,
+        message,
+        username,
+        url,
+    } = options;
+
+    return new Promise((resolve, reject) => {
+        onesignal.sendMessage({
+            contents: {
+                en: message,
+            },
+            headings: {
+                en: title,
+            },
+            url: url,
+            filters: [
+                {
+                    field: 'tag',
+                    key: 'username',
+                    relation: '=',
+                    value: username,
+                },
+            ],
+        }, (err, data) => {
+            if (err && err.length > 0) {
+                logger.error(err, data);
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        });
+    });
+};
 
 class PushNotificationManager {
     static sendRebasedNotification(options) {
@@ -19,11 +55,11 @@ class PushNotificationManager {
             username,
         } = options;
 
-        return PushNotificationManager._sendNotification({
+        return sendNotification({
             ...options,
             title: 'Your PR can be rebased',
             message: `${owner}/${repo} #${pullRequestNumber} can be rebased from ${branch}`,
-            url: _buildPullRequesturl({ owner, repo, pullRequestNumber }),
+            url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
         });
     }
@@ -45,48 +81,12 @@ class PushNotificationManager {
             ? `${owner}/${repo} #${pullRequestNumber} can be merged into ${branch}`
             : `${owner}/${repo} #${pullRequestNumber} failed its checks`;
 
-        return _sendNotification({
+        return sendNotification({
             ...options,
             title,
             message,
-            url: _buildPullRequesturl({ owner, repo, pullRequestNumber }),
+            url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
-        });
-    }
-
-    static _sendNotification(options) {
-        const {
-            title,
-            message,
-            username,
-            url,
-        } = options;
-
-        return new Promise((resolve, reject) => {
-            onesignal.sendMessage({
-                contents: {
-                    en: message,
-                },
-                headings: {
-                    en: title,
-                },
-                url: url,
-                filters: [
-                    {
-                        field: 'tag',
-                        key: 'username',
-                        relation: '=',
-                        value: username,
-                    },
-                ],
-            }, (err, data) => {
-                if (err && err.length > 0) {
-                    logger.error(err, data);
-                    reject(err);
-                } else {
-                    resolve(data);
-                }
-            });
         });
     }
 }
