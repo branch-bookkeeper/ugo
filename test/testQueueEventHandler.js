@@ -84,6 +84,17 @@ suite('QueueEventHandler', () => {
         }).then(() => {
             const { pullRequestNumber } = queueItemFixture;
 
+            assert.calledWith(postalSpy, {
+                channel: 'notification',
+                topic: 'send.update',
+                data: {
+                    owner,
+                    repo,
+                    branch,
+                    items: [],
+                },
+            });
+
             assert.calledWith(gitHubSpy, {
                 status: GitHub.STATUS_FAILURE,
                 description: 'Book to merge',
@@ -142,6 +153,33 @@ suite('QueueEventHandler', () => {
                         name: 'queue.length',
                         value: 3,
                         tags: [`queue:${owner}:${repo}:${branch}`],
+                    },
+                });
+            });
+    });
+
+    test('Push queue update', () => {
+        return queueEventHandler.pushQueueUpdate({
+            owner,
+            repo,
+            branch,
+        })
+            .then(() => {
+                assert.calledWith(
+                    queueManagerItemsSpy,
+                    owner,
+                    repo,
+                    branch
+                );
+
+                assert.calledWith(postalSpy, {
+                    channel: 'notification',
+                    topic: 'send.update',
+                    data: {
+                        owner,
+                        repo,
+                        branch,
+                        items: [queueItemFixture],
                     },
                 });
             });
