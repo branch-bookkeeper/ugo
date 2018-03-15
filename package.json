@@ -31,6 +31,7 @@
     "newrelic": "^2.2.0",
     "nodemon": "^1.11.0",
     "postal": "^2.0.5",
+    "pusher": "^1.5.1",
     "ramda": "^0.24.1",
     "request": "^2.81.0",
     "request-all-pages": "^0.3.1",
