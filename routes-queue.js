@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const createError = require('http-errors');
 const manager = require('./manager-queue');
+const pusherManager = require('./manager-notification-pusher.js');
 const authenticator = require('./authenticator-github');
 
 router.route('/:owner/:repository/:branch')
@@ -31,5 +32,11 @@ router.route('/:owner/:repository/:branch')
             next(createError.BadRequest());
         }
     });
+
+router.route('/:owner/:repository/:branch/update-channel')
+    .all(authenticator)
+    .get((req, res, next) => res.send({
+        id: pusherManager.getChannelId(req.params.owner, req.params.repository, req.params.branch),
+    }));
 
 module.exports = router;
