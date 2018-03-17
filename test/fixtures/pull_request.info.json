@@ -8,5 +8,6 @@
   "assignees": [
     "branch-bookkeeper"
   ],
-  "branch": "master"
+  "branch": "master",
+  "sha": "31337"
 }

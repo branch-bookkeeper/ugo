@@ -3,6 +3,7 @@ const { assert } = require('chai');
 const sinon = require('sinon');
 const oneSignal = require('simple-onesignal');
 const pushNotificationManager = require('../manager-notification-push');
+const GitHub = require('../github');
 const fakeOneSignalReponse = { fake: true };
 let owner;
 let repo;
@@ -40,7 +41,7 @@ suite('PushNotificationManager', () => {
         return pushNotificationManager.sendRebasedNotification(options)
             .then(data => {
                 assert.calledWith(oneSignalSpy, {
-                    contents: { en: `${owner}/${repo} #${pullRequestNumber} can be rebased` },
+                    contents: { en: `${owner}/${repo} #${pullRequestNumber} can be rebased from ${branch}` },
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
@@ -51,15 +52,38 @@ suite('PushNotificationManager', () => {
             });
     });
 
-    test('Send merged notification', () => {
-        return pushNotificationManager.sendMergedNotification(options)
+    test('Send success notification', () => {
+        options = {
+            ...options,
+            state: GitHub.STATUS_SUCCESS,
+        };
+        return pushNotificationManager.sendChecksNotification(options)
             .then(data => {
                 assert.calledWith(oneSignalSpy, {
-                    contents: { en: `${owner}/${repo} #${pullRequestNumber} can be merged on ${branch}` },
+                    contents: { en: `${owner}/${repo} #${pullRequestNumber} can be merged into ${branch}` },
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: 'All checks passed' },
+                    headings: { en: 'All checks have passed' },
+                    url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
+                });
+                assert.deepEqual(data, fakeOneSignalReponse);
+            });
+    });
+
+    test('Send failure notification', () => {
+        options = {
+            ...options,
+            state: GitHub.STATUS_FAILURE,
+        };
+        return pushNotificationManager.sendChecksNotification(options)
+            .then(data => {
+                assert.calledWith(oneSignalSpy, {
+                    contents: { en: `${owner}/${repo} #${pullRequestNumber} failed its checks` },
+                    filters: [{
+                        field: 'tag', key: 'username', relation: '=', value: username,
+                    }],
+                    headings: { en: 'Some checks were not successful' },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.deepEqual(data, fakeOneSignalReponse);

@@ -1,30 +1,52 @@
 const postal = require('postal');
 const onesignal = require('simple-onesignal');
 const logger = require('./logger');
+const GitHub = require('./github');
 const environment = process.env['NODE_ENV'] || 'production';
 const development = environment === 'development';
 
 onesignal.configure(process.env.ONESIGNAL_APP_ID, process.env.ONESIGNAL_KEY, development);
 
+const buildPullRequesturl = ({ owner, repo, pullRequestNumber }) => `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`;
+
+const sendNotification = (options) => {
+    const {
+        title,
+        message,
+        username,
+        url,
+    } = options;
+
+    return new Promise((resolve, reject) => {
+        onesignal.sendMessage({
+            contents: {
+                en: message,
+            },
+            headings: {
+                en: title,
+            },
+            url: url,
+            filters: [
+                {
+                    field: 'tag',
+                    key: 'username',
+                    relation: '=',
+                    value: username,
+                },
+            ],
+        }, (err, data) => {
+            if (err && err.length > 0) {
+                logger.error(err, data);
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        });
+    });
+};
+
 class PushNotificationManager {
     static sendRebasedNotification(options) {
-        const {
-            owner,
-            repo,
-            pullRequestNumber,
-            username,
-        } = options;
-
-        return PushNotificationManager._sendNotification({
-            ...options,
-            title: 'Your PR can be rebased',
-            message: `${owner}/${repo} #${pullRequestNumber} can be rebased`,
-            url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
-            username,
-        });
-    }
-
-    static sendMergedNotification(options) {
         const {
             owner,
             repo,
@@ -33,56 +55,46 @@ class PushNotificationManager {
             username,
         } = options;
 
-        return PushNotificationManager._sendNotification({
+        return sendNotification({
             ...options,
-            title: 'All checks passed',
-            message: `${owner}/${repo} #${pullRequestNumber} can be merged on ${branch}`,
-            url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
+            title: 'Your PR can be rebased',
+            message: `${owner}/${repo} #${pullRequestNumber} can be rebased from ${branch}`,
+            url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
         });
     }
 
-    static _sendNotification(options) {
+    static sendChecksNotification(options) {
         const {
-            title,
-            message,
+            owner,
+            repo,
+            branch,
+            pullRequestNumber,
             username,
-            url,
+            state,
         } = options;
 
-        return new Promise((resolve, reject) => {
-            onesignal.sendMessage({
-                contents: {
-                    en: message,
-                },
-                headings: {
-                    en: title,
-                },
-                url: url,
-                filters: [
-                    {
-                        field: 'tag',
-                        key: 'username',
-                        relation: '=',
-                        value: username,
-                    },
-                ],
-            }, (err, data) => {
-                if (err && err.length > 0) {
-                    logger.error(err, data);
-                    reject(err);
-                } else {
-                    resolve(data);
-                }
-            });
+        const title = state === GitHub.STATUS_SUCCESS
+            ? 'All checks have passed'
+            : 'Some checks were not successful';
+        const message = state === GitHub.STATUS_SUCCESS
+            ? `${owner}/${repo} #${pullRequestNumber} can be merged into ${branch}`
+            : `${owner}/${repo} #${pullRequestNumber} failed its checks`;
+
+        return sendNotification({
+            ...options,
+            title,
+            message,
+            url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
+            username,
         });
     }
 }
 
 postal.subscribe({
     channel: 'notification',
-    topic: 'send.merged',
-    callback: PushNotificationManager.sendMergedNotification,
+    topic: 'send.checks',
+    callback: PushNotificationManager.sendChecksNotification,
 });
 
 postal.subscribe({

@@ -6,6 +6,7 @@ const queueManager = require('./manager-queue');
 const addItem = ({
     owner,
     repo,
+    branch,
     item,
     index,
 }) => {
@@ -18,6 +19,7 @@ const addItem = ({
             data: {
                 owner,
                 repo,
+                branch,
                 pullRequestNumber,
                 username,
             },
@@ -49,10 +51,9 @@ const removeItem = ({
     });
 
     const notifyOnFirstItemChanged = firstItemChanged
-        ? queueManager.getItems(owner, repo, branch, 1)
-            .then(queueItems => {
-                if (queueItems.length > 0) {
-                    const [first] = queueItems;
+        ? queueManager.getFirstItem(owner, repo, branch)
+            .then(first => {
+                if (first) {
                     const { pullRequestNumber, username } = first;
 
                     postal.publish({
@@ -61,6 +62,7 @@ const removeItem = ({
                         data: {
                             owner,
                             repo,
+                            branch,
                             pullRequestNumber,
                             username,
                         },

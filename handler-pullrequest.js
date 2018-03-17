@@ -1,4 +1,5 @@
 const Github = require('./github');
+const postal = require('postal');
 const {
     pluck,
     slice,
@@ -59,6 +60,7 @@ const _updatePullRequestInfo = (pullRequest, installationId) => {
         number: pullRequestNumber,
         base: { repo: { owner: { login: owner }, name: repo }, ref: branch },
         user: { login: author },
+        head: { sha },
     } = pullRequest;
 
     return pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {
@@ -70,6 +72,7 @@ const _updatePullRequestInfo = (pullRequest, installationId) => {
         humanUrl,
         branch,
         assignees: pluck('login', assignees),
+        sha,
     })
         .then(() => ({
             owner,
@@ -155,6 +158,54 @@ class PullRequestHandler {
                     branch,
                     pullRequestNumber,
                 })));
+    }
+
+    static handleStatusChange({
+        owner,
+        repo,
+        state,
+        sha,
+    }) {
+        return pullRequestManager.getPullRequestInfoBySha(owner, repo, sha)
+            .then(data => {
+                if (!data) {
+                    return Promise.resolve();
+                }
+                const {
+                    branch,
+                    installationId,
+                    pullRequestNumber,
+                } = data;
+                return queueManager.getFirstItem(owner, repo, branch)
+                    .then(firstItem => {
+                        if (!firstItem || firstItem.pullRequestNumber !== pullRequestNumber) {
+                            return Promise.resolve();
+                        }
+                        return Github.getHashStatus({
+                            installationId,
+                            owner,
+                            repo,
+                            sha,
+                        })
+                            .then(({ state }) => {
+                                if (state !== Github.STATUS_PENDING) {
+                                    const { username, pullRequestNumber } = firstItem;
+                                    postal.publish({
+                                        channel: 'notification',
+                                        topic: 'send.checks',
+                                        data: {
+                                            owner,
+                                            repo,
+                                            branch,
+                                            pullRequestNumber,
+                                            username,
+                                            state,
+                                        },
+                                    });
+                                }
+                            });
+                    });
+            });
     }
 
     static blockPullRequest({

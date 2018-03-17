@@ -11,18 +11,40 @@ const validator = require('./validator-signature-github');
 // Validator
 router.post('/', validator);
 
-// Username
+// Service availability
 router.post('/', (req, res, next) => {
     if (!pullRequestManager.enabled()) {
         next(createError.ServiceUnavailable('queue not available'));
         return;
     }
+    next();
+});
 
+// Username
+router.post('/', (req, res, next) => {
     const { sender: { login: username } } = req.body;
 
     req.username = username;
     req.event = req.get('X-GitHub-Event');
     next();
+});
+
+// Statuses
+router.post('/', (req, res, next) => {
+    if (req.event !== 'status') {
+        next();
+        return;
+    }
+
+    const { state, sha, repository: { name: repo, owner: { login: owner } } } = req.body;
+
+    pullRequestHandler.handleStatusChange({
+        owner,
+        repo,
+        sha,
+        state,
+    })
+        .then(() => res.json(`Status of ${sha} ${state}`));
 });
 
 // Repositories

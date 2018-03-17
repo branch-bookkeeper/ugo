@@ -19,6 +19,8 @@ const installationRepositoriesRemovedPayload = require('./fixtures/installation_
 const pullRequestOpenedPayload = require('./fixtures/pull_request.opened.json');
 const pullRequestClosedPayload = require('./fixtures/pull_request.closed.json');
 const pullRequestMergededPayload = require('./fixtures/pull_request.merged.json');
+const statusFailurePayload = require('./fixtures/status.failure.json');
+const statusSuccessPayload = require('./fixtures/status.success.json');
 const pullRequestSynchronizePayload = require('./fixtures/pull_request.synchronize.json');
 const repositoryCreatedPayload = require('./fixtures/repository.created.json');
 const repositoryDeletedPayload = require('./fixtures/repository.deleted.json');
@@ -149,6 +151,32 @@ suite('Route webhook', () => {
                 assert.notEmpty(res.body);
                 assert.isString(res.body);
                 assert.include(res.body, 'closed');
+            })
+            .expect(200, done);
+    });
+
+    test('Status success', (done) => {
+        request(server)
+            .post(url)
+            .set('X-GitHub-Event', 'status')
+            .send(statusSuccessPayload)
+            .expect(res => {
+                assert.notEmpty(res.body);
+                assert.isString(res.body);
+                assert.include(res.body, 'success');
+            })
+            .expect(200, done);
+    });
+
+    test('Status failure', (done) => {
+        request(server)
+            .post(url)
+            .set('X-GitHub-Event', 'status')
+            .send(statusFailurePayload)
+            .expect(res => {
+                assert.notEmpty(res.body);
+                assert.isString(res.body);
+                assert.include(res.body, 'failure');
             })
             .expect(200, done);
     });

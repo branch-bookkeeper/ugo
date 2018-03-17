@@ -131,6 +131,11 @@ class QueueManager {
             .then(pathOr(undefined, ['queue', 0]));
     }
 
+    static getFirstItem(owner, repo, branch) {
+        return QueueManager.getItems(owner, repo, branch, 1)
+            .then(pathOr(undefined, [0]));
+    }
+
     static getLength(owner, repo, branch) {
         return mongoManager.getCollection(COLLECTION_NAME)
             .then(collection => collection.aggregate([

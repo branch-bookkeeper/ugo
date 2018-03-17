@@ -9,7 +9,7 @@ const webhook = require('./routes-webhook');
 const pullRequest = require('./routes-pullrequest');
 const analytics = require('./analytics');
 const logger = require('./logger');
-require('./queue-event-handler');
+require('./handler-event-queue');
 require('./manager-notification-push');
 require('./manager-metrics');
 

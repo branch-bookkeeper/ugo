@@ -56,27 +56,38 @@ const getInstallationAccessToken = installationId => {
     }).then(path(['body', 'token']));
 };
 
+const trackApiUsageAndReturnBody = response => {
+    trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
+    trackApiRequest();
+    return {
+        ...response.body,
+        client_id: path(['x-oauth-client-id'], response.headers),
+    };
+};
+
 class Github {
-    static updatePullRequestStatus(options) {
-        return getInstallationAccessToken(options.installationId)
+    static updatePullRequestStatus({
+        installationId,
+        statusUrl,
+        status,
+        description,
+        targetUrl,
+    }) {
+        return getInstallationAccessToken(installationId)
             .then(accessToken => {
-                return request.post(options.statusUrl, {
+                return request.post(statusUrl, {
                     headers: {
                         'user-agent': userAgent,
                         authorization: `token ${accessToken}`,
                     },
                     body: {
-                        state: options.status,
-                        description: options.description,
-                        target_url: options.targetUrl,
+                        state: status,
+                        description: description,
+                        target_url: targetUrl,
                         context: 'Branch Bookkeeper',
                     },
                 })
-                    .then(response => {
-                        trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
-                        trackApiRequest();
-                        return response.body;
-                    });
+                    .then(trackApiUsageAndReturnBody);
             });
     }
 
@@ -87,14 +98,7 @@ class Github {
                 authorization: `token ${token}`,
             },
         })
-            .then(response => {
-                trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
-                trackApiRequest();
-                return {
-                    ...response.body,
-                    client_id: path(['x-oauth-client-id'], response.headers),
-                };
-            });
+            .then(trackApiUsageAndReturnBody);
     }
 
     static getInstallationInfo(token, installationId) {
@@ -129,9 +133,27 @@ class Github {
                 resolveWithFullResponse: false,
             }));
     }
+
+    static getHashStatus({
+        installationId,
+        owner,
+        repo,
+        sha,
+    }) {
+        return getInstallationAccessToken(installationId)
+            .then(accessToken => request.get(`https://api.github.com/repos/${owner}/${repo}/commits/${sha}/status`, {
+                headers: {
+                    'user-agent': userAgent,
+                    authorization: `token ${accessToken}`,
+                },
+            })
+                .then(trackApiUsageAndReturnBody));
+    }
 }
 
 Github.STATUS_SUCCESS = 'success';
 Github.STATUS_FAILURE = 'failure';
+Github.STATUS_ERROR = 'error';
+Github.STATUS_PENDING = 'pending';
 
 module.exports = Github;
