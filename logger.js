@@ -1,6 +1,6 @@
 const winston = require('winston');
-const logentriesToken = process.env['LOGENTRIES_TOKEN'];
-const environment = process.env['NODE_ENV'] || 'production';
+const { env: { LOGENTRIES_TOKEN: logentriesToken, NODE_ENV } } = process;
+const environment = NODE_ENV || 'production';
 const development = environment === 'development';
 const test = environment === 'test';
 const logger = new winston.Logger();

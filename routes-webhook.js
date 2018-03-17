@@ -14,8 +14,7 @@ router.post('/', validator);
 // Service availability
 router.post('/', (req, res, next) => {
     if (!pullRequestManager.enabled()) {
-        next(createError.ServiceUnavailable('queue not available'));
-        return;
+        return next(createError.ServiceUnavailable('queue not available'));
     }
     next();
 });
@@ -32,8 +31,7 @@ router.post('/', (req, res, next) => {
 // Statuses
 router.post('/', (req, res, next) => {
     if (req.event !== 'status') {
-        next();
-        return;
+        return next();
     }
 
     const { state, sha, repository: { name: repo, owner: { login: owner } } } = req.body;
@@ -50,8 +48,7 @@ router.post('/', (req, res, next) => {
 // Repositories
 router.post('/', (req, res, next) => {
     if (req.event !== 'repository') {
-        next();
-        return;
+        return next();
     }
 
     const { repository: { owner: { login: owner } } } = req.body;
@@ -64,8 +61,7 @@ router.post('/', (req, res, next) => {
 // PR
 router.post('/', (req, res, next) => {
     if (req.event !== 'pull_request') {
-        next();
-        return;
+        return next();
     }
 
     const { action, installation: { id: installationId }, pull_request: pullRequest } = req.body;
@@ -96,8 +92,7 @@ router.post('/', (req, res, next) => {
 // Installation
 router.post('/', (req, res, next) => {
     if (req.event !== 'installation') {
-        next();
-        return;
+        return next();
     }
 
     const { action, installation } = req.body;
@@ -129,8 +124,7 @@ router.post('/', (req, res, next) => {
 // Installation repositories
 router.post('/', (req, res, next) => {
     if (req.event !== 'installation_repositories') {
-        next();
-        return;
+        return next();
     }
 
     const { action, installation } = req.body;
