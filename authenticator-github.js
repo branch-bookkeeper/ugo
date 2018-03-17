@@ -26,15 +26,13 @@ const throwErrorIfNil = throwErrorIf(isNil);
 
 const authenticator = (req, res, next) => {
     if (test || development) {
-        next();
-        return;
+        return next();
     }
 
     const authHeader = req.get('authorization');
 
     if (!authHeader || authHeader.indexOf('token ') !== 0) {
-        next(createError.Unauthorized('Unauthorized'));
-        return;
+        return next(createError.Unauthorized('Unauthorized'));
     }
 
     const token = authHeader.replace('token ', '');

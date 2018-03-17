@@ -7,8 +7,7 @@ const test = environment === 'test';
 
 const validator = (req, res, next) => {
     if (test || development || !token) {
-        next();
-        return;
+        return next();
     }
 
     const headerSignature = req.get('X-Hub-Signature');
@@ -26,7 +25,7 @@ const validator = (req, res, next) => {
         return next(createError.Unauthorized('Unauthorized'));
     }
 
-    return next();
+    next();
 };
 
 module.exports = validator;
