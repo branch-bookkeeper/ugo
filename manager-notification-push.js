@@ -1,11 +1,12 @@
 const postal = require('postal');
 const onesignal = require('simple-onesignal');
 const logger = require('./logger');
+const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, NODE_ENV } } = process;
 const GitHub = require('./github');
-const environment = process.env['NODE_ENV'] || 'production';
+const environment = NODE_ENV || 'production';
 const development = environment === 'development';
 
-onesignal.configure(process.env.ONESIGNAL_APP_ID, process.env.ONESIGNAL_KEY, development);
+onesignal.configure(ONESIGNAL_APP_ID, ONESIGNAL_KEY, development);
 
 const buildPullRequesturl = ({ owner, repo, pullRequestNumber }) => `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`;
 

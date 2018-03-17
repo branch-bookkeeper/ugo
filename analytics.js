@@ -1,6 +1,6 @@
 const ua = require('universal-analytics');
-const accountId = process.env['UA'];
-const development = process.env['NODE_ENV'] === 'development';
+const { env: { UA: accountId, NODE_ENV } } = process;
+const development = NODE_ENV === 'development';
 
 const getVisitor = userId => {
     const visitor = ua(

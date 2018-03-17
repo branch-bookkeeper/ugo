@@ -1,8 +1,8 @@
 const MongoClient = require('mongodb').MongoClient;
 const logger = require('./logger');
 const { isNil } = require('ramda');
-const environment = process.env['NODE_ENV'] || 'production';
-const { MONGO_URL } = process.env;
+const { env: { MONGO_URL, NODE_ENV } } = process;
+const environment = NODE_ENV || 'production';
 const development = environment === 'development';
 const getDb = new Promise(resolve => {
     if (MONGO_URL) {

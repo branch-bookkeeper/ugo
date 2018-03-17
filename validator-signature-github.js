@@ -1,9 +1,9 @@
 const createError = require('http-errors');
 const crypto = require('crypto');
-const environment = process.env.NODE_ENV || 'production';
+const { env: { SECRET_TOKEN: token, NODE_ENV } } = process;
+const environment = NODE_ENV || 'production';
 const development = environment === 'development';
 const test = environment === 'test';
-const token = process.env.SECRET_TOKEN;
 
 const validator = (req, res, next) => {
     if (test || development || !token) {
