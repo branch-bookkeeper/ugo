@@ -12,7 +12,7 @@ if [ -z "$MONGO_URL" ]; then
     export MONGO_URL=mongodb://localhost/branch-bookkeeper-test
 fi
 
-./resetdb.sh
+./tools/resetdb.sh
 
 echo
 printf "\033[33mTesting with mongo\n\033[0m"
