@@ -43,7 +43,7 @@ suite('QueueEventHandler', () => {
         queueManagerLengthSpy.restore();
     });
 
-    test('Add item', () => {
+    test('Add item in first position', () => {
         return queueEventHandler.addItem({
             owner,
             repo,
