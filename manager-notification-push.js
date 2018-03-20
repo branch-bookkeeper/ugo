@@ -8,6 +8,10 @@ const development = environment === 'development';
 
 onesignal.configure(ONESIGNAL_APP_ID, ONESIGNAL_KEY, development);
 
+const TITLE_CHECKS_PASSED = 'All checks have passed';
+const TITLE_CHECKS_FAILED = 'Some checks were not successful';
+const TITLE_FIRST = 'You\'re first in queue';
+
 const buildPullRequesturl = ({ owner, repo, pullRequestNumber }) => `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`;
 
 const sendNotification = (options) => {
@@ -57,8 +61,8 @@ class PushNotificationManager {
 
         return sendNotification({
             ...options,
-            title: 'Your PR can be rebased',
-            message: `${owner}/${repo} #${pullRequestNumber} can be rebased from ${branch}`,
+            title: TITLE_FIRST,
+            message: `${owner}/${repo} #${pullRequestNumber} is first in the queue`,
             url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
         });
@@ -74,10 +78,10 @@ class PushNotificationManager {
         } = options;
 
         const title = state === GitHub.STATUS_SUCCESS
-            ? 'All checks have passed'
-            : 'Some checks were not successful';
+            ? TITLE_CHECKS_PASSED
+            : TITLE_CHECKS_FAILED;
         const message = state === GitHub.STATUS_SUCCESS
-            ? `${owner}/${repo} #${pullRequestNumber} can be merged into ${branch}`
+            ? `${owner}/${repo} #${pullRequestNumber} passed its checks`
             : `${owner}/${repo} #${pullRequestNumber} failed its checks`;
 
         return sendNotification({
@@ -89,6 +93,10 @@ class PushNotificationManager {
         });
     }
 }
+
+PushNotificationManager.TITLE_CHECKS_PASSED = TITLE_CHECKS_PASSED;
+PushNotificationManager.TITLE_CHECKS_FAILED = TITLE_CHECKS_FAILED;
+PushNotificationManager.TITLE_FIRST = TITLE_FIRST;
 
 postal.subscribe({
     channel: 'notification',

@@ -10,8 +10,8 @@ const queueManager = require('./manager-queue');
 const pullRequestManager = require('./manager-pullrequest');
 
 const MAX_REPORTED_QUEUE_POSITION = 5;
-const DESCRIPTION_NOT_BOOKED = 'Not booked';
-const DESCRIPTION_FIRST = 'It\'s your turn';
+const DESCRIPTION_NOT_IN_QUEUE = 'Not in queue';
+const DESCRIPTION_FIRST = 'You\'re first in queue';
 const DESCRIPTION_MERGED = 'Merged by';
 
 const _updatePullRequestStatus = ({
@@ -212,7 +212,7 @@ class PullRequestHandler {
         owner,
         repo,
         pullRequestNumber,
-        description = DESCRIPTION_NOT_BOOKED,
+        description = DESCRIPTION_NOT_IN_QUEUE,
     }) {
         return _getPullRequestAndUpdateStatus(
             owner,
@@ -271,7 +271,7 @@ class PullRequestHandler {
             let description;
 
             if (index < 0) {
-                description = DESCRIPTION_NOT_BOOKED;
+                description = DESCRIPTION_NOT_IN_QUEUE;
             } else if (index <= MAX_REPORTED_QUEUE_POSITION) {
                 description = `${index} PR${index === 1 ? '' : 's'} before you`;
             } else if (index > MAX_REPORTED_QUEUE_POSITION) {
@@ -293,5 +293,9 @@ class PullRequestHandler {
         return pullRequestManager.enabled();
     }
 }
+
+PullRequestHandler.DESCRIPTION_NOT_IN_QUEUE = DESCRIPTION_NOT_IN_QUEUE;
+PullRequestHandler.DESCRIPTION_FIRST = DESCRIPTION_FIRST;
+PullRequestHandler.DESCRIPTION_MERGED = DESCRIPTION_MERGED;
 
 module.exports = PullRequestHandler;

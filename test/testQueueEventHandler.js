@@ -5,6 +5,7 @@ const postal = require('postal');
 const GitHub = require('../github');
 const queueManager = require('../manager-queue');
 const pullRequestManager = require('../manager-pullrequest');
+const pullRequestHandler = require('../handler-pullrequest');
 const queueEventHandler = require('../handler-event-queue');
 const queueItemFixture = {
     ...require('./fixtures/queue.item.json'),
@@ -66,7 +67,7 @@ suite('QueueEventHandler', () => {
 
                 assert.calledWith(gitHubSpy, {
                     status: GitHub.STATUS_SUCCESS,
-                    description: 'It\'s your turn',
+                    description: pullRequestHandler.DESCRIPTION_FIRST,
                     statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
                     installationId: 1234,
                     targetUrl: `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
@@ -96,7 +97,7 @@ suite('QueueEventHandler', () => {
 
             assert.calledWith(gitHubSpy, {
                 status: GitHub.STATUS_FAILURE,
-                description: 'Book to merge',
+                description: pullRequestHandler.DESCRIPTION_NOT_IN_QUEUE,
                 statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
                 installationId: 1234,
                 targetUrl: `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,

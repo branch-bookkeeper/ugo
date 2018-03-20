@@ -38,11 +38,11 @@ suite('PushNotificationManager', () => {
         return pushNotificationManager.sendFirstInQueueNotification(options)
             .then(data => {
                 assert.calledWith(oneSignalSpy, {
-                    contents: { en: `${owner}/${repo} #${pullRequestNumber} can be rebased from ${branch}` },
+                    contents: { en: `${owner}/${repo} #${pullRequestNumber} is first in the queue` },
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: 'Your PR can be rebased' },
+                    headings: { en: pushNotificationManager.TITLE_FIRST },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.deepEqual(data, fakeOneSignalReponse);
@@ -57,11 +57,11 @@ suite('PushNotificationManager', () => {
         return pushNotificationManager.sendChecksNotification(options)
             .then(data => {
                 assert.calledWith(oneSignalSpy, {
-                    contents: { en: `${owner}/${repo} #${pullRequestNumber} can be merged into ${branch}` },
+                    contents: { en: `${owner}/${repo} #${pullRequestNumber} passed its checks` },
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: 'All checks have passed' },
+                    headings: { en: pushNotificationManager.TITLE_CHECKS_PASSED },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.deepEqual(data, fakeOneSignalReponse);
@@ -80,7 +80,7 @@ suite('PushNotificationManager', () => {
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: 'Some checks were not successful' },
+                    headings: { en: pushNotificationManager.TITLE_CHECKS_FAILED },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.deepEqual(data, fakeOneSignalReponse);

@@ -85,7 +85,7 @@ suite('PullRequestHandler', () => {
                 assert.calledWith(
                     gitHubSpy,
                     {
-                        description: 'Book to merge',
+                        description: pullRequestHandler.DESCRIPTION_NOT_IN_QUEUE,
                         installationId,
                         status: GitHub.STATUS_FAILURE,
                         statusUrl,
@@ -115,7 +115,7 @@ suite('PullRequestHandler', () => {
                 assert.calledWith(
                     gitHubSpy,
                     {
-                        description: 'Merged by branch-bookkeeper',
+                        description: `${pullRequestHandler.DESCRIPTION_MERGED} branch-bookkeeper`,
                         installationId,
                         status: GitHub.STATUS_SUCCESS,
                         statusUrl,
@@ -134,7 +134,7 @@ suite('PullRequestHandler', () => {
                 assert.calledWith(
                     gitHubSpy,
                     {
-                        description: 'Book to merge',
+                        description: pullRequestHandler.DESCRIPTION_NOT_IN_QUEUE,
                         installationId,
                         status: GitHub.STATUS_FAILURE,
                         statusUrl,
@@ -158,7 +158,7 @@ suite('PullRequestHandler', () => {
                 assert.calledWith(pullRequestManagerSetSpy, owner, repo, pullRequestNumber, pullRequestInfo);
                 assert.calledWith(queueManagerGetItemsSpy, owner, repo, branch);
                 assert.calledWith(gitHubSpy, {
-                    description: 'It\'s your turn',
+                    description: pullRequestHandler.DESCRIPTION_FIRST,
                     installationId: 1234,
                     status: GitHub.STATUS_SUCCESS,
                     statusUrl: 'https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef',
