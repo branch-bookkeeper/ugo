@@ -122,6 +122,22 @@ const reportQueueSize = ({
         },
     }));
 
+const pushQueueUpdate = ({
+    owner,
+    repo,
+    branch,
+}) => queueManager.getItems(owner, repo, branch)
+    .then(items => postal.publish({
+        channel: 'notification',
+        topic: 'send.update',
+        data: {
+            owner,
+            repo,
+            branch,
+            items,
+        },
+    }));
+
 postal.subscribe({
     channel: 'queue',
     topic: 'item.add',
@@ -152,10 +168,17 @@ postal.subscribe({
     callback: reportQueueSize,
 });
 
+postal.subscribe({
+    channel: 'queue',
+    topic: 'item.*',
+    callback: pushQueueUpdate,
+});
+
 module.exports = {
     addItem,
     reportAddItem,
     removeItem,
     reportRemoveItem,
     reportQueueSize,
+    pushQueueUpdate,
 };
