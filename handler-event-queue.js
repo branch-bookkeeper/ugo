@@ -14,7 +14,7 @@ const addItem = ({
     if (index === 0) {
         postal.publish({
             channel: 'notification',
-            topic: 'send.rebased',
+            topic: 'send.queue.first',
             data: {
                 owner,
                 repo,
@@ -56,7 +56,7 @@ const removeItem = ({
 
                     postal.publish({
                         channel: 'notification',
-                        topic: 'send.rebased',
+                        topic: 'send.queue.first',
                         data: {
                             owner,
                             repo,

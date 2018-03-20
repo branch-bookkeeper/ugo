@@ -55,7 +55,7 @@ suite('QueueEventHandler', () => {
 
                 assert.calledWith(postalSpy, {
                     channel: 'notification',
-                    topic: 'send.rebased',
+                    topic: 'send.queue.first',
                     data: {
                         owner,
                         repo,

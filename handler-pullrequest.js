@@ -10,7 +10,7 @@ const queueManager = require('./manager-queue');
 const pullRequestManager = require('./manager-pullrequest');
 
 const MAX_REPORTED_QUEUE_POSITION = 5;
-const DESCRIPTION_NOT_BOOKED = 'Book to merge';
+const DESCRIPTION_NOT_BOOKED = 'Not booked';
 const DESCRIPTION_FIRST = 'It\'s your turn';
 const DESCRIPTION_MERGED = 'Merged by';
 

@@ -47,7 +47,7 @@ const sendNotification = (options) => {
 };
 
 class PushNotificationManager {
-    static sendRebasedNotification(options) {
+    static sendFirstInQueueNotification(options) {
         const {
             owner,
             repo,
@@ -98,8 +98,8 @@ postal.subscribe({
 
 postal.subscribe({
     channel: 'notification',
-    topic: 'send.rebased',
-    callback: PushNotificationManager.sendRebasedNotification,
+    topic: 'send.queue.first',
+    callback: PushNotificationManager.sendFirstInQueueNotification,
 });
 
 module.exports = PushNotificationManager;

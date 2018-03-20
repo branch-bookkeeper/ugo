@@ -34,8 +34,8 @@ suite('PushNotificationManager', () => {
         oneSignalSpy.restore();
     });
 
-    test('Send rebased notification', () => {
-        return pushNotificationManager.sendRebasedNotification(options)
+    test('Send first in queue notification', () => {
+        return pushNotificationManager.sendFirstInQueueNotification(options)
             .then(data => {
                 assert.calledWith(oneSignalSpy, {
                     contents: { en: `${owner}/${repo} #${pullRequestNumber} can be rebased from ${branch}` },
