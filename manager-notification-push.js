@@ -51,7 +51,6 @@ class PushNotificationManager {
         const {
             owner,
             repo,
-            branch,
             pullRequestNumber,
             username,
         } = options;
@@ -69,7 +68,6 @@ class PushNotificationManager {
         const {
             owner,
             repo,
-            branch,
             pullRequestNumber,
             username,
             state,

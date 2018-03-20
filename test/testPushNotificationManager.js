@@ -8,7 +8,6 @@ const fakeOneSignalReponse = { fake: true };
 let owner;
 let repo;
 let username;
-let branch;
 let options;
 let pullRequestNumber;
 let oneSignalSpy;
@@ -21,13 +20,11 @@ suite('PushNotificationManager', () => {
         pullRequestNumber = Math.floor(Math.random() * 89) + 10;
         owner = Math.random().toString(36).substring(2);
         repo = Math.random().toString(36).substring(2);
-        branch = Math.random().toString(36).substring(2);
         username = Math.random().toString(36).substring(2);
 
         options = {
             owner,
             repo,
-            branch,
             username,
             pullRequestNumber,
         };

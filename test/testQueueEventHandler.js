@@ -59,7 +59,6 @@ suite('QueueEventHandler', () => {
                     data: {
                         owner,
                         repo,
-                        branch,
                         pullRequestNumber,
                         username,
                     },
