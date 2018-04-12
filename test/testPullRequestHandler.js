@@ -179,8 +179,8 @@ suite('PullRequestHandler', () => {
         });
     });
 
-    [GitHub.STATUS_SUCCESS, GitHub.STATUS_FAILURE].forEach(status => {
-        test(`Handle status change success for first item GH reports ${status}`, () => {
+    [GitHub.STATUS_SUCCESS, GitHub.STATUS_FAILURE].forEach(state => {
+        test(`Handle status change success for first item GH reports ${state}`, () => {
             gitHubHashSpy.resolves({ state });
             const {
                 sha,
