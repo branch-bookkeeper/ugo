@@ -210,7 +210,7 @@ suite('PullRequestHandler', () => {
                             branch,
                             pullRequestNumber,
                             username,
-                            state: GitHub.STATUS_SUCCESS,
+                            state,
                         },
                         topic: 'send.checks',
                     });
