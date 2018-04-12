@@ -11,7 +11,6 @@ const pullRequestSynchronizedFixture = require('./fixtures/pull_request.synchron
 const pullRequestClosedFixture = require('./fixtures/pull_request.closed.json');
 const pullRequestMergedFixture = require('./fixtures/pull_request.merged.json');
 const pullRequestInfoFixture = require('./fixtures/pull_request.info.json');
-const statusFailurePayload = require('./fixtures/status.failure.json');
 const statusSuccessPayload = require('./fixtures/status.success.json');
 const queueItemFixture = require('./fixtures/queue.item.json');
 const owner = 'branch-bookkeeper';
