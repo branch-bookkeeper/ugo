@@ -163,7 +163,6 @@ class PullRequestHandler {
     static handleStatusChange({
         owner,
         repo,
-        state,
         sha,
     }) {
         return pullRequestManager.getPullRequestInfoBySha(owner, repo, sha)

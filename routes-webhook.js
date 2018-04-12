@@ -40,7 +40,6 @@ router.post('/', (req, res, next) => {
         owner,
         repo,
         sha,
-        state,
     })
         .then(() => res.json(`Status of ${sha} ${state}`));
 });
