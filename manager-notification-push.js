@@ -1,9 +1,8 @@
 const postal = require('postal');
 const onesignal = require('simple-onesignal');
 const logger = require('./logger');
-const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, NODE_ENV } } = process;
+const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, NODE_ENV: environment = 'production' } } = process;
 const GitHub = require('./github');
-const environment = NODE_ENV || 'production';
 const development = environment === 'development';
 
 onesignal.configure(ONESIGNAL_APP_ID, ONESIGNAL_KEY, development);

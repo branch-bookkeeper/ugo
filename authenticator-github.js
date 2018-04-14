@@ -9,8 +9,7 @@ const {
     curry,
     isNil,
 } = require('ramda');
-const { env: { NODE_ENV } } = process;
-const environment = NODE_ENV || 'production';
+const { env: { NODE_ENV: environment = 'production' } } = process;
 const development = environment === 'development';
 const test = environment === 'test';
 
