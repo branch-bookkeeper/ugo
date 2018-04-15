@@ -3,13 +3,14 @@ const onesignal = require('simple-onesignal');
 const logger = require('./logger');
 const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, NODE_ENV: environment = 'production' } } = process;
 const GitHub = require('./github');
+const t = require('./manager-localization');
 const development = environment === 'development';
 
 onesignal.configure(ONESIGNAL_APP_ID, ONESIGNAL_KEY, development);
 
-const TITLE_CHECKS_PASSED = 'All checks have passed';
-const TITLE_CHECKS_FAILED = 'Some checks were not successful';
-const TITLE_FIRST = 'You\'re first in queue';
+const TITLE_CHECKS_PASSED = t('notification.title.checks.passed');
+const TITLE_CHECKS_FAILED = t('notification.title.checks.failed');
+const TITLE_FIRST = t('notification.title.queue.first');
 
 const buildPullRequesturl = ({ owner, repo, pullRequestNumber }) => `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`;
 
@@ -61,7 +62,7 @@ class PushNotificationManager {
         return sendNotification({
             ...options,
             title: TITLE_FIRST,
-            message: `${owner}/${repo} #${pullRequestNumber} is first in the queue`,
+            message: t('notification.message.queue.first', { owner, repo, pullRequestNumber }),
             url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
         });
@@ -80,22 +81,18 @@ class PushNotificationManager {
             ? TITLE_CHECKS_PASSED
             : TITLE_CHECKS_FAILED;
         const message = state === GitHub.STATUS_SUCCESS
-            ? `${owner}/${repo} #${pullRequestNumber} passed its checks`
-            : `${owner}/${repo} #${pullRequestNumber} failed its checks`;
+            ? 'notification.message.checks.passed'
+            : 'notification.message.checks.failed';
 
         return sendNotification({
             ...options,
             title,
-            message,
+            message: t(message, { owner, repo, pullRequestNumber }),
             url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
         });
     }
 }
-
-PushNotificationManager.TITLE_CHECKS_PASSED = TITLE_CHECKS_PASSED;
-PushNotificationManager.TITLE_CHECKS_FAILED = TITLE_CHECKS_FAILED;
-PushNotificationManager.TITLE_FIRST = TITLE_FIRST;
 
 postal.subscribe({
     channel: 'notification',

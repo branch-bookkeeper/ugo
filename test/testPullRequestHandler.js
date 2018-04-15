@@ -85,7 +85,7 @@ suite('PullRequestHandler', () => {
                 assert.calledWith(
                     gitHubSpy,
                     {
-                        description: pullRequestHandler.DESCRIPTION_NOT_IN_QUEUE,
+                        description: 'Not in the queue',
                         installationId,
                         status: GitHub.STATUS_FAILURE,
                         statusUrl,
@@ -115,7 +115,7 @@ suite('PullRequestHandler', () => {
                 assert.calledWith(
                     gitHubSpy,
                     {
-                        description: `${pullRequestHandler.DESCRIPTION_MERGED} branch-bookkeeper`,
+                        description: 'Merged by branch-bookkeeper',
                         installationId,
                         status: GitHub.STATUS_SUCCESS,
                         statusUrl,
@@ -134,7 +134,7 @@ suite('PullRequestHandler', () => {
                 assert.calledWith(
                     gitHubSpy,
                     {
-                        description: pullRequestHandler.DESCRIPTION_NOT_IN_QUEUE,
+                        description: 'Not in the queue',
                         installationId,
                         status: GitHub.STATUS_FAILURE,
                         statusUrl,
@@ -144,27 +144,44 @@ suite('PullRequestHandler', () => {
             });
     });
 
-    test('Handle synchronize', () => {
-        const { pull_request: pullRequest, installation: { id: installationId } } = pullRequestSynchronizedFixture;
-        const { statuses_url: statusUrl } = pullRequest;
-        const pullRequestInfo = {
-            ...pullRequestInfoFixture,
-            installationId: 4567,
-            assignees: [],
-            statusUrl,
-        };
-        return pullRequestHandler.handleSync(pullRequest, installationId)
-            .then(() => {
-                assert.calledWith(pullRequestManagerSetSpy, owner, repo, pullRequestNumber, pullRequestInfo);
-                assert.calledWith(queueManagerGetItemsSpy, owner, repo, branch);
-                assert.calledWith(gitHubSpy, {
-                    description: pullRequestHandler.DESCRIPTION_FIRST,
-                    installationId: 1234,
-                    status: GitHub.STATUS_SUCCESS,
-                    statusUrl: 'https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef',
-                    targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
+    [[], [queueItemFixture], [1, queueItemFixture], [1, 2, 3, 4, 5, 6, queueItemFixture]].forEach(queue => {
+        const position = queue.length - 1;
+
+        test(`Handle synchronize for item in position ${position}`, () => {
+            queueManagerGetItemsSpy.resolves(queue);
+            const { pull_request: pullRequest, installation: { id: installationId } } = pullRequestSynchronizedFixture;
+            const { statuses_url: statusUrl } = pullRequest;
+            const pullRequestInfo = {
+                ...pullRequestInfoFixture,
+                installationId: 4567,
+                assignees: [],
+                statusUrl,
+            };
+
+            const status = queue.length === 1 ? GitHub.STATUS_SUCCESS : GitHub.STATUS_FAILURE;
+
+            let description = 'First in the queue';
+            if (position < 0) {
+                description = 'Not in the queue';
+            } else if (position > 0 && position < pullRequestHandler.MAX_REPORTED_QUEUE_POSITION) {
+                description = '1 PR before this';
+            } else if (position > pullRequestHandler.MAX_REPORTED_QUEUE_POSITION) {
+                description = 'More than 5 PRs before this';
+            }
+
+            return pullRequestHandler.handleSync(pullRequest, installationId)
+                .then(() => {
+                    assert.calledWith(pullRequestManagerSetSpy, owner, repo, pullRequestNumber, pullRequestInfo);
+                    assert.calledWith(queueManagerGetItemsSpy, owner, repo, branch);
+                    assert.calledWith(gitHubSpy, {
+                        description,
+                        installationId: 1234,
+                        status,
+                        statusUrl: 'https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef',
+                        targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
+                    });
                 });
-            });
+        });
     });
 
     [GitHub.STATUS_SUCCESS, GitHub.STATUS_FAILURE].forEach(status => {

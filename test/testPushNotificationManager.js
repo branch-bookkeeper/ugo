@@ -42,7 +42,7 @@ suite('PushNotificationManager', () => {
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: pushNotificationManager.TITLE_FIRST },
+                    headings: { en: 'PR is first in the queue' },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.deepEqual(data, fakeOneSignalReponse);
@@ -61,7 +61,7 @@ suite('PushNotificationManager', () => {
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: pushNotificationManager.TITLE_CHECKS_PASSED },
+                    headings: { en: 'All checks have passed' },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.deepEqual(data, fakeOneSignalReponse);
@@ -80,7 +80,7 @@ suite('PushNotificationManager', () => {
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: pushNotificationManager.TITLE_CHECKS_FAILED },
+                    headings: { en: 'Some checks were not successful' },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.deepEqual(data, fakeOneSignalReponse);

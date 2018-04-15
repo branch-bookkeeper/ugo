@@ -5,7 +5,6 @@ const postal = require('postal');
 const GitHub = require('../github');
 const queueManager = require('../manager-queue');
 const pullRequestManager = require('../manager-pullrequest');
-const pullRequestHandler = require('../handler-pullrequest');
 const queueEventHandler = require('../handler-event-queue');
 const queueItemFixture = {
     ...require('./fixtures/queue.item.json'),
@@ -67,7 +66,7 @@ suite('QueueEventHandler', () => {
 
                 assert.calledWith(gitHubSpy, {
                     status: GitHub.STATUS_SUCCESS,
-                    description: pullRequestHandler.DESCRIPTION_FIRST,
+                    description: 'First in the queue',
                     statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
                     installationId: 1234,
                     targetUrl: `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
@@ -97,7 +96,7 @@ suite('QueueEventHandler', () => {
 
             assert.calledWith(gitHubSpy, {
                 status: GitHub.STATUS_FAILURE,
-                description: pullRequestHandler.DESCRIPTION_NOT_IN_QUEUE,
+                description: 'You\'re first in queue',
                 statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
                 installationId: 1234,
                 targetUrl: `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
