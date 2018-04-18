@@ -1,12 +1,16 @@
 const postal = require('postal');
 const onesignal = require('simple-onesignal');
 const logger = require('./logger');
-const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, NODE_ENV } } = process;
+const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, NODE_ENV: environment = 'production' } } = process;
 const GitHub = require('./github');
-const environment = NODE_ENV || 'production';
+const t = require('./manager-localization');
 const development = environment === 'development';
 
 onesignal.configure(ONESIGNAL_APP_ID, ONESIGNAL_KEY, development);
+
+const TITLE_CHECKS_PASSED = t('notification.title.checks.passed');
+const TITLE_CHECKS_FAILED = t('notification.title.checks.failed');
+const TITLE_FIRST = t('notification.title.queue.first');
 
 const buildPullRequesturl = ({ owner, repo, pullRequestNumber }) => `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`;
 
@@ -47,19 +51,18 @@ const sendNotification = (options) => {
 };
 
 class PushNotificationManager {
-    static sendRebasedNotification(options) {
+    static sendFirstInQueueNotification(options) {
         const {
             owner,
             repo,
-            branch,
             pullRequestNumber,
             username,
         } = options;
 
         return sendNotification({
             ...options,
-            title: 'Your PR can be rebased',
-            message: `${owner}/${repo} #${pullRequestNumber} can be rebased from ${branch}`,
+            title: TITLE_FIRST,
+            message: t('notification.message.queue.first', { owner, repo, pullRequestNumber }),
             url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
         });
@@ -69,23 +72,22 @@ class PushNotificationManager {
         const {
             owner,
             repo,
-            branch,
             pullRequestNumber,
             username,
             state,
         } = options;
 
         const title = state === GitHub.STATUS_SUCCESS
-            ? 'All checks have passed'
-            : 'Some checks were not successful';
+            ? TITLE_CHECKS_PASSED
+            : TITLE_CHECKS_FAILED;
         const message = state === GitHub.STATUS_SUCCESS
-            ? `${owner}/${repo} #${pullRequestNumber} can be merged into ${branch}`
-            : `${owner}/${repo} #${pullRequestNumber} failed its checks`;
+            ? 'notification.message.checks.passed'
+            : 'notification.message.checks.failed';
 
         return sendNotification({
             ...options,
             title,
-            message,
+            message: t(message, { owner, repo, pullRequestNumber }),
             url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
             username,
         });
@@ -100,8 +102,8 @@ postal.subscribe({
 
 postal.subscribe({
     channel: 'notification',
-    topic: 'send.rebased',
-    callback: PushNotificationManager.sendRebasedNotification,
+    topic: 'send.queue.first',
+    callback: PushNotificationManager.sendFirstInQueueNotification,
 });
 
 module.exports = PushNotificationManager;

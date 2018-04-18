@@ -1,7 +1,6 @@
 const metrics = require('datadog-metrics');
 const postal = require('postal');
-const { env: { NODE_ENV } } = process;
-const environment = NODE_ENV || 'production';
+const { env: { NODE_ENV: environment = 'production' } } = process;
 
 metrics.init({
     prefix: 'ugo.',

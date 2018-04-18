@@ -8,7 +8,6 @@ const fakeOneSignalReponse = { fake: true };
 let owner;
 let repo;
 let username;
-let branch;
 let options;
 let pullRequestNumber;
 let oneSignalSpy;
@@ -21,13 +20,11 @@ suite('PushNotificationManager', () => {
         pullRequestNumber = Math.floor(Math.random() * 89) + 10;
         owner = Math.random().toString(36).substring(2);
         repo = Math.random().toString(36).substring(2);
-        branch = Math.random().toString(36).substring(2);
         username = Math.random().toString(36).substring(2);
 
         options = {
             owner,
             repo,
-            branch,
             username,
             pullRequestNumber,
         };
@@ -37,15 +34,15 @@ suite('PushNotificationManager', () => {
         oneSignalSpy.restore();
     });
 
-    test('Send rebased notification', () => {
-        return pushNotificationManager.sendRebasedNotification(options)
+    test('Send first in queue notification', () => {
+        return pushNotificationManager.sendFirstInQueueNotification(options)
             .then(data => {
                 assert.calledWith(oneSignalSpy, {
-                    contents: { en: `${owner}/${repo} #${pullRequestNumber} can be rebased from ${branch}` },
+                    contents: { en: `${owner}/${repo} #${pullRequestNumber} is first in the queue` },
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: 'Your PR can be rebased' },
+                    headings: { en: 'PR is first in the queue' },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.deepEqual(data, fakeOneSignalReponse);
@@ -60,7 +57,7 @@ suite('PushNotificationManager', () => {
         return pushNotificationManager.sendChecksNotification(options)
             .then(data => {
                 assert.calledWith(oneSignalSpy, {
-                    contents: { en: `${owner}/${repo} #${pullRequestNumber} can be merged into ${branch}` },
+                    contents: { en: `${owner}/${repo} #${pullRequestNumber} passed its checks` },
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],

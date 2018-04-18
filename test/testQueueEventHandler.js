@@ -42,7 +42,7 @@ suite('QueueEventHandler', () => {
         queueManagerLengthSpy.restore();
     });
 
-    test('Add item', () => {
+    test('Add item in first position', () => {
         return queueEventHandler.addItem({
             owner,
             repo,
@@ -55,11 +55,10 @@ suite('QueueEventHandler', () => {
 
                 assert.calledWith(postalSpy, {
                     channel: 'notification',
-                    topic: 'send.rebased',
+                    topic: 'send.queue.first',
                     data: {
                         owner,
                         repo,
-                        branch,
                         pullRequestNumber,
                         username,
                     },
@@ -67,7 +66,7 @@ suite('QueueEventHandler', () => {
 
                 assert.calledWith(gitHubSpy, {
                     status: GitHub.STATUS_SUCCESS,
-                    description: 'It\'s your turn',
+                    description: 'First in the queue',
                     statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
                     installationId: 1234,
                     targetUrl: `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
@@ -97,7 +96,7 @@ suite('QueueEventHandler', () => {
 
             assert.calledWith(gitHubSpy, {
                 status: GitHub.STATUS_FAILURE,
-                description: 'Book to merge',
+                description: 'You\'re first in queue',
                 statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
                 installationId: 1234,
                 targetUrl: `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,

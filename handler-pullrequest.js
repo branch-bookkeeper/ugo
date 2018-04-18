@@ -1,5 +1,6 @@
 const Github = require('./github');
 const postal = require('postal');
+const t = require('./manager-localization');
 const {
     pluck,
     slice,
@@ -10,9 +11,8 @@ const queueManager = require('./manager-queue');
 const pullRequestManager = require('./manager-pullrequest');
 
 const MAX_REPORTED_QUEUE_POSITION = 5;
-const DESCRIPTION_NOT_BOOKED = 'Book to merge';
-const DESCRIPTION_FIRST = 'It\'s your turn';
-const DESCRIPTION_MERGED = 'Merged by';
+const DESCRIPTION_NOT_IN_QUEUE = t('pullRequest.queue.not');
+const DESCRIPTION_FIRST = t('pullRequest.queue.first');
 
 const _updatePullRequestStatus = ({
     owner, repo, branch, pullRequestNumber, status, description, statusUrl, installationId,
@@ -95,7 +95,7 @@ class PullRequestHandler {
         } = pullRequest;
         const { name: repo, owner: { login: owner } } = baseRepo;
         const { login: username } = merged ? mergeUser : {};
-        const description = merged ? `${DESCRIPTION_MERGED} ${ username }` : undefined;
+        const description = merged ? t('pullRequest.merged', { username }) : undefined;
         const blockOrUnblock = merged ? PullRequestHandler.unblockPullRequest : PullRequestHandler.blockPullRequest;
 
         return queueManager.getItem(owner, repo, branch, pullRequestNumber)
@@ -212,7 +212,7 @@ class PullRequestHandler {
         owner,
         repo,
         pullRequestNumber,
-        description = DESCRIPTION_NOT_BOOKED,
+        description = DESCRIPTION_NOT_IN_QUEUE,
     }) {
         return _getPullRequestAndUpdateStatus(
             owner,
@@ -271,11 +271,11 @@ class PullRequestHandler {
             let description;
 
             if (index < 0) {
-                description = DESCRIPTION_NOT_BOOKED;
+                description = DESCRIPTION_NOT_IN_QUEUE;
             } else if (index <= MAX_REPORTED_QUEUE_POSITION) {
-                description = `${index} PR${index === 1 ? '' : 's'} before you`;
+                description = t(index === 1 ? 'pullRequest.queue.second' : 'pullRequest.queue.position', { position: index });
             } else if (index > MAX_REPORTED_QUEUE_POSITION) {
-                description = `More than ${MAX_REPORTED_QUEUE_POSITION} PRs before you`;
+                description = t('pullRequest.queue.over', { number: MAX_REPORTED_QUEUE_POSITION });
             }
 
             return PullRequestHandler.blockPullRequest({
@@ -293,5 +293,7 @@ class PullRequestHandler {
         return pullRequestManager.enabled();
     }
 }
+
+PullRequestHandler.MAX_REPORTED_QUEUE_POSITION = MAX_REPORTED_QUEUE_POSITION;
 
 module.exports = PullRequestHandler;

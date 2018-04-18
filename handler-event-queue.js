@@ -6,7 +6,6 @@ const queueManager = require('./manager-queue');
 const addItem = ({
     owner,
     repo,
-    branch,
     item,
     index,
 }) => {
@@ -15,11 +14,10 @@ const addItem = ({
     if (index === 0) {
         postal.publish({
             channel: 'notification',
-            topic: 'send.rebased',
+            topic: 'send.queue.first',
             data: {
                 owner,
                 repo,
-                branch,
                 pullRequestNumber,
                 username,
             },
@@ -58,11 +56,10 @@ const removeItem = ({
 
                     postal.publish({
                         channel: 'notification',
-                        topic: 'send.rebased',
+                        topic: 'send.queue.first',
                         data: {
                             owner,
                             repo,
-                            branch,
                             pullRequestNumber,
                             username,
                         },

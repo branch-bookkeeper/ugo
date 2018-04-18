@@ -1,0 +1,32 @@
+{
+  "pullRequest": {
+    "queue": {
+      "first": "First in the queue",
+      "second": "{position} PR before this",
+      "position": "{position} PRs before this",
+      "not": "Not in the queue",
+      "over": "More than {number} PRs before this"
+    },
+    "merged": "Merged by {username}"
+  },
+  "notification": {
+    "title": {
+      "checks": {
+        "passed": "All checks have passed",
+        "failed": "Some checks were not successful"
+      },
+      "queue": {
+        "first": "PR is first in the queue"
+      }
+    },
+    "message": {
+      "checks": {
+        "passed": "{owner}/{repo} #{pullRequestNumber} passed its checks",
+        "failed": "{owner}/{repo} #{pullRequestNumber} failed its checks"
+      },
+      "queue": {
+        "first": "{owner}/{repo} #{pullRequestNumber} is first in the queue"
+      }
+    }
+  }
+}

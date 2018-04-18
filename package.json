@@ -1,8 +1,7 @@
 {
   "engines": {
     "node": "^8.10.0",
-    "yarn": "^1.5.1",
-    "npm": "^5.6.0"
+    "yarn": "^1.5.1"
   },
   "name": "ugo",
   "version": "1.0.0",
@@ -13,9 +12,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "npm run lint && npm run test-ci",
+    "test": "yarn lint && yarn test-ci",
     "test-ci": "./test.sh",
-    "lint": "node_modules/.bin/eslint ."
+    "lint": "eslint ."
   },
   "dependencies": {
     "async": "^2.5.0",
@@ -26,6 +25,7 @@
     "http-errors": "^1.6.2",
     "jsonwebtoken": "^7.4.3",
     "le_node": "^1.7.1",
+    "localizify": "^1.2.2",
     "mongodb": "^2.2.33",
     "morgan": "^1.8.2",
     "newrelic": "^2.2.0",
@@ -42,15 +42,12 @@
     "winston": "^2.3.1"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-istanbul": "^0.12.2",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "chai": "^4.1.2",
     "eslint": "^4.6.0",
     "eslint-config-airbnb-base": "^12.0.0",
     "eslint-plugin-import": "^2.7.0",
-    "istanbul": "^0.4.5",
     "mocha": "^3.5.0",
+    "nyc": "^11.6.0",
     "sinon": "^4.1.2",
     "supertest": "^3.0.0"
   }
