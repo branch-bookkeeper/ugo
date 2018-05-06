@@ -11,7 +11,6 @@ const pullRequestSynchronizedFixture = require('./fixtures/pull_request.synchron
 const pullRequestClosedFixture = require('./fixtures/pull_request.closed.json');
 const pullRequestMergedFixture = require('./fixtures/pull_request.merged.json');
 const pullRequestInfoFixture = require('./fixtures/pull_request.info.json');
-const statusFailurePayload = require('./fixtures/status.failure.json');
 const statusSuccessPayload = require('./fixtures/status.success.json');
 const queueItemFixture = require('./fixtures/queue.item.json');
 const owner = 'branch-bookkeeper';
@@ -37,11 +36,7 @@ suite('PullRequestHandler', () => {
             this.skip();
         }
         gitHubSpy = sinon.stub(GitHub, 'updatePullRequestStatus').resolves('');
-        gitHubHashSpy = sinon.stub(GitHub, 'getHashStatus')
-            .onFirstCall()
-            .resolves({ state: GitHub.STATUS_SUCCESS })
-            .onSecondCall()
-            .resolves({ state: GitHub.STATUS_FAILURE });
+        gitHubHashSpy = sinon.stub(GitHub, 'getHashStatus').resolves({ state: GitHub.STATUS_PENDING });
         queueManagerGetItemSpy = sinon.stub(queueManager, 'getItem').resolves(queueItemFixture);
         queueManagerGetFirstItemSpy = sinon.stub(queueManager, 'getFirstItem').resolves(queueItemFixture);
         queueManagerGetItemsSpy = sinon.stub(queueManager, 'getItems').resolves([queueItemFixture]);
@@ -184,10 +179,10 @@ suite('PullRequestHandler', () => {
         });
     });
 
-    [GitHub.STATUS_SUCCESS, GitHub.STATUS_FAILURE].forEach(status => {
-        test(`Handle status change success for first item GH reports ${status}`, () => {
+    [GitHub.STATUS_SUCCESS, GitHub.STATUS_FAILURE].forEach(state => {
+        test(`Handle status change success for first item GH reports ${state}`, () => {
+            gitHubHashSpy.resolves({ state });
             const {
-                state,
                 sha,
                 installation: { id: installationId },
                 repository: { name: repo, owner: { login: owner } },
@@ -196,7 +191,6 @@ suite('PullRequestHandler', () => {
             return pullRequestHandler.handleStatusChange({
                 owner,
                 repo,
-                state,
                 sha,
             })
                 .then(() => {
@@ -216,7 +210,7 @@ suite('PullRequestHandler', () => {
                             branch,
                             pullRequestNumber,
                             username,
-                            state: GitHub.STATUS_SUCCESS,
+                            state,
                         },
                         topic: 'send.checks',
                     });
@@ -225,9 +219,7 @@ suite('PullRequestHandler', () => {
     });
 
     test('Handle status change success for first item GH reports pending', () => {
-        gitHubHashSpy.onFirstCall().resolves({ state: GitHub.STATUS_PENDING });
         const {
-            state,
             sha,
             installation: { id: installationId },
             repository: { name: repo, owner: { login: owner } },
@@ -235,7 +227,6 @@ suite('PullRequestHandler', () => {
         return pullRequestHandler.handleStatusChange({
             owner,
             repo,
-            state,
             sha,
         })
             .then(() => {
@@ -252,12 +243,11 @@ suite('PullRequestHandler', () => {
     });
 
     test('Handle status change empty queue', () => {
-        const { state, sha, repository: { name: repo, owner: { login: owner } } } = statusSuccessPayload;
+        const { sha, repository: { name: repo, owner: { login: owner } } } = statusSuccessPayload;
         queueManagerGetFirstItemSpy.resolves(undefined);
         return pullRequestHandler.handleStatusChange({
             owner,
             repo,
-            state,
             sha,
         })
             .then(() => {
@@ -269,7 +259,7 @@ suite('PullRequestHandler', () => {
     });
 
     test('Handle status change item not in queue', () => {
-        const { state, sha, repository: { name: repo, owner: { login: owner } } } = statusSuccessPayload;
+        const { sha, repository: { name: repo, owner: { login: owner } } } = statusSuccessPayload;
         const firstItem = {
             ...queueItemFixture,
             pullRequestNumber: 2,
@@ -278,7 +268,6 @@ suite('PullRequestHandler', () => {
         return pullRequestHandler.handleStatusChange({
             owner,
             repo,
-            state,
             sha,
         })
             .then(() => {
@@ -290,7 +279,7 @@ suite('PullRequestHandler', () => {
     });
 
     test('Handle status change item not first', () => {
-        const { state, sha, repository: { name: repo, owner: { login: owner } } } = statusSuccessPayload;
+        const { sha, repository: { name: repo, owner: { login: owner } } } = statusSuccessPayload;
         const firstItem = {
             ...queueItemFixture,
             pullRequestNumber: 2,
@@ -299,7 +288,6 @@ suite('PullRequestHandler', () => {
         return pullRequestHandler.handleStatusChange({
             owner,
             repo,
-            state,
             sha,
         })
             .then(() => {
