@@ -9,7 +9,7 @@ const {
     curry,
     isNil,
 } = require('ramda');
-const { env: { NODE_ENV: environment = 'production' } } = process;
+const { env: { NODE_ENV: environment = 'production', CLIENT_ID: appClientId  } } = process;
 const development = environment === 'development';
 const test = environment === 'test';
 
@@ -40,7 +40,7 @@ const authenticator = (req, res, next) => {
     tokenManager.getTokenInfo(token)
         .then(tokenInfo => {
             const { client_id: clientId, login } = tokenInfo;
-            if (clientId === process.env.CLIENT_ID) {
+            if (clientId === appClientId) {
                 req.username = login;
             } else {
                 throw new Error('Wrong client id');

@@ -14,6 +14,7 @@ const pullRequestInfoFixture = {
     ...require('./fixtures/pull_request.info.json'),
     pullRequestNumber: queueItemFixture.pullRequestNumber,
 };
+const { env: { APP_ORIGIN } } = process;
 const owner = 'branch-bookkeeper';
 const repo = 'branch-bookkeeper';
 const branch = 'master';
@@ -69,7 +70,7 @@ suite('QueueEventHandler', () => {
                     description: 'First in the queue',
                     statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
                     installationId: 1234,
-                    targetUrl: `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
+                    targetUrl: `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
                 });
             });
     });
@@ -99,7 +100,7 @@ suite('QueueEventHandler', () => {
                 description: 'You\'re first in queue',
                 statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
                 installationId: 1234,
-                targetUrl: `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
+                targetUrl: `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
             });
         });
     });

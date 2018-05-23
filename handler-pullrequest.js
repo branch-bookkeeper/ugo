@@ -13,11 +13,12 @@ const pullRequestManager = require('./manager-pullrequest');
 const MAX_REPORTED_QUEUE_POSITION = 5;
 const DESCRIPTION_NOT_IN_QUEUE = t('pullRequest.queue.not');
 const DESCRIPTION_FIRST = t('pullRequest.queue.first');
+const { env: { APP_ORIGIN } } = process;
 
 const _updatePullRequestStatus = ({
     owner, repo, branch, pullRequestNumber, status, description, statusUrl, installationId,
 }) => {
-    const targetUrl = `${process.env.APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
+    const targetUrl = `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
 
     return Github.updatePullRequestStatus({
         installationId,
@@ -239,17 +240,15 @@ class PullRequestHandler {
 
     static setAllPullRequestsStatuses(owner, repo, branch) {
         return queueManager.getItems(owner, repo, branch)
-            .then(items => {
-                return Promise.all(slice(0, MAX_REPORTED_QUEUE_POSITION + 1, items)
-                    .map(({ pullRequestNumber }, index) => (
-                        PullRequestHandler.setPullRequestStatusByPosition({
-                            owner,
-                            repo,
-                            pullRequestNumber,
-                            index,
-                        })
-                    )));
-            });
+            .then(items => Promise.all(slice(0, MAX_REPORTED_QUEUE_POSITION + 1, items)
+                .map(({ pullRequestNumber }, index) => (
+                    PullRequestHandler.setPullRequestStatusByPosition({
+                        owner,
+                        repo,
+                        pullRequestNumber,
+                        index,
+                    })
+                ))));
     }
 
     static setPullRequestStatusByPosition({

@@ -9,41 +9,41 @@ const request = require('request-promise-native').defaults({ json: true, resolve
 const RequestAllPages = require('request-all-pages');
 const postal = require('postal');
 const userAgent = 'branch-bookkeeper';
+const {
+    env: {
+        APP_ID: appId,
+        PRIVATE_KEY: privateKey,
+    },
+} = process;
 
-const requestAllPages = (opts) => {
-    return new Promise((resolve, reject) => {
-        RequestAllPages(opts, { perPage: 100 }, (err, pages) => err ? reject(err) : resolve(pages));
-    });
-};
+const requestAllPages = opts => new Promise((resolve, reject) =>
+    RequestAllPages(opts, { perPage: 100 }, (err, pages) =>
+        err ? reject(err) : resolve(pages)));
 
-const trackRateLimit = remaining => {
-    postal.publish({
-        channel: 'metrics',
-        topic: 'gauge',
-        data: {
-            name: 'github.api.ratelimit',
-            value: remaining,
-        },
-    });
-};
+const trackRateLimit = remaining => postal.publish({
+    channel: 'metrics',
+    topic: 'gauge',
+    data: {
+        name: 'github.api.ratelimit',
+        value: remaining,
+    },
+});
 
-const trackApiRequest = (value = 1) => {
-    postal.publish({
-        channel: 'metrics',
-        topic: 'increment',
-        data: {
-            name: 'github.api.request',
-            value,
-        },
-    });
-};
+const trackApiRequest = (value = 1) => postal.publish({
+    channel: 'metrics',
+    topic: 'increment',
+    data: {
+        name: 'github.api.request',
+        value,
+    },
+});
 
 const getInstallationAccessToken = installationId => {
     const token = JWT.sign({
         iat: Math.floor(Date.now() / 1000),
         exp: (Math.floor(Date.now() / 1000) + (10 * 60)),
-        iss: process.env.APP_ID,
-    }, process.env.PRIVATE_KEY, { algorithm: 'RS256' });
+        iss: appId,
+    }, privateKey, { algorithm: 'RS256' });
 
     return request.post(`https://api.github.com/installations/${installationId}/access_tokens`, {
         auth: {
@@ -74,21 +74,19 @@ class Github {
         targetUrl,
     }) {
         return getInstallationAccessToken(installationId)
-            .then(accessToken => {
-                return request.post(statusUrl, {
-                    headers: {
-                        'user-agent': userAgent,
-                        authorization: `token ${accessToken}`,
-                    },
-                    body: {
-                        state: status,
-                        description: description,
-                        target_url: targetUrl,
-                        context: 'Branch Bookkeeper',
-                    },
-                })
-                    .then(trackApiUsageAndReturnBody);
-            });
+            .then(accessToken => request.post(statusUrl, {
+                headers: {
+                    'user-agent': userAgent,
+                    authorization: `token ${accessToken}`,
+                },
+                body: {
+                    state: status,
+                    description: description,
+                    target_url: targetUrl,
+                    context: 'Branch Bookkeeper',
+                },
+            })
+                .then(trackApiUsageAndReturnBody));
     }
 
     static getUserInfo(token) {

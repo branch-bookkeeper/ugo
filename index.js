@@ -9,6 +9,14 @@ const webhook = require('./routes-webhook');
 const pullRequest = require('./routes-pullrequest');
 const analytics = require('./analytics');
 const logger = require('./logger');
+const {
+    env: {
+        ROLLBAR_KEY: rollbarAccessToken,
+        PORT: port = 3000,
+        APP_ORIGIN: appOrigin = 'http://localhost:4000',
+        UA: analyticsUa,
+    },
+} = process;
 require('./handler-event-queue');
 require('./manager-notification-push');
 require('./manager-notification-pusher');
@@ -21,24 +29,22 @@ const development = environment === 'development';
 const test = environment === 'test';
 
 const rollbar = new Rollbar({
-    accessToken: process.env['ROLLBAR_KEY'],
+    accessToken: rollbarAccessToken,
     environment: environment,
     captureUncaught: !development,
     captureUnhandledRejections: !development,
 });
 
-app.set('port', process.env.PORT || 3000);
-
 app.use(express.json());
 app.use(compression());
-app.use(cors({ origin: process.env.APP_ORIGIN || 'http://localhost:4000' }));
+app.use(cors({ origin: appOrigin }));
 
 if (!test) {
     morgan.token('remote-user', req => req.username);
     app.use(morgan('combined', { stream: logger }));
 }
 
-if (process.env['UA']) {
+if (analyticsUa) {
     app.use(analytics.trackRequest);
 }
 
@@ -74,10 +80,9 @@ app.use((err, req, res, next) => {
 if (!test) {
     app.use(morgan('combined'));
 }
-app.set('port', process.env.PORT || 3000);
 
 app.get('/', (req, res) => {
     res.send('');
 });
 
-module.exports = app.listen(app.get('port'));
+module.exports = app.listen(port);

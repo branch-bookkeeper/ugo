@@ -1,9 +1,12 @@
 const pullRequestHandler = require('./handler-pullrequest');
-
-const owner = process.env.OWNER;
-const repo = process.env.REPO;
-const branch = process.env.BRANCH || 'master';
-const appId = process.env.APP_ID;
+const {
+    env: {
+        OWNER: owner,
+        REPO: repo,
+        BRANCH: branch = 'master',
+        APP_ID: appId,
+    },
+} = process;
 
 if (!appId) {
     console.error('Specify APP_ID');
