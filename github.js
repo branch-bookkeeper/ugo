@@ -9,12 +9,18 @@ const request = require('request-promise-native').defaults({ json: true, resolve
 const RequestAllPages = require('request-all-pages');
 const postal = require('postal');
 const userAgent = 'branch-bookkeeper';
+const GITHUB_DEFAULT_BASE_HOST = 'https://api.github.com';
 const {
     env: {
+        GITHUB_BASE_HOST: baseHost = GITHUB_DEFAULT_BASE_HOST,
         APP_ID: appId,
+        NODE_ENV: environment = 'production',
         PRIVATE_KEY: privateKey,
     },
 } = process;
+const development = environment === 'development';
+
+const updateBaseHost = url => url.replace(GITHUB_DEFAULT_BASE_HOST, baseHost);
 
 const requestAllPages = opts => new Promise((resolve, reject) =>
     RequestAllPages(opts, { perPage: 100 }, (err, pages) =>
@@ -45,7 +51,7 @@ const getInstallationAccessToken = installationId => {
         iss: appId,
     }, privateKey, { algorithm: 'RS256' });
 
-    return request.post(`https://api.github.com/installations/${installationId}/access_tokens`, {
+    return request.post(`${baseHost}/installations/${installationId}/access_tokens`, {
         auth: {
             bearer: token,
         },
@@ -74,7 +80,7 @@ class Github {
         targetUrl,
     }) {
         return getInstallationAccessToken(installationId)
-            .then(accessToken => request.post(statusUrl, {
+            .then(accessToken => request.post(updateBaseHost(statusUrl), {
                 headers: {
                     'user-agent': userAgent,
                     authorization: `token ${accessToken}`,
@@ -90,7 +96,7 @@ class Github {
     }
 
     static getUserInfo(token) {
-        return request.get('https://api.github.com/user', {
+        return request.get(`${baseHost}/user`, {
             headers: {
                 'user-agent': userAgent,
                 authorization: `token ${token}`,
@@ -101,7 +107,7 @@ class Github {
 
     static getInstallationInfo(token, installationId) {
         return requestAllPages({
-            uri: `https://api.github.com/user/installations/${installationId}/repositories`,
+            uri: `${baseHost}/user/installations/${installationId}/repositories`,
             json: true,
             headers: {
                 'user-agent': userAgent,
@@ -123,7 +129,7 @@ class Github {
 
     static getPullRequestInfo(owner, repo, number, installationId) {
         return getInstallationAccessToken(installationId)
-            .then(accessToken => request.get(`https://api.github.com/repos/${owner}/${repo}/pulls/${number}`, {
+            .then(accessToken => request.get(`${baseHost}/repos/${owner}/${repo}/pulls/${number}`, {
                 headers: {
                     'user-agent': userAgent,
                     authorization: `token ${accessToken}`,
@@ -139,7 +145,7 @@ class Github {
         sha,
     }) {
         return getInstallationAccessToken(installationId)
-            .then(accessToken => request.get(`https://api.github.com/repos/${owner}/${repo}/commits/${sha}/status`, {
+            .then(accessToken => request.get(`${baseHost}/repos/${owner}/${repo}/commits/${sha}/status`, {
                 headers: {
                     'user-agent': userAgent,
                     authorization: `token ${accessToken}`,
