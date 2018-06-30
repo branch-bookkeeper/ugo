@@ -1,6 +1,6 @@
-const mongoManager = require('./manager-mongo');
-const GitHub = require('./github');
-const pullRequestManager = require('./manager-pullrequest');
+const mongoManager = require('../manager-mongo');
+const GitHub = require('../github');
+const pullRequestManager = require('../manager-pullrequest');
 const { pluck } = require('ramda');
 const {
     env: {

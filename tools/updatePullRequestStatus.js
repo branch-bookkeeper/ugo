@@ -1,4 +1,4 @@
-const pullRequestHandler = require('./handler-pullrequest');
+const pullRequestHandler = require('../handler-pullrequest');
 const {
     env: {
         OWNER: owner,

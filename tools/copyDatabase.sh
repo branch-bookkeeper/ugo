@@ -13,7 +13,7 @@ printf "\033[32mExport DB\n\033[0m"
 mongodump --uri ${PROD_MONGO_URL} -o ./dump
 
 printf "\033[32mReset DB\n\033[0m"
-./resetdb.sh
+tools/resetdb.sh
 
 printf "\033[32mImport DB\n\033[0m"
 mongorestore --uri ${MONGO_URL} --dir ./dump
