@@ -175,6 +175,7 @@ class PullRequestHandler {
                     branch,
                     installationId,
                     pullRequestNumber,
+                    status: pullRequestStatus = Github.STATUS_PENDING,
                 } = data;
                 return queueManager.getFirstItem(owner, repo, branch)
                     .then(firstItem => {
@@ -187,22 +188,29 @@ class PullRequestHandler {
                             repo,
                             sha,
                         })
-                            .then(({ state }) => {
-                                if (state !== Github.STATUS_PENDING) {
-                                    const { username, pullRequestNumber } = firstItem;
-                                    postal.publish({
-                                        channel: 'notification',
-                                        topic: 'send.checks',
-                                        data: {
-                                            owner,
-                                            repo,
-                                            branch,
-                                            pullRequestNumber,
-                                            username,
-                                            state,
-                                        },
+                            .then(({ state: githubStatus }) => {
+                                const { username, pullRequestNumber } = firstItem;
+
+                                pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {
+                                    status: githubStatus,
+                                })
+                                    .then(() => {
+                                        if (githubStatus !== Github.STATUS_PENDING &&
+                                            githubStatus !== pullRequestStatus) {
+                                            postal.publish({
+                                                channel: 'notification',
+                                                topic: 'send.checks',
+                                                data: {
+                                                    owner,
+                                                    repo,
+                                                    branch,
+                                                    pullRequestNumber,
+                                                    username,
+                                                    state: githubStatus,
+                                                },
+                                            });
+                                        }
                                     });
-                                }
                             });
                     });
             });
