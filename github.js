@@ -45,7 +45,7 @@ const trackApiRequest = (value = 1) => postal.publish({
 });
 
 const getInstallationAccessToken = installationId => {
-    const token = JWT.sign({
+    const token = development ? '' : JWT.sign({
         iat: Math.floor(Date.now() / 1000),
         exp: (Math.floor(Date.now() / 1000) + (10 * 60)),
         iss: appId,
