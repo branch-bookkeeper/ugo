@@ -1,11 +1,15 @@
-const mongoManager = require('./manager-mongo');
-const GitHub = require('./github');
-const pullRequestManager = require('./manager-pullrequest');
+const mongoManager = require('../manager-mongo');
+const GitHub = require('../github');
+const pullRequestManager = require('../manager-pullrequest');
 const { pluck } = require('ramda');
-const owner = process.env.OWNER;
-const repo = process.env.REPO;
-const branch = process.env.BRANCH || 'master';
-const appId = process.env.APP_ID;
+const {
+    env: {
+        OWNER: owner,
+        REPO: repo,
+        BRANCH: branch = 'master',
+        APP_ID: appId,
+    },
+} = process;
 
 if (!appId) {
     console.error('Specify APP_ID');
@@ -19,9 +23,9 @@ if (!owner || !repo || !branch || !appId) {
 
 mongoManager.getCollection('pullRequest')
     .then(c => c.find({
-        owner: { $eq: process.env.OWNER },
-        repo: { $eq: process.env.REPO },
-        branch: { $eq: process.env.BRANCH },
+        owner: { $eq: owner },
+        repo: { $eq: repo },
+        branch: { $eq: branch },
     }))
     .then(cursor => cursor.toArray())
     .then(items => Promise.all(items.map(({
