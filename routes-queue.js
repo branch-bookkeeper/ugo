@@ -8,7 +8,7 @@ router.route('/:owner/:repository/:branch')
     .all(authenticator)
     .all((req, res, next) => {
         if (!manager.enabled()) {
-            return next(createError.ServiceUnavailable('queue not available'));
+            return next(createError.ServiceUnavailable('Queue not available'));
         }
 
         next();

@@ -14,7 +14,7 @@ router.post('/', validator);
 // Service availability
 router.post('/', (req, res, next) => {
     if (!pullRequestManager.enabled()) {
-        return next(createError.ServiceUnavailable('queue not available'));
+        return next(createError.ServiceUnavailable('Queue not available'));
     }
     next();
 });
