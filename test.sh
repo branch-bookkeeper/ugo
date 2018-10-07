@@ -9,6 +9,7 @@ export NEW_RELIC_NO_CONFIG_FILE=true
 export DATADOG_API_KEY=fake
 export APP_ORIGIN=fake
 export PORT=3333
+export CLIENT_ID=1234;
 
 if [ -z "$MONGO_URL" ]; then
     export MONGO_URL=mongodb://localhost/branch-bookkeeper-test
