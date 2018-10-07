@@ -18,19 +18,22 @@ router.route('/:owner/:repository/:branch')
             .then(data => res.set({ 'Cache-Control': 'no-cache' }).json(data))
             .catch(next);
     })
+    .all((req, res, next) => {
+        const { user: { username, permissions: { isAdmin } }, body } = req;
+        if (Object.keys(body).length === 0) {
+            next(createError.BadRequest('Malformed request body'));
+        } else if (body.username !== username && !isAdmin) {
+            next(createError.Unauthorized('Unauthorized'));
+        } else {
+            next();
+        }
+    })
     .post((req, res, next) => {
         manager.addItem(req.params.owner, req.params.repository, req.params.branch, req.body)
             .then(res.status(201).json())
             .catch(next);
     })
     .delete((req, res, next) => {
-        if (Object.keys(req.body).length > 0) {
-            manager.removeItem(req.params.owner, req.params.repository, req.params.branch, req.body)
-                .then(res.status(204).json())
-                .catch(next);
-        } else {
-            next(createError.BadRequest());
-        }
     });
 
 router.route('/:owner/:repository/:branch/update-channel')
