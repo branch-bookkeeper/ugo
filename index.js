@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const compression = require('compression');
 const cors = require('cors');
 const Rollbar = require('rollbar');
+const { path } = require('ramda');
 const queue = require('./routes-queue');
 const webhook = require('./routes-webhook');
 const pullRequest = require('./routes-pullrequest');
@@ -40,7 +41,7 @@ app.use(compression());
 app.use(cors({ origin: appOrigin }));
 
 if (!test) {
-    morgan.token('remote-user', req => req.username);
+    morgan.token('remote-user', path(['user', 'username']));
     app.use(morgan('combined', { stream: logger }));
 }
 
@@ -57,7 +58,7 @@ app.disable('etag');
 app.enable('trust proxy');
 
 app.use((req, res, next) => {
-    newrelic.addCustomParameter('username', req.username);
+    newrelic.addCustomParameter('username', path(['user', 'username'], req));
     next();
 });
 

@@ -1,4 +1,5 @@
 const ua = require('universal-analytics');
+const { path } = require('ramda');
 const { env: { UA: accountId, NODE_ENV } } = process;
 const development = NODE_ENV === 'development';
 
@@ -22,13 +23,21 @@ module.exports = {
             res.end = end;
             res.end(chunk, encoding);
 
-            getVisitor(req.username)
+            const {
+                ip: uip,
+                protocol,
+                hostname,
+                originalUrl,
+            } = req;
+            const userId = path(['user', 'username'], req);
+
+            getVisitor(userId)
                 .pageview({
-                    userId: req.username,
-                    uip: req.ip,
+                    userId,
+                    uip,
                     ua: req.get('User-Agent'),
                     t: 'pageview',
-                    dl: req.protocol + '://' + req.hostname + req.originalUrl,
+                    dl: `${protocol}://${hostname}${originalUrl}`,
                 })
                 .send();
         };
