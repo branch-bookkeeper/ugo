@@ -38,8 +38,7 @@ const authenticator = (req, res, next) => {
     const { params: { owner, repository } } = req;
 
     tokenManager.getTokenInfo(token)
-        .then(tokenInfo => {
-            const { client_id: clientId, login } = tokenInfo;
+        .then(({ client_id: clientId, login: username }) => {
             if (clientId === appClientId) {
                 req.user = { username };
             } else {

@@ -14,7 +14,8 @@ router.route('/:owner/:repository/:branch')
         next();
     })
     .get((req, res, next) => {
-        manager.getItems(req.params.owner, req.params.repository, req.params.branch)
+        const { params: { owner, repository, branch } } = req;
+        manager.getItems(owner, repository, branch)
             .then(data => res.set({ 'Cache-Control': 'no-cache' }).json(data))
             .catch(next);
     })
@@ -29,17 +30,25 @@ router.route('/:owner/:repository/:branch')
         }
     })
     .post((req, res, next) => {
-        manager.addItem(req.params.owner, req.params.repository, req.params.branch, req.body)
+        const { params: { owner, repository, branch }, body } = req;
+        manager.addItem(owner, repository, branch, body)
             .then(res.status(201).json())
             .catch(next);
     })
     .delete((req, res, next) => {
+        const { params: { owner, repository, branch }, body } = req;
+        manager.removeItem(owner, repository, branch, body)
+            .then(res.status(204).json())
+            .catch(next);
     });
 
 router.route('/:owner/:repository/:branch/update-channel')
     .all(authenticator)
-    .get((req, res, next) => res.send({
-        id: pusherManager.getChannelId(req.params.owner, req.params.repository, req.params.branch),
-    }));
+    .get((req, res, next) => {
+        const { params: { owner, repository, branch } } = req;
+        res.send({
+            id: pusherManager.getChannelId(owner, repository, branch),
+        });
+    });
 
 module.exports = router;

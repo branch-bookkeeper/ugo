@@ -12,7 +12,8 @@ router.route('/:owner/:repository')
         next();
     })
     .get((req, res, next) => {
-        manager.getRepositoryPullRequestsInfo(req.params.owner, req.params.repository)
+        const { params: { owner, repository } } = req;
+        manager.getRepositoryPullRequestsInfo(owner, repository)
             .then(data => data.length > 0 ? res.send(data) : next(createError.NotFound('Repository not found')))
             .catch(next);
     });
