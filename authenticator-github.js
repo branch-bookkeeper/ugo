@@ -11,7 +11,6 @@ const {
 } = require('ramda');
 const { env: { NODE_ENV: environment = 'production', CLIENT_ID: appClientId  } } = process;
 const development = environment === 'development';
-const test = environment === 'test';
 
 const throwErrorIf = curry((condition, message, input) => {
     if (condition(input)) {
@@ -24,7 +23,7 @@ const throwErrorIf = curry((condition, message, input) => {
 const throwErrorIfNil = throwErrorIf(isNil);
 
 const authenticator = (req, res, next) => {
-    if (test || development) {
+    if (development) {
         return next();
     }
 
