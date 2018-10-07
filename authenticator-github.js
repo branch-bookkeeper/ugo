@@ -41,7 +41,7 @@ const authenticator = (req, res, next) => {
         .then(tokenInfo => {
             const { client_id: clientId, login } = tokenInfo;
             if (clientId === appClientId) {
-                req.username = login;
+                req.user = { username };
             } else {
                 throw new Error('Wrong client id');
             }
@@ -53,6 +53,15 @@ const authenticator = (req, res, next) => {
         .then(({ repositories }) => find(propEq('full_name', `${owner}/${repository}`), repositories))
         .then(throwErrorIfNil('Repository not found'))
         .then(({ permissions: { push: canPush = false, pull: canPull = false, admin: isAdmin = false } }) => {
+            req.user = {
+                permissions: {
+                    canPush,
+                    canPull,
+                    isAdmin,
+                },
+                ...req.user,
+            };
+
             if (!canPush || !canPull) {
                 throw new Error('Repository not accessible');
             }

@@ -23,7 +23,7 @@ router.post('/', (req, res, next) => {
 router.post('/', (req, res, next) => {
     const { sender: { login: username } } = req.body;
 
-    req.username = username;
+    req.user = { username };
     req.event = req.get('X-GitHub-Event');
     next();
 });
