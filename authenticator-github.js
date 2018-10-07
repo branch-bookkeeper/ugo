@@ -13,9 +13,9 @@ const { env: { NODE_ENV: environment = 'production', CLIENT_ID: appClientId  } }
 const development = environment === 'development';
 const test = environment === 'test';
 
-const throwErrorIf = curry((condition, error, input) => {
+const throwErrorIf = curry((condition, message, input) => {
     if (condition(input)) {
-        throw error;
+        throw new Error(message);
     }
 
     return input;
@@ -47,21 +47,12 @@ const authenticator = (req, res, next) => {
             }
         })
         .then(() => installationManager.getInstallationId(owner))
-        .then(throwErrorIfNil(new Error('No installation id')))
+        .then(throwErrorIfNil('No installation id'))
         .then(installationId => installationInfoManager.getInstallationInfo(token, installationId))
-        .then(installationInfo => {
-            if (!installationInfo) {
-                throw new Error('No installation found');
-            }
-            const { repositories } = installationInfo;
-            const item = find(propEq('full_name', `${owner}/${repository}`), repositories);
-
-            if (!item) {
-                throw new Error('Repository not found');
-            }
-
-            const { permissions: { push: canPush, pull: canPull } } = item;
-
+        .then(throwErrorIfNil('No installation found'))
+        .then(({ repositories }) => find(propEq('full_name', `${owner}/${repository}`), repositories))
+        .then(throwErrorIfNil('Repository not found'))
+        .then(({ permissions: { push: canPush = false, pull: canPull = false, admin: isAdmin = false } }) => {
             if (!canPush || !canPull) {
                 throw new Error('Repository not accessible');
             }

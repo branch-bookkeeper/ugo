@@ -49,8 +49,8 @@ suite('Route pull-request', () => {
         request(server)
             .get(`${url}/${owner}/${repo}-fake`)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '21')
-            .expect({ error: 'Not Found' })
+            .expect('content-length', '32')
+            .expect({ error: 'Repository not found' })
             .expect(404, done);
     });
 });
