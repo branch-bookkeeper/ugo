@@ -2,7 +2,7 @@
 const { assert } = require('chai');
 const pullRequestManager = require('../manager-pullrequest');
 const mongoManager = require('../manager-mongo');
-const pullRequestInfoFixture = require('./fixtures/pull_request.info.json');
+const pullRequestInfoFixture = require('./fixtures/pull_request.info');
 const owner = 'branch-bookkeeper';
 const repo = 'branch-bookkeeper';
 let randomNumber = 0;

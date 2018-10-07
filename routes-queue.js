@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const createError = require('http-errors');
 const manager = require('./manager-queue');
-const pusherManager = require('./manager-notification-pusher.js');
+const pusherManager = require('./manager-notification-pusher');
 const authenticator = require('./authenticator-github');
 
 router.route('/:owner/:repository/:branch')

@@ -1,7 +1,7 @@
 const localizify = require('localizify');
 
 localizify
-    .add('en', require('./messages/en.json'))
+    .add('en', require('./messages/en'))
     .setLocale('en');
 
 module.exports = localizify.t;

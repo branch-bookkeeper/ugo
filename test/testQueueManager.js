@@ -6,7 +6,7 @@ const owner = 'branch-bookkeeper';
 const repo = 'branch-bookkeeper';
 const branch = 'master';
 const queueItemFixture = {
-    ...require('./fixtures/queue.item.json'),
+    ...require('./fixtures/queue.item'),
     pullRequestNumber: Math.floor(Math.random() * 89) + 10,
 };
 
