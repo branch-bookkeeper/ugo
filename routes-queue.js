@@ -1,42 +1,54 @@
 const router = require('express').Router();
 const createError = require('http-errors');
 const manager = require('./manager-queue');
-const pusherManager = require('./manager-notification-pusher.js');
+const pusherManager = require('./manager-notification-pusher');
 const authenticator = require('./authenticator-github');
 
 router.route('/:owner/:repository/:branch')
     .all(authenticator)
     .all((req, res, next) => {
         if (!manager.enabled()) {
-            return next(createError.ServiceUnavailable('queue not available'));
+            return next(createError.ServiceUnavailable('Queue not available'));
         }
 
         next();
     })
     .get((req, res, next) => {
-        manager.getItems(req.params.owner, req.params.repository, req.params.branch)
+        const { params: { owner, repository, branch } } = req;
+        manager.getItems(owner, repository, branch)
             .then(data => res.set({ 'Cache-Control': 'no-cache' }).json(data))
             .catch(next);
     })
+    .all((req, res, next) => {
+        const { user: { username, permissions: { isAdmin } }, body } = req;
+        if (Object.keys(body).length === 0) {
+            next(createError.BadRequest('Malformed request body'));
+        } else if (body.username !== username && !isAdmin) {
+            next(createError.Unauthorized('Unauthorized'));
+        } else {
+            next();
+        }
+    })
     .post((req, res, next) => {
-        manager.addItem(req.params.owner, req.params.repository, req.params.branch, req.body)
+        const { params: { owner, repository, branch }, body } = req;
+        manager.addItem(owner, repository, branch, body)
             .then(res.status(201).json())
             .catch(next);
     })
     .delete((req, res, next) => {
-        if (Object.keys(req.body).length > 0) {
-            manager.removeItem(req.params.owner, req.params.repository, req.params.branch, req.body)
-                .then(res.status(204).json())
-                .catch(next);
-        } else {
-            next(createError.BadRequest());
-        }
+        const { params: { owner, repository, branch }, body } = req;
+        manager.removeItem(owner, repository, branch, body)
+            .then(res.status(204).json())
+            .catch(next);
     });
 
 router.route('/:owner/:repository/:branch/update-channel')
     .all(authenticator)
-    .get((req, res, next) => res.send({
-        id: pusherManager.getChannelId(req.params.owner, req.params.repository, req.params.branch),
-    }));
+    .get((req, res, next) => {
+        const { params: { owner, repository, branch } } = req;
+        res.send({
+            id: pusherManager.getChannelId(owner, repository, branch),
+        });
+    });
 
 module.exports = router;

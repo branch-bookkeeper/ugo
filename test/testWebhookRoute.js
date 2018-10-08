@@ -10,20 +10,20 @@ const owner = 'branch-bookkeeper';
 const repo = 'branch-bookkeeper';
 const branch = 'master';
 const pullRequestNumber = 1;
-const installationInfoFixture = require('./fixtures/installation.info.json');
+const installationInfoFixture = require('./fixtures/installation.info');
 
-const installationCreatedPayload = require('./fixtures/installation.created.json');
-const installationDeletedPayload = require('./fixtures/installation.deleted.json');
-const installationRepositoriesAddedPayload = require('./fixtures/installation_repositories.added.json');
-const installationRepositoriesRemovedPayload = require('./fixtures/installation_repositories.removed.json');
-const pullRequestOpenedPayload = require('./fixtures/pull_request.opened.json');
-const pullRequestClosedPayload = require('./fixtures/pull_request.closed.json');
-const pullRequestMergededPayload = require('./fixtures/pull_request.merged.json');
-const statusFailurePayload = require('./fixtures/status.failure.json');
-const statusSuccessPayload = require('./fixtures/status.success.json');
-const pullRequestSynchronizePayload = require('./fixtures/pull_request.synchronize.json');
-const repositoryCreatedPayload = require('./fixtures/repository.created.json');
-const repositoryDeletedPayload = require('./fixtures/repository.deleted.json');
+const installationCreatedPayload = require('./fixtures/installation.created');
+const installationDeletedPayload = require('./fixtures/installation.deleted');
+const installationRepositoriesAddedPayload = require('./fixtures/installation_repositories.added');
+const installationRepositoriesRemovedPayload = require('./fixtures/installation_repositories.removed');
+const pullRequestOpenedPayload = require('./fixtures/pull_request.opened');
+const pullRequestClosedPayload = require('./fixtures/pull_request.closed');
+const pullRequestMergededPayload = require('./fixtures/pull_request.merged');
+const statusFailurePayload = require('./fixtures/status.failure');
+const statusSuccessPayload = require('./fixtures/status.success');
+const pullRequestSynchronizePayload = require('./fixtures/pull_request.synchronize');
+const repositoryCreatedPayload = require('./fixtures/repository.created');
+const repositoryDeletedPayload = require('./fixtures/repository.deleted');
 
 suite('Route webhook', () => {
     suiteSetup(function () {

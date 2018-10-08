@@ -7,11 +7,11 @@ const queueManager = require('../manager-queue');
 const pullRequestManager = require('../manager-pullrequest');
 const queueEventHandler = require('../handler-event-queue');
 const queueItemFixture = {
-    ...require('./fixtures/queue.item.json'),
+    ...require('./fixtures/queue.item'),
     pullRequestNumber: Math.floor(Math.random() * 89) + 10,
 };
 const pullRequestInfoFixture = {
-    ...require('./fixtures/pull_request.info.json'),
+    ...require('./fixtures/pull_request.info'),
     pullRequestNumber: queueItemFixture.pullRequestNumber,
 };
 const { env: { APP_ORIGIN } } = process;

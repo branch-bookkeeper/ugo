@@ -12,7 +12,8 @@ const validator = (req, res, next) => {
 
     const headerSignature = req.get('X-Hub-Signature');
     const hmac = crypto.createHmac('sha1', token);
-    hmac.update(Buffer.from(JSON.stringify(req.body)), 'utf-8');
+    const { body } = req;
+    hmac.update(Buffer.from(JSON.stringify(body)), 'utf-8');
 
     const computedSignature = `sha1=${hmac.digest('hex')}`;
 

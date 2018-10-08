@@ -14,16 +14,16 @@ router.post('/', validator);
 // Service availability
 router.post('/', (req, res, next) => {
     if (!pullRequestManager.enabled()) {
-        return next(createError.ServiceUnavailable('queue not available'));
+        return next(createError.ServiceUnavailable('Queue not available'));
     }
     next();
 });
 
 // Username
 router.post('/', (req, res, next) => {
-    const { sender: { login: username } } = req.body;
+    const { body: { sender: { login: username } } } = req;
 
-    req.username = username;
+    req.user = { username };
     req.event = req.get('X-GitHub-Event');
     next();
 });
@@ -34,7 +34,7 @@ router.post('/', (req, res, next) => {
         return next();
     }
 
-    const { state, sha, repository: { name: repo, owner: { login: owner } } } = req.body;
+    const { body: { state, sha, repository: { name: repo, owner: { login: owner } } } } = req;
 
     pullRequestHandler.handleStatusChange({
         owner,
@@ -50,7 +50,7 @@ router.post('/', (req, res, next) => {
         return next();
     }
 
-    const { repository: { owner: { login: owner } } } = req.body;
+    const { body: { repository: { owner: { login: owner } } } } = req;
 
     installationManager.getInstallationId(owner)
         .then(installationInfoManager.deleteInstallationInfos)
@@ -63,7 +63,7 @@ router.post('/', (req, res, next) => {
         return next();
     }
 
-    const { action, installation: { id: installationId }, pull_request: pullRequest } = req.body;
+    const { body: { action, installation: { id: installationId }, pull_request: pullRequest } } = req;
 
     let pendingPromise;
 
@@ -94,9 +94,7 @@ router.post('/', (req, res, next) => {
         return next();
     }
 
-    const { action, installation } = req.body;
-    const { id } = installation;
-    const { account: { login: owner } } = installation;
+    const { body: { action, installation: { id, account: { login: owner } } } } = req;
 
     let pendingPromise;
 
@@ -126,9 +124,7 @@ router.post('/', (req, res, next) => {
         return next();
     }
 
-    const { action, installation } = req.body;
-    const { id } = installation;
-    const { account: { login: owner } } = installation;
+    const { body: { action, installation: { id, account: { login: owner } } } } = req;
 
     installationInfoManager.deleteInstallationInfos(id)
         .then(() => res.json(`Installation repositories of installation ${id} for ${owner} ${action}`))

@@ -7,13 +7,14 @@ router.route('/:owner/:repository')
     .all(authenticator)
     .all((req, res, next) => {
         if (!manager.enabled()) {
-            return next(createError.ServiceUnavailable('queue not available'));
+            return next(createError.ServiceUnavailable('Queue not available'));
         }
         next();
     })
     .get((req, res, next) => {
-        manager.getRepositoryPullRequestsInfo(req.params.owner, req.params.repository)
-            .then(data => data.length > 0 ? res.send(data) : next(createError.NotFound()))
+        const { params: { owner, repository } } = req;
+        manager.getRepositoryPullRequestsInfo(owner, repository)
+            .then(data => data.length > 0 ? res.send(data) : next(createError.NotFound('Repository not found')))
             .catch(next);
     });
 

@@ -5,7 +5,7 @@ const installationInfoManager = require('../manager-installation-info');
 const mongoManager = require('../manager-mongo');
 const GitHub = require('../github');
 const postal = require('postal');
-const installationInfoFixture = require('./fixtures/installation.info.json');
+const installationInfoFixture = require('./fixtures/installation.info');
 let gitHubSpy;
 let postalSpy;
 let token = '';

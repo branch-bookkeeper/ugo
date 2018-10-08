@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const GitHub = require('../github');
 const tokenManager = require('../manager-token');
 const mongoManager = require('../manager-mongo');
-const tokenInfoFixture = require('./fixtures/token.info.json');
+const tokenInfoFixture = require('./fixtures/token.info');
 let token = '';
 let gitHubSpy;
 
