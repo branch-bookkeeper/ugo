@@ -1,11 +1,11 @@
 const ua = require('universal-analytics');
-const { path } = require('ramda');
+const { pathOr } = require('ramda');
 const { env: { UA: accountId } } = process;
 
 const getVisitor = userId => {
     return ua(
         accountId,
-        userId || 'unknown',
+        userId,
         {
             https: true,
             strictCidFormat: false,
@@ -26,7 +26,7 @@ module.exports = {
                 hostname,
                 originalUrl,
             } = req;
-            const userId = path(['user', 'username'], req);
+            const userId = pathOr('unknown', ['user', 'username'], req);
 
             getVisitor(userId)
                 .pageview({
