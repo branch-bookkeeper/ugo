@@ -1,10 +1,9 @@
 const ua = require('universal-analytics');
 const { path } = require('ramda');
-const { env: { UA: accountId, NODE_ENV } } = process;
-const development = NODE_ENV === 'development';
+const { env: { UA: accountId } } = process;
 
 const getVisitor = userId => {
-    const visitor = ua(
+    return ua(
         accountId,
         userId || 'unknown',
         {
@@ -12,8 +11,6 @@ const getVisitor = userId => {
             strictCidFormat: false,
         }
     );
-
-    return development ? visitor.debug() : visitor;
 };
 
 module.exports = {
