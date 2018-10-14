@@ -22,9 +22,7 @@ const development = environment === 'development';
 
 const updateBaseHost = url => url.replace(GITHUB_DEFAULT_BASE_HOST, baseHost);
 
-const requestAllPages = opts => new Promise((resolve, reject) =>
-    RequestAllPages(opts, { perPage: 100 }, (err, pages) =>
-        err ? reject(err) : resolve(pages)));
+const requestAllPages = opts => new Promise((resolve, reject) => RequestAllPages(opts, { perPage: 100 }, (err, pages) => err ? reject(err) : resolve(pages)));
 
 const trackRateLimit = remaining => postal.publish({
     channel: 'metrics',

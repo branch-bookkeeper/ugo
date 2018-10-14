@@ -6,11 +6,7 @@
         "node": true
     },
     "parserOptions": {
-        "ecmaVersion": 6,
-        "ecmaFeatures": {
-            "impliedStrict": true,
-            "experimentalObjectRestSpread": true
-        }
+        "ecmaVersion": 9
     },
     "rules": {
         "indent": ["error", 4, { "SwitchCase": 1, "VariableDeclarator": 1 }],

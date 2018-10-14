@@ -120,8 +120,7 @@ suite('Route queue', () => {
             .set('Authorization', `token ${userToken}`)
             .expect('content-type', /application\/json/)
             .expect('content-length', '286')
-            .expect(res =>
-                [0, 1, 2].forEach(i => assert.deepEqual(pathOr(0, ['body', i, 'pullRequestNumber'], res), randomNumber + i)))
+            .expect(res => [0, 1, 2].forEach(i => assert.deepEqual(pathOr(0, ['body', i, 'pullRequestNumber'], res), randomNumber + i)))
             .expect(200, done);
     });
     /*
