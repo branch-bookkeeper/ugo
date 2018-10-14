@@ -39,7 +39,7 @@ class PullRequestManager {
         return mongoManager.getCollection(COLLECTION_NAME)
             .then(collection => collection.findOne(
                 { _id: `${owner}-${repo}-${number}` },
-                { fields: { _id: false, owner: false, repo: false } }
+                { projection: { _id: false, owner: false, repo: false } }
             ));
     }
 
@@ -47,7 +47,7 @@ class PullRequestManager {
         return mongoManager.getCollection(COLLECTION_NAME)
             .then(collection => collection.find(
                 { owner, repo },
-                { fields: { _id: false, owner: false, repo: false } }
+                { projection: { _id: false, owner: false, repo: false } }
             ))
             .then(cursor => cursor.toArray());
     }
@@ -56,7 +56,7 @@ class PullRequestManager {
         return mongoManager.getCollection(COLLECTION_NAME)
             .then(collection => collection.findOne(
                 { owner, repo, sha },
-                { fields: { _id: false, owner: false, repo: false } }
+                { projection: { _id: false, owner: false, repo: false } }
             ));
     }
 

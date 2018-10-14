@@ -1,12 +1,14 @@
 const MongoClient = require('mongodb').MongoClient;
-let db;
+const { env: { MONGO_URL } } = process;
+let client;
 
-MongoClient.connect(process.env.MONGO_URL)
-    .then(d => {
+MongoClient.connect(MONGO_URL, { useNewUrlParser: true })
+    .then(c => {
         console.log('Connected to DB');
-        db = d;
-        return db.createCollection('githubToken');
+        client = c;
+        return c.db();
     })
+    .then(d => d.createCollection('githubToken'))
     .then(collection => {
         console.log('Collection githubToken created');
 
@@ -29,6 +31,6 @@ MongoClient.connect(process.env.MONGO_URL)
     .then(() => {
         console.log('Indexes created');
 
-        db.close();
+        client.close();
     })
     .catch(e => console.error(e));

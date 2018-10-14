@@ -9,7 +9,7 @@ class TokenManager {
             return mongoManager.getCollection(COLLECTION_NAME)
                 .then(collection => collection.findOne(
                     { _id: token },
-                    { fields: { _id: false, created_at: false, updated_at: false } }
+                    { projection: { _id: false, created_at: false, updated_at: false } }
                 ))
                 .then(tokenInfo => {
                     if (!tokenInfo) {
