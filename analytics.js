@@ -21,7 +21,7 @@ module.exports = {
             res.end(chunk, encoding);
 
             const {
-                ip: uip,
+                ip: ipOverride,
                 protocol,
                 hostname,
                 originalUrl,
@@ -31,10 +31,10 @@ module.exports = {
             getVisitor(userId)
                 .pageview({
                     userId,
-                    uip,
-                    ua: req.get('User-Agent'),
-                    t: 'pageview',
-                    dl: `${protocol}://${hostname}${originalUrl}`,
+                    ipOverride,
+                    userAgentOverride: req.get('User-Agent'),
+                    hitType: 'pageview',
+                    documentLocationUrl: `${protocol}://${hostname}${originalUrl}`,
                 })
                 .send();
         };
