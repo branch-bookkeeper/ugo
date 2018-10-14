@@ -52,6 +52,8 @@ router.post('/', (req, res, next) => {
 
     const { body: { repository: { owner: { login: owner } } } } = req;
 
+    // Installation info are deleted also on repo creation because they're obsolete
+    // So there's no need to check the action present in the body
     installationManager.getInstallationId(owner)
         .then(installationInfoManager.deleteInstallationInfos)
         .then(() => res.json(`Installation infos of ${owner} deleted`));
