@@ -23,6 +23,7 @@
     "datadog-metrics": "^0.8.1",
     "express": "^4.16.4",
     "http-errors": "^1.7.1",
+    "joi": "^14.0.0",
     "jsonwebtoken": "^8.3.0",
     "le_node": "^1.7.1",
     "localizify": "^1.2.2",
