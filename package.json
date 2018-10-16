@@ -22,7 +22,7 @@
     "cors": "^2.8.4",
     "datadog-metrics": "^0.8.1",
     "express": "^4.16.4",
-    "http-errors": "^1.6.2",
+    "http-errors": "^1.7.1",
     "jsonwebtoken": "^7.4.3",
     "le_node": "^1.7.1",
     "localizify": "^1.2.2",
