@@ -27,7 +27,7 @@
     "le_node": "^1.7.1",
     "localizify": "^1.2.2",
     "mongodb": "^2.2.33",
-    "morgan": "^1.8.2",
+    "morgan": "^1.9.1",
     "newrelic": "^2.2.0",
     "postal": "^2.0.5",
     "pusher": "^1.5.1",
