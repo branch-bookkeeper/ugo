@@ -4245,7 +4245,7 @@ widest-line@^2.0.0:
   dependencies:
     string-width "^2.1.1"
 
-winston@^2.3.1:
+winston@^2.4.4:
   version "2.4.4"
   resolved "https://registry.yarnpkg.com/winston/-/winston-2.4.4.tgz#a01e4d1d0a103cf4eada6fc1f886b3110d71c34b"
   dependencies:
