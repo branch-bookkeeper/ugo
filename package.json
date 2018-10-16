@@ -28,7 +28,7 @@
     "localizify": "^1.2.2",
     "mongodb": "^2.2.33",
     "morgan": "^1.9.1",
-    "newrelic": "^2.2.0",
+    "newrelic": "^4.9.0",
     "postal": "^2.0.5",
     "pusher": "^1.5.1",
     "ramda": "^0.24.1",
