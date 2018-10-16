@@ -38,7 +38,7 @@
     "request-promise-native": "^1.0.5",
     "rollbar": "^2.2.7",
     "simple-onesignal": "^1.0.4",
-    "universal-analytics": "^0.4.15",
+    "universal-analytics": "^0.4.17",
     "winston": "^2.3.1"
   },
   "devDependencies": {
