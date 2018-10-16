@@ -34,9 +34,6 @@ const analytics = proxyquire('../analytics', { 'universal-analytics': uaSpy });
 sinon.assert.expose(assert, { prefix: '' });
 
 suite('Analytics', () => {
-    setup(() => {
-    });
-
     teardown(() => {
         delete process.env.UA;
     });
