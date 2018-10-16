@@ -143,7 +143,7 @@ suite('PullRequestHandler', () => {
         const position = queue.length - 1;
 
         test(`Handle synchronize for item in position ${position}`, () => {
-            queueManagerGetItemsSpy.resolves(queue);
+            queueManagerGetItemsSpy.resolves(queue); // TODO Fix
             const { pull_request: pullRequest, installation: { id: installationId } } = pullRequestSynchronizedFixture;
             const { statuses_url: statusUrl } = pullRequest;
             const pullRequestInfo = {
@@ -181,7 +181,7 @@ suite('PullRequestHandler', () => {
 
     [GitHub.STATUS_SUCCESS, GitHub.STATUS_FAILURE].forEach(state => {
         test(`Handle status change success for first item GH reports ${state}`, () => {
-            gitHubHashSpy.resolves({ state });
+            gitHubHashSpy.resolves({ state }); // TODO Fix
             const {
                 sha,
                 installation: { id: installationId },
@@ -244,7 +244,7 @@ suite('PullRequestHandler', () => {
 
     test('Handle status change empty queue', () => {
         const { sha, repository: { name: repo, owner: { login: owner } } } = statusSuccessPayload;
-        queueManagerGetFirstItemSpy.resolves(undefined);
+        queueManagerGetFirstItemSpy.resolves(undefined); // TODO Fix
         return pullRequestHandler.handleStatusChange({
             owner,
             repo,
@@ -264,7 +264,7 @@ suite('PullRequestHandler', () => {
             ...queueItemFixture,
             pullRequestNumber: 2,
         };
-        queueManagerGetFirstItemSpy.resolves(firstItem);
+        queueManagerGetFirstItemSpy.resolves(firstItem); // TODO Fix
         return pullRequestHandler.handleStatusChange({
             owner,
             repo,
@@ -284,7 +284,7 @@ suite('PullRequestHandler', () => {
             ...queueItemFixture,
             pullRequestNumber: 2,
         };
-        queueManagerGetFirstItemSpy.resolves([firstItem, queueItemFixture]);
+        queueManagerGetFirstItemSpy.resolves([firstItem, queueItemFixture]); // TODO Fix
         return pullRequestHandler.handleStatusChange({
             owner,
             repo,
