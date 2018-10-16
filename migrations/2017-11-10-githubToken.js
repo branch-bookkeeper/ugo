@@ -32,4 +32,3 @@ MongoClient.connect(process.env.MONGO_URL)
         db.close();
     })
     .catch(e => console.error(e));
-

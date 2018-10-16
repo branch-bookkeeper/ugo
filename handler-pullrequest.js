@@ -29,28 +29,27 @@ const _updatePullRequestStatus = ({
     });
 };
 
-const _getPullRequestAndUpdateStatus = (owner, repo, pullRequestNumber, status, description) =>
-    pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
-        .then(pullRequestData => {
-            if (pullRequestData) {
-                const {
-                    pullRequestNumber,
-                    branch,
-                    installationId,
-                    statusUrl,
-                } = pullRequestData;
-                return _updatePullRequestStatus({
-                    owner,
-                    repo,
-                    branch,
-                    pullRequestNumber,
-                    installationId,
-                    statusUrl,
-                    status,
-                    description,
-                });
-            }
-        });
+const _getPullRequestAndUpdateStatus = (owner, repo, pullRequestNumber, status, description) => pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
+    .then(pullRequestData => {
+        if (pullRequestData) {
+            const {
+                pullRequestNumber,
+                branch,
+                installationId,
+                statusUrl,
+            } = pullRequestData;
+            return _updatePullRequestStatus({
+                owner,
+                repo,
+                branch,
+                pullRequestNumber,
+                installationId,
+                statusUrl,
+                status,
+                description,
+            });
+        }
+    });
 
 const _updatePullRequestInfo = (pullRequest, installationId) => {
     const {
@@ -195,8 +194,8 @@ class PullRequestHandler {
                                     status: githubStatus,
                                 })
                                     .then(() => {
-                                        if (githubStatus !== Github.STATUS_PENDING &&
-                                            githubStatus !== pullRequestStatus) {
+                                        if (githubStatus !== Github.STATUS_PENDING
+                                            && githubStatus !== pullRequestStatus) {
                                             postal.publish({
                                                 channel: 'notification',
                                                 topic: 'send.checks',

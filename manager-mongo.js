@@ -24,8 +24,8 @@ class MongoManager {
 
     static reset() {
         return new Promise((resolve, reject) => getDb.then(db => db.listCollections().toArray()
-            .then(collections => Promise.all(collections.map(({ name }) => name.indexOf('system.') === 0 ?
-                Promise.resolve() : db.collection(name).deleteMany({})))
+            .then(collections => Promise.all(collections.map(({ name }) => name.indexOf('system.') === 0
+                ? Promise.resolve() : db.collection(name).deleteMany({})))
                 .then(resolve)
                 .catch(reject))));
     }
