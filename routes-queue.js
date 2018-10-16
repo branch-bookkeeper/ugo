@@ -3,6 +3,7 @@ const createError = require('http-errors');
 const manager = require('./manager-queue');
 const pusherManager = require('./manager-notification-pusher');
 const authenticator = require('./authenticator-github');
+const validator = require('./validator-queue');
 
 router.route('/:owner/:repository/:branch')
     .all(authenticator)
@@ -19,11 +20,11 @@ router.route('/:owner/:repository/:branch')
             .then(data => res.set({ 'Cache-Control': 'no-cache' }).json(data))
             .catch(next);
     })
+    .post(validator)
+    .delete(validator)
     .all((req, res, next) => {
         const { user: { username, permissions: { isAdmin } }, body } = req;
-        if (Object.keys(body).length === 0) {
-            next(createError.BadRequest('Malformed request body'));
-        } else if (body.username !== username && !isAdmin) {
+        if (body.username !== username && !isAdmin) {
             next(createError.Unauthorized('Unauthorized'));
         } else {
             next();
