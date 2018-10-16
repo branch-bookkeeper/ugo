@@ -40,10 +40,8 @@ app.use(express.json());
 app.use(compression());
 app.use(cors({ origin: appOrigin }));
 
-if (!test) {
-    morgan.token('remote-user', path(['user', 'username']));
-    app.use(morgan('combined', { stream: logger }));
-}
+morgan.token('remote-user', path(['user', 'username']));
+app.use(morgan('combined', { stream: logger }));
 
 if (analyticsUa) {
     app.use(analytics.trackRequest);
@@ -63,7 +61,7 @@ app.use((req, res, next) => {
 });
 
 // error handlers
-if (!development && !test) {
+if (!development) {
     app.use(rollbar.errorHandler());
 }
 app.use((err, req, res, next) => {
