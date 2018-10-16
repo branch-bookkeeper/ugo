@@ -24,6 +24,12 @@ const throwErrorIfNil = throwErrorIf(isNil);
 
 const authenticator = (req, res, next) => {
     if (development) {
+        req.user = {
+            username: 'username',
+            permissions: {
+                isAdmin: true,
+            },
+        };
         return next();
     }
 
