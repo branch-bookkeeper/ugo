@@ -38,7 +38,7 @@
     "request-promise-native": "^1.0.5",
     "rollbar": "^2.2.7",
     "simple-onesignal": "^1.0.4",
-    "universal-analytics": "^0.4.15",
+    "universal-analytics": "^0.4.17",
     "winston": "^2.3.1"
   },
   "devDependencies": {
@@ -49,6 +49,7 @@
     "json-server": "^0.12.2",
     "mocha": "^3.5.0",
     "nyc": "^11.6.0",
+    "proxyquire": "^2.1.0",
     "sinon": "^4.1.2",
     "supertest": "^3.0.0"
   }

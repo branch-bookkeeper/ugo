@@ -1,19 +1,16 @@
 const ua = require('universal-analytics');
-const { path } = require('ramda');
-const { env: { UA: accountId, NODE_ENV } } = process;
-const development = NODE_ENV === 'development';
+const { pathOr } = require('ramda');
+const { env: { UA: accountId } } = process;
 
 const getVisitor = userId => {
-    const visitor = ua(
+    return ua(
         accountId,
-        userId || 'unknown',
+        userId,
         {
             https: true,
             strictCidFormat: false,
         }
     );
-
-    return development ? visitor.debug() : visitor;
 };
 
 module.exports = {
@@ -24,20 +21,20 @@ module.exports = {
             res.end(chunk, encoding);
 
             const {
-                ip: uip,
+                ip: ipOverride,
                 protocol,
                 hostname,
                 originalUrl,
             } = req;
-            const userId = path(['user', 'username'], req);
+            const userId = pathOr('unknown', ['user', 'username'], req);
 
             getVisitor(userId)
                 .pageview({
                     userId,
-                    uip,
-                    ua: req.get('User-Agent'),
-                    t: 'pageview',
-                    dl: `${protocol}://${hostname}${originalUrl}`,
+                    ipOverride,
+                    userAgentOverride: req.get('User-Agent'),
+                    hitType: 'pageview',
+                    documentLocationUrl: `${protocol}://${hostname}${originalUrl}`,
                 })
                 .send();
         };
