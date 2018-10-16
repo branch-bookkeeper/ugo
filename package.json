@@ -51,6 +51,6 @@
     "nyc": "^13.1.0",
     "proxyquire": "^2.1.0",
     "sinon": "^7.0.0",
-    "supertest": "^3.0.0"
+    "supertest": "^3.3.0"
   }
 }
