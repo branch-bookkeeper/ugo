@@ -4,7 +4,7 @@ set -e
 export NODE_ENV=test
 export NEW_RELIC_ENABLED=false
 export NEW_RELIC_APP_NAME=ugo
-export NEW_RELIC_LOG=stdout
+export NEW_RELIC_LOG=/dev/null
 export NEW_RELIC_NO_CONFIG_FILE=true
 export DATADOG_API_KEY=fake
 export APP_ORIGIN=fake
