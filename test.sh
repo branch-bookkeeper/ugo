@@ -20,7 +20,7 @@ fi
 echo
 printf "\033[33mTesting with mongo\n\033[0m"
 
-nyc --reporter=none mocha test/test* --ui tdd --timeout 2000
+nyc --reporter=none mocha test/test* --exit --ui tdd --timeout 2000
 
 mv .nyc_output{,-old}
 
@@ -29,7 +29,7 @@ printf "\033[33mTesting without mongo\n\033[0m"
 
 unset MONGO_URL
 
-nyc --reporter=none mocha test/test* --ui tdd --timeout 2000
+nyc --reporter=none mocha test/test* --exit --ui tdd --timeout 2000
 
 cp .nyc_output-old/* .nyc_output/
 rm -rf .nyc_output-old
