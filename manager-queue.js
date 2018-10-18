@@ -26,10 +26,7 @@ class QueueManager {
                         repo,
                     },
                     $push: {
-                        queue: {
-                            ...item,
-                            createdAt: new Date(item.createdAt),
-                        },
+                        queue: item,
                     },
                 },
                 {
