@@ -22,10 +22,10 @@ if (!owner || !repo || !branch || !appId) {
 }
 
 mongoManager.getCollection('pullRequest')
-    .then(c => c.find({
-        owner: { $eq: owner },
-        repo: { $eq: repo },
-        branch: { $eq: branch },
+    .then(collection => collection.find({
+        owner,
+        repo,
+        branch,
     }))
     .then(cursor => cursor.toArray())
     .then(items => Promise.all(items.map(({
