@@ -123,7 +123,7 @@ suite('Route queue', () => {
             .expect(res => [0, 1, 2].forEach(i => assert.deepEqual(pathOr(0, ['body', i, 'pullRequestNumber'], res), randomNumber + i)))
             .expect(200, done);
     });
-    /*
+
     test('Add malformed item', done => {
         request(server)
             .post(url)
@@ -132,17 +132,17 @@ suite('Route queue', () => {
                 pullRequestNumber: 1,
             })
             .expect('content-type', /application\/json/)
-            .expect({ error: 'Malformed request body' })
-            .expect(201, done);
+            .expect({ error: '"username" is required' })
+            .expect(400, done);
     });
-    */
+
     test('Add empty item', done => {
         request(server)
             .post(url)
             .set('Authorization', `token ${userToken}`)
             .send({})
             .expect('content-type', /application\/json/)
-            .expect({ error: 'Malformed request body' })
+            .expect({ error: '"username" is required' })
             .expect(400, done);
     });
 
@@ -200,7 +200,7 @@ suite('Route queue', () => {
             .expect({ error: 'Unauthorized' })
             .expect(401, done);
     });
-    /*
+
     test('Remove malformed item', done => {
         request(server)
             .delete(url)
@@ -209,17 +209,17 @@ suite('Route queue', () => {
                 pullRequestNumber: 1,
             })
             .expect('content-type', /application\/json/)
-            .expect({ error: 'Malformed request body' })
-            .expect(201, done);
+            .expect({ error: '"username" is required' })
+            .expect(400, done);
     });
-    */
+
     test('Remove empty item', done => {
         request(server)
             .delete(url)
             .set('Authorization', `token ${userToken}`)
             .send({})
             .expect('content-type', /application\/json/)
-            .expect({ error: 'Malformed request body' })
+            .expect({ error: '"username" is required' })
             .expect(400, done);
     });
 
