@@ -1,11 +1,11 @@
 const MongoClient = require('mongodb').MongoClient;
 const logger = require('./logger');
 const { isNil } = require('ramda');
-const { env: { MONGO_URL, NODE_ENV: environment = 'production' } } = process;
-const development = environment === 'development';
+const { env: { MONGO_URL } } = process;
 const getDb = new Promise(resolve => {
     if (MONGO_URL) {
-        MongoClient.connect(MONGO_URL)
+        MongoClient.connect(MONGO_URL, { useNewUrlParser: true })
+            .then(c => c.db())
             .then(db => {
                 logger.info('Connected to mongo');
                 resolve(db);

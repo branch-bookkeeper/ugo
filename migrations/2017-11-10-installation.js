@@ -1,12 +1,14 @@
 const MongoClient = require('mongodb').MongoClient;
-let db;
+const { env: { MONGO_URL } } = process;
+let client;
 
-MongoClient.connect(process.env.MONGO_URL)
-    .then(d => {
+MongoClient.connect(MONGO_URL, { useNewUrlParser: true })
+    .then(c => {
         console.log('Connected to DB');
-        db = d;
-        return db.createCollection('installation');
+        client = c;
+        return c.db();
     })
+    .then(d => d.createCollection('installation'))
     .then(collection => {
         console.log('Collection installation created');
 
@@ -22,6 +24,6 @@ MongoClient.connect(process.env.MONGO_URL)
     .then(() => {
         console.log('Index created');
 
-        db.close();
+        client.close();
     })
     .catch(e => console.error(e));

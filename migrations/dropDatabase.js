@@ -1,16 +1,17 @@
 const MongoClient = require('mongodb').MongoClient;
-let db;
+const { env: { MONGO_URL } } = process;
+let client;
 
-MongoClient.connect(process.env.MONGO_URL)
-    .then(d => {
+MongoClient.connect(MONGO_URL, { useNewUrlParser: true })
+    .then(c => {
         console.log('Connected to DB');
-        db = d;
-        return d.dropDatabase();
+        client = c;
+        return client.db().dropDatabase();
     })
     .then(() => {
         console.log('Database dropped');
 
-        db.close();
+        client.close();
     })
     .catch(e => {
         console.error(e);

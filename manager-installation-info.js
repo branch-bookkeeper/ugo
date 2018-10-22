@@ -15,7 +15,7 @@ class InstallationInfoManager {
             return mongoManager.getCollection(COLLECTION_NAME)
                 .then(collection => collection.findOne(
                     { _id: `${installationId}-${token}` },
-                    { fields: { _id: false, created_at: false, installationId: false } }
+                    { projection: { _id: false, created_at: false, installationId: false } }
                 ))
                 .then(installationInfo => {
                     if (isNil(installationInfo)) {
