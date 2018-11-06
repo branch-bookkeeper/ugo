@@ -19,8 +19,12 @@ const sendNotification = (options) => {
         title,
         message,
         username,
-        url,
+        owner,
+        repo,
+        pullRequestNumber,
     } = options;
+
+    const url = buildPullRequesturl({ owner, repo, pullRequestNumber });
 
     return new Promise((resolve, reject) => {
         onesignal.sendMessage({
@@ -30,7 +34,7 @@ const sendNotification = (options) => {
             headings: {
                 en: title,
             },
-            url: url,
+            url,
             filters: [
                 {
                     field: 'tag',
@@ -62,7 +66,9 @@ class PushNotificationManager {
         return sendNotification({
             title: TITLE_FIRST,
             message: t('notification.message.queue.first', { owner, repo, pullRequestNumber }),
-            url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
+            owner,
+            repo,
+            pullRequestNumber,
             username,
         });
     }
@@ -87,7 +93,9 @@ class PushNotificationManager {
             ...options,
             title,
             message: t(message, { owner, repo, pullRequestNumber }),
-            url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
+            owner,
+            repo,
+            pullRequestNumber,
             username,
         });
     }
