@@ -104,6 +104,32 @@ const sendNotification = (options) => {
         }));
 };
 
+const cancelNotification = id => getNotification(id)
+    .then(notification => {
+        if (notification) {
+            return onesignal.cancelNotification(notification.id);
+        } else {
+            throw new Error('Notification not found on DB');
+        }
+    })
+    .then(({ data }) => {
+        data = JSON.parse(data);
+        if (data.errors) {
+            throw new Error(data.errors[0]);
+        }
+        postal.publish({
+            channel: 'notification',
+            topic: 'cancel.ok',
+            data,
+        });
+    })
+    .then(() => deleteNotification(id))
+    .catch(err => postal.publish({
+        channel: 'notification',
+        topic: 'cancel.ko',
+        data: err,
+    }));
+
 class PushNotificationManager {
     static sendFirstInQueueNotification(options) {
         const {
