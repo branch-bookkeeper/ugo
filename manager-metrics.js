@@ -21,7 +21,7 @@ class MetricsManager {
     static increment(options) {
         const {
             name,
-            value,
+            value = 1,
             tags,
             timestamp,
         } = options;
