@@ -11,7 +11,7 @@
   "license": "GPL-3.0",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
+    "dev": "nodemon --ignore migrations/ --ignore mocks/ --ignore test/ --ignore tools/",
     "dev-server": "json-server --watch -p 3003 --routes mocks/routes.json mocks/server.js",
     "test": "yarn lint && yarn test-ci",
     "test-ci": "./test.sh",
