@@ -1,13 +1,10 @@
 const postal = require('postal');
-const onesignal = require('simple-onesignal');
-const logger = require('./logger');
-const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, SEND_DELAY = 60, NODE_ENV: environment = 'production' } } = process;
+const { Client: OneSignalClient, Notification } = require('onesignal-node');
+const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, SEND_DELAY = 60 } } = process;
 const GitHub = require('./github');
 const t = require('./manager-localization');
+const onesignal = new OneSignalClient({ app: { appAuthKey: ONESIGNAL_KEY, appId: ONESIGNAL_APP_ID } });
 const mongoManager = require('./manager-mongo');
-const development = environment === 'development';
-
-onesignal.configure(ONESIGNAL_APP_ID, ONESIGNAL_KEY, development);
 
 const COLLECTION_NAME = 'pushNotification';
 const TITLE_CHECKS_PASSED = t('notification.title.checks.passed');
@@ -67,33 +64,41 @@ const sendNotification = (options) => {
     } = options;
 
     const url = buildPullRequesturl({ owner, repo, pullRequestNumber });
-
-    return new Promise((resolve, reject) => {
-        onesignal.sendMessage({
-            contents: {
-                en: message,
+    const notification = new Notification({
+        contents: {
+            en: message,
+        },
+        headings: {
+            en: title,
+        },
+        url,
+        filters: [
+            {
+                field: 'tag',
+                key: 'username',
+                relation: '=',
+                value: username,
             },
-            headings: {
-                en: title,
-            },
-            url,
-            filters: [
-                {
-                    field: 'tag',
-                    key: 'username',
-                    relation: '=',
-                    value: username,
-                },
-            ],
-        }, (err, data) => {
-            if (err && err.length > 0) {
-                logger.error(err, data);
-                reject(err);
-            } else {
-                resolve(data);
-            }
-        });
+        ],
     });
+
+    return onesignal.sendNotification(notification)
+        .then(({ data }) => {
+            if (data.errors) {
+                throw new Error(data.errors[0]);
+            }
+            postal.publish({
+                channel: 'notification',
+                topic: 'sent.ok',
+                data,
+            });
+            return data;
+        })
+        .catch(err => postal.publish({
+            channel: 'notification',
+            topic: 'sent.ko',
+            data: err,
+        }));
 };
 
 class PushNotificationManager {
@@ -131,8 +136,7 @@ class PushNotificationManager {
             ? 'notification.message.checks.passed'
             : 'notification.message.checks.failed';
 
-        return sendNotification({
-            ...options,
+        const data = {
             title,
             message: t(message, { owner, repo, pullRequestNumber }),
             owner,
@@ -140,7 +144,14 @@ class PushNotificationManager {
             pullRequestNumber,
             username,
             type: NOTIFICATION_TYPE_CHECKS,
-        });
+        };
+
+        return PushNotificationManager.cancelChecksNotification(options)
+            .then(() => sendNotification(data))
+            .then(res => saveNotification({
+                ...res,
+                ...data,
+            }));
     }
 }
 
