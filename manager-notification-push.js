@@ -216,6 +216,12 @@ postal.subscribe({
 
 postal.subscribe({
     channel: 'notification',
+    topic: 'cancel.checks',
+    callback: PushNotificationManager.cancelChecksNotification,
+});
+
+postal.subscribe({
+    channel: 'notification',
     topic: 'send.queue.first',
     callback: PushNotificationManager.sendFirstInQueueNotification,
 });
