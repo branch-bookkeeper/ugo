@@ -106,4 +106,52 @@ postal.subscribe({
     callback: PushNotificationManager.sendFirstInQueueNotification,
 });
 
+postal.subscribe({
+    channel: 'notification',
+    topic: 'sent.ok',
+    callback: () => postal.publish({
+        channel: 'metrics',
+        topic: 'increment',
+        data: {
+            name: 'notification.sent.ok',
+        },
+    }),
+});
+
+postal.subscribe({
+    channel: 'notification',
+    topic: 'sent.ko',
+    callback: () => postal.publish({
+        channel: 'metrics',
+        topic: 'increment',
+        data: {
+            name: 'notification.sent.ko',
+        },
+    }),
+});
+
+postal.subscribe({
+    channel: 'notification',
+    topic: 'cancel.ok',
+    callback: () => postal.publish({
+        channel: 'metrics',
+        topic: 'increment',
+        data: {
+            name: 'notification.cancel.ok',
+        },
+    }),
+});
+
+postal.subscribe({
+    channel: 'notification',
+    topic: 'cancel.ko',
+    callback: () => postal.publish({
+        channel: 'metrics',
+        topic: 'increment',
+        data: {
+            name: 'notification.cancel.ko',
+        },
+    }),
+});
+
 module.exports = PushNotificationManager;
