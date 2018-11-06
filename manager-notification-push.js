@@ -221,6 +221,24 @@ postal.subscribe({
 });
 
 postal.subscribe({
+    channel: 'queue',
+    topic: 'item.remove',
+    callback: ({
+        owner,
+        repo,
+        item: {
+            pullRequestNumber,
+            username,
+        },
+    }) => PushNotificationManager.cancelChecksNotification({
+        owner,
+        repo,
+        pullRequestNumber,
+        username,
+    }),
+});
+
+postal.subscribe({
     channel: 'notification',
     topic: 'send.queue.first',
     callback: PushNotificationManager.sendFirstInQueueNotification,
