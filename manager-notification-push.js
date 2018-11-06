@@ -4,15 +4,57 @@ const logger = require('./logger');
 const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, SEND_DELAY = 60, NODE_ENV: environment = 'production' } } = process;
 const GitHub = require('./github');
 const t = require('./manager-localization');
+const mongoManager = require('./manager-mongo');
 const development = environment === 'development';
 
 onesignal.configure(ONESIGNAL_APP_ID, ONESIGNAL_KEY, development);
 
+const COLLECTION_NAME = 'pushNotification';
 const TITLE_CHECKS_PASSED = t('notification.title.checks.passed');
 const TITLE_CHECKS_FAILED = t('notification.title.checks.failed');
 const TITLE_FIRST = t('notification.title.queue.first');
 
 const buildPullRequesturl = ({ owner, repo, pullRequestNumber }) => `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`;
+const getNotificationId = ({
+    owner,
+    repo,
+    pullRequestNumber,
+    username,
+    type,
+}) => `${owner}-${repo}-${pullRequestNumber}-${username}-${type}`;
+
+const saveNotification = data => !mongoManager.enabled()
+    ? Promise.resolve(data)
+    : mongoManager.getCollection(COLLECTION_NAME)
+        .then(collection => collection.updateOne(
+            {
+                _id: getNotificationId(data),
+            },
+            {
+                $set: {
+                    ...data,
+                    createdAt: new Date(),
+                },
+            },
+            {
+                upsert: true,
+            }
+        ))
+        .then(() => data);
+
+const getNotification = id => !mongoManager.enabled()
+    ? Promise.resolve()
+    : mongoManager.getCollection(COLLECTION_NAME)
+        .then(collection => collection.findOne(
+            { _id: id },
+            { projection: { id: true } }
+        ));
+
+const deleteNotification = id => !mongoManager.enabled()
+    ? Promise.resolve(id)
+    : mongoManager.getCollection(COLLECTION_NAME)
+        .then(collection => collection.deleteOne({ _id: id }))
+        .then(() => id);
 
 const sendNotification = (options) => {
     const {
@@ -97,6 +139,7 @@ class PushNotificationManager {
             repo,
             pullRequestNumber,
             username,
+            type: NOTIFICATION_TYPE_CHECKS,
         });
     }
 }
