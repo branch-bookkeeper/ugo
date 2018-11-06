@@ -1,7 +1,7 @@
 const postal = require('postal');
 const onesignal = require('simple-onesignal');
 const logger = require('./logger');
-const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, NODE_ENV: environment = 'production' } } = process;
+const { env: { ONESIGNAL_APP_ID, ONESIGNAL_KEY, SEND_DELAY = 60, NODE_ENV: environment = 'production' } } = process;
 const GitHub = require('./github');
 const t = require('./manager-localization');
 const development = environment === 'development';
