@@ -60,7 +60,6 @@ class PushNotificationManager {
         } = options;
 
         return sendNotification({
-            ...options,
             title: TITLE_FIRST,
             message: t('notification.message.queue.first', { owner, repo, pullRequestNumber }),
             url: buildPullRequesturl({ owner, repo, pullRequestNumber }),
