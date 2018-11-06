@@ -10,6 +10,7 @@ const COLLECTION_NAME = 'pushNotification';
 const TITLE_CHECKS_PASSED = t('notification.title.checks.passed');
 const TITLE_CHECKS_FAILED = t('notification.title.checks.failed');
 const TITLE_FIRST = t('notification.title.queue.first');
+const NOTIFICATION_TYPE_CHECKS = 'checks';
 
 const buildPullRequesturl = ({ owner, repo, pullRequestNumber }) => `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`;
 const getNotificationId = ({
@@ -185,6 +186,25 @@ class PushNotificationManager {
                 ...res,
                 ...data,
             }));
+    }
+
+    static cancelChecksNotification(options) {
+        const {
+            owner,
+            repo,
+            pullRequestNumber,
+            username,
+        } = options;
+
+        const notificationId = getNotificationId({
+            owner,
+            repo,
+            pullRequestNumber,
+            username,
+            type: NOTIFICATION_TYPE_CHECKS,
+        });
+
+        return cancelNotification(notificationId);
     }
 }
 
