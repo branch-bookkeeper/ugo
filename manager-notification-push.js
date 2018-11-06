@@ -61,10 +61,13 @@ const sendNotification = (options) => {
         owner,
         repo,
         pullRequestNumber,
+        sendAt,
     } = options;
 
+    const sendAfter = sendAt ? sendAt.toISOString() : undefined;
     const url = buildPullRequesturl({ owner, repo, pullRequestNumber });
     const notification = new Notification({
+        send_after: sendAfter,
         contents: {
             en: message,
         },
@@ -136,9 +139,13 @@ class PushNotificationManager {
             ? 'notification.message.checks.passed'
             : 'notification.message.checks.failed';
 
+        const sendAt = new Date();
+        sendAt.setSeconds(sendAt.getSeconds() + SEND_DELAY);
+
         const data = {
             title,
             message: t(message, { owner, repo, pullRequestNumber }),
+            sendAt,
             owner,
             repo,
             pullRequestNumber,
