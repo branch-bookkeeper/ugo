@@ -1,8 +1,6 @@
 {
     "extends": ["airbnb-base/rules/style"],
     "env": {
-        "browser": true,
-        "greasemonkey": true,
         "node": true
     },
     "parserOptions": {
