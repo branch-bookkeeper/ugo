@@ -99,9 +99,9 @@
   dependencies:
     methods "^1.1.2"
 
-"@sinonjs/commons@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.0.2.tgz#3e0ac737781627b8844257fadc3d803997d0526e"
+"@sinonjs/commons@^1.2.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.3.0.tgz#50a2754016b6f30a994ceda6d9a0a8c36adda849"
   dependencies:
     type-detect "4.0.8"
 
@@ -550,7 +550,7 @@ check-error@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/check-error/-/check-error-1.0.2.tgz#574d312edd88bb5dd8912e9286dd6c0aed4aac82"
 
-chokidar@^2.0.2:
+chokidar@^2.0.4:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-2.0.4.tgz#356ff4e2b0e8e43e322d18a372460bbcf3accd26"
   dependencies:
@@ -774,6 +774,13 @@ core-util-is@1.0.2, core-util-is@~1.0.0:
 cors@^2.8.4:
   version "2.8.4"
   resolved "https://registry.yarnpkg.com/cors/-/cors-2.8.4.tgz#2bd381f2eb201020105cd50ea59da63090694686"
+  dependencies:
+    object-assign "^4"
+    vary "^1"
+
+cors@^2.8.5:
+  version "2.8.5"
+  resolved "https://registry.yarnpkg.com/cors/-/cors-2.8.5.tgz#eac11da51592dd86b9f06f6e7ac293b3df875d29"
   dependencies:
     object-assign "^4"
     vary "^1"
@@ -1131,9 +1138,9 @@ eslint-visitor-keys@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#3f3180fb2e291017716acb4c9d6d5b5c34a6a81d"
 
-eslint@^5.7.0:
-  version "5.7.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-5.7.0.tgz#55c326d6fb2ad45fcbd0ce17c3846f025d1d819c"
+eslint@^5.9.0:
+  version "5.9.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-5.9.0.tgz#b234b6d15ef84b5849c6de2af43195a2d59d408e"
   dependencies:
     "@babel/code-frame" "^7.0.0"
     ajv "^6.5.3"
@@ -1724,6 +1731,10 @@ hoek@5.x.x:
   version "5.0.4"
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-5.0.4.tgz#0f7fa270a1cafeb364a4b2ddfaa33f864e4157da"
 
+hoek@6.x.x:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/hoek/-/hoek-6.0.3.tgz#7884360426d927865a0a1251fc9c59313af5b798"
+
 hosted-git-info@^2.1.4:
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.7.1.tgz#97f236977bd6e125408930ff6de3eec6281ec047"
@@ -2139,11 +2150,11 @@ jju@^1.1.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/jju/-/jju-1.4.0.tgz#a3abe2718af241a2b2904f84a625970f389ae32a"
 
-joi@^14.0.0:
-  version "14.0.0"
-  resolved "https://registry.yarnpkg.com/joi/-/joi-14.0.0.tgz#05a206b259e702f426eb2b2e523d642fb383e6ad"
+joi@^14.0.4:
+  version "14.0.6"
+  resolved "https://registry.yarnpkg.com/joi/-/joi-14.0.6.tgz#8c72314af6dba13ca48028a4f0af992ddc5a7472"
   dependencies:
-    hoek "5.x.x"
+    hoek "6.x.x"
     isemail "3.x.x"
     topo "3.x.x"
 
@@ -2303,14 +2314,14 @@ lcid@^1.0.0:
   dependencies:
     invert-kv "^1.0.0"
 
-le_node@^1.7.1:
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/le_node/-/le_node-1.7.1.tgz#8316409dada82b9f29657ca4060663f8f11551d1"
+le_node@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/le_node/-/le_node-1.8.0.tgz#07b1ae7d0c8f36a8e9892650c25f711b8a403f83"
   dependencies:
     babel-runtime "6.6.1"
     codependency "0.1.4"
     json-stringify-safe "5.0.1"
-    lodash "3.9.3"
+    lodash "4.17.11"
     reconnect-core "1.3.0"
     semver "5.1.0"
 
@@ -2339,9 +2350,9 @@ load-json-file@^4.0.0:
     pify "^3.0.0"
     strip-bom "^3.0.0"
 
-localizify@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/localizify/-/localizify-1.2.2.tgz#2be80bc04858e653814230821c6b82ea72a0b023"
+localizify@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/localizify/-/localizify-1.2.4.tgz#af92f6035d5a9b893f447b6316de95958db71d4c"
 
 locate-path@^2.0.0:
   version "2.0.0"
@@ -2401,11 +2412,7 @@ lodash.once@^4.0.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/lodash.once/-/lodash.once-4.1.1.tgz#0dd3971213c7c56df880977d504c88fb471a97ac"
 
-lodash@3.9.3:
-  version "3.9.3"
-  resolved "http://registry.npmjs.org/lodash/-/lodash-3.9.3.tgz#0159e86832feffc6d61d852b12a953b99496bd32"
-
-lodash@4, lodash@^4.12.0, lodash@^4.13.1, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.17.5:
+lodash@4, lodash@4.17.11, lodash@^4.12.0, lodash@^4.13.1, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.17.5:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
 
@@ -2613,9 +2620,9 @@ module-not-found-error@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/module-not-found-error/-/module-not-found-error-1.0.1.tgz#cf8b4ff4f29640674d6cdd02b0e3bc523c2bbdc0"
 
-mongodb-core@3.1.7:
-  version "3.1.7"
-  resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-3.1.7.tgz#fe61853a6a6acbd2046c91794e5325ecad85428a"
+mongodb-core@3.1.9:
+  version "3.1.9"
+  resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-3.1.9.tgz#c31ee407bf932b0149eaed775c17ee09974e4ca3"
   dependencies:
     bson "^1.1.0"
     require_optional "^1.0.1"
@@ -2623,11 +2630,11 @@ mongodb-core@3.1.7:
   optionalDependencies:
     saslprep "^1.0.0"
 
-mongodb@^3.1.8:
-  version "3.1.8"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.1.8.tgz#df8084fda2efdbaddd05dfd6a269891fc4cc72df"
+mongodb@^3.1.9:
+  version "3.1.10"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.1.10.tgz#45ad9b74ea376f4122d0881b75e5489b9e504ed7"
   dependencies:
-    mongodb-core "3.1.7"
+    mongodb-core "3.1.9"
     safe-buffer "^5.1.2"
 
 morgan@^1.9.0, morgan@^1.9.1:
@@ -2692,9 +2699,9 @@ negotiator@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.1.tgz#2b327184e8992101177b28563fb5e7102acd0ca9"
 
-newrelic@^4.9.0:
-  version "4.9.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-4.9.0.tgz#8d7e0426115e0b2cd078de2dafb95952e17879c3"
+newrelic@^4.10.0:
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-4.11.0.tgz#1a0b6a2e9e023878789b2b64db6de62912977aa9"
   dependencies:
     "@newrelic/koa" "^1.0.0"
     "@newrelic/superagent" "^1.0.0"
@@ -2712,7 +2719,7 @@ nice-try@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
 
-nise@^1.4.5:
+nise@^1.4.6:
   version "1.4.6"
   resolved "https://registry.yarnpkg.com/nise/-/nise-1.4.6.tgz#76cc3915925056ae6c405dd8ad5d12bde570c19f"
   dependencies:
@@ -2737,11 +2744,11 @@ node-pre-gyp@^0.10.0:
     semver "^5.3.0"
     tar "^4"
 
-nodemon@^1.18.4:
-  version "1.18.4"
-  resolved "https://registry.yarnpkg.com/nodemon/-/nodemon-1.18.4.tgz#873f65fdb53220eb166180cf106b1354ac5d714d"
+nodemon@^1.18.6:
+  version "1.18.6"
+  resolved "https://registry.yarnpkg.com/nodemon/-/nodemon-1.18.6.tgz#89b1136634d6c0afc7de24cc932a760e999e2c76"
   dependencies:
-    chokidar "^2.0.2"
+    chokidar "^2.0.4"
     debug "^3.1.0"
     ignore-by-default "^1.0.1"
     minimatch "^3.0.4"
@@ -3438,32 +3445,6 @@ request@2.85.0:
     tunnel-agent "^0.6.0"
     uuid "^3.1.0"
 
-request@2.86.0:
-  version "2.86.0"
-  resolved "https://registry.yarnpkg.com/request/-/request-2.86.0.tgz#2b9497f449b0a32654c081a5cf426bbfb5bf5b69"
-  dependencies:
-    aws-sign2 "~0.7.0"
-    aws4 "^1.6.0"
-    caseless "~0.12.0"
-    combined-stream "~1.0.5"
-    extend "~3.0.1"
-    forever-agent "~0.6.1"
-    form-data "~2.3.1"
-    har-validator "~5.0.3"
-    hawk "~6.0.2"
-    http-signature "~1.2.0"
-    is-typedarray "~1.0.0"
-    isstream "~0.1.2"
-    json-stringify-safe "~5.0.1"
-    mime-types "~2.1.17"
-    oauth-sign "~0.8.2"
-    performance-now "^2.1.0"
-    qs "~6.5.1"
-    safe-buffer "^5.1.1"
-    tough-cookie "~2.3.3"
-    tunnel-agent "^0.6.0"
-    uuid "^3.1.0"
-
 request@^2.87.0, request@^2.88.0:
   version "2.88.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.0.tgz#9c2fca4f7d35b592efe57c7f0a55e81052124fef"
@@ -3550,9 +3531,9 @@ rimraf@^2.2.8, rimraf@^2.6.1, rimraf@^2.6.2:
   dependencies:
     glob "^7.0.5"
 
-rollbar@^2.4.7:
-  version "2.4.7"
-  resolved "https://registry.yarnpkg.com/rollbar/-/rollbar-2.4.7.tgz#9b1de1a0fab6b6e63fcfcd322c26081a1d8242e8"
+rollbar@^2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/rollbar/-/rollbar-2.5.0.tgz#dbb513eea34f1e3bae57611810c3e6df0ef50a12"
   dependencies:
     async "~1.2.1"
     console-polyfill "0.3.0"
@@ -3694,17 +3675,17 @@ signal-exit@^3.0.0, signal-exit@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
 
-sinon@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/sinon/-/sinon-7.0.0.tgz#99f2e5198d90a01ccbcebd4dc181a24827cb90dd"
+sinon@^7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-7.1.1.tgz#1202f317aa14d93cb9b69ff50b6bd49c0e05ffc9"
   dependencies:
-    "@sinonjs/commons" "^1.0.2"
+    "@sinonjs/commons" "^1.2.0"
     "@sinonjs/formatio" "^3.0.0"
     "@sinonjs/samsam" "^2.1.2"
     diff "^3.5.0"
     lodash.get "^4.4.2"
     lolex "^3.0.0"
-    nise "^1.4.5"
+    nise "^1.4.6"
     supports-color "^5.5.0"
     type-detect "^4.0.8"
 
@@ -4155,12 +4136,12 @@ unique-string@^1.0.0:
   dependencies:
     crypto-random-string "^1.0.0"
 
-universal-analytics@^0.4.17:
-  version "0.4.17"
-  resolved "https://registry.yarnpkg.com/universal-analytics/-/universal-analytics-0.4.17.tgz#b57a07e37446ebe4f32872b2152a44cbc5cc4b73"
+universal-analytics@^0.4.20:
+  version "0.4.20"
+  resolved "https://registry.yarnpkg.com/universal-analytics/-/universal-analytics-0.4.20.tgz#d6b64e5312bf74f7c368e3024a922135dbf24b03"
   dependencies:
     debug "^3.0.0"
-    request "2.86.0"
+    request "^2.88.0"
     uuid "^3.0.0"
 
 unpipe@1.0.0, unpipe@~1.0.0:
