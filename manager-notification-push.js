@@ -292,4 +292,8 @@ postal.subscribe({
     }),
 });
 
+PushNotificationManager.NOTIFICATION_TYPE_CHECKS = NOTIFICATION_TYPE_CHECKS;
+PushNotificationManager.TITLE_CHECKS_PASSED = TITLE_CHECKS_PASSED;
+PushNotificationManager.TITLE_CHECKS_FAILED = TITLE_CHECKS_FAILED;
+PushNotificationManager.TITLE_FIRST = TITLE_FIRST;
 module.exports = PushNotificationManager;
