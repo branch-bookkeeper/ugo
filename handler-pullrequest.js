@@ -194,11 +194,11 @@ class PullRequestHandler {
                                     status: githubStatus,
                                 })
                                     .then(() => {
-                                        if (githubStatus !== Github.STATUS_PENDING
-                                            && githubStatus !== pullRequestStatus) {
+                                        if (githubStatus !== pullRequestStatus) {
+                                            const topic = githubStatus === Github.STATUS_PENDING ? 'cancel.checks' : 'send.checks';
                                             postal.publish({
                                                 channel: 'notification',
-                                                topic: 'send.checks',
+                                                topic,
                                                 data: {
                                                     owner,
                                                     repo,

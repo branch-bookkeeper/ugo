@@ -20,7 +20,7 @@ suite('Validator queue', () => {
         validator(req, res, nextSpy);
         assert.called(nextSpy);
 
-        const args = nextSpy.getCall(0).args;
+        const args = nextSpy.firstCall.args;
         assert.isArray(args);
         assert.empty(args);
     });
@@ -32,7 +32,7 @@ suite('Validator queue', () => {
         validator(req, res, nextSpy);
         assert.called(nextSpy);
 
-        const args = nextSpy.getCall(0).args;
+        const args = nextSpy.firstCall.args;
         assert.isArray(args);
         assert.notEmpty(args);
         assert.lengthOf(args, 1);
@@ -50,7 +50,7 @@ suite('Validator queue', () => {
         validator(req, res, nextSpy);
         assert.called(nextSpy);
 
-        const args = nextSpy.getCall(0).args;
+        const args = nextSpy.firstCall.args;
         assert.isArray(args);
         assert.notEmpty(args);
         assert.lengthOf(args, 1);
