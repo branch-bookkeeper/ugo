@@ -26,12 +26,29 @@ suite('QueueManager', () => {
     });
 
     test('Get items', () => {
-        return queueManager.getItems(owner, repo, branch)
+        const secondItem = { ...queueItem, pullRequestNumber: queueItem.pullRequestNumber + 1 };
+        return queueManager.addItem(owner, repo, branch, queueItem)
+            .then(() => queueManager.addItem(owner, repo, branch, secondItem))
+            .then(() => queueManager.getItems(owner, repo, branch))
             .then(items => {
                 assert.isArray(items);
-                assert.empty(items);
-                assert.lengthOf(items, 0);
-                assert.deepEqual([], items);
+                assert.notEmpty(items);
+                assert.lengthOf(items, 2);
+                assert.deepEqual([queueItem, secondItem], items);
+            });
+    });
+
+    test('Get specific number of items', () => {
+        const secondItem = { ...queueItem, pullRequestNumber: queueItem.pullRequestNumber + 1 };
+        const numberOfItems = 1;
+        return queueManager.addItem(owner, repo, branch, queueItem)
+            .then(() => queueManager.addItem(owner, repo, branch, secondItem))
+            .then(() => queueManager.getItems(owner, repo, branch, numberOfItems))
+            .then(items => {
+                assert.isArray(items);
+                assert.notEmpty(items);
+                assert.lengthOf(items, numberOfItems);
+                assert.deepEqual([queueItem], items);
             });
     });
 
