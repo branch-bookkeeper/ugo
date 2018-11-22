@@ -63,10 +63,15 @@ suite('QueueManager', () => {
             });
     });
 
-    test('Get item', () => {
+    test('Get specific item', () => {
+        const secondItem = { ...queueItem, pullRequestNumber: queueItem.pullRequestNumber + 1 };
+
         return queueManager.addItem(owner, repo, branch, queueItem)
-            .then(() => queueManager.getItem(owner, repo, branch, queueItem.pullRequestNumber))
-            .then(item => assert.deepEqual(queueItem, item));
+            .then(() => queueManager.addItem(owner, repo, branch, secondItem))
+            .then(() => queueManager.getItem(owner, repo, branch, secondItem.pullRequestNumber))
+            .then(item => {
+                assert.deepEqual(secondItem, item);
+            });
     });
 
     test('Get not existing item', () => {
