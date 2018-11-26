@@ -101,11 +101,13 @@ class QueueManager {
                     _id: `${owner}-${repo}-${branch}`,
                 },
                 {
-                    _id: false,
-                    owner: false,
-                    repo: false,
-                    queue: {
-                        $slice: numberOfItems,
+                    projection: {
+                        _id: false,
+                        owner: false,
+                        repo: false,
+                        queue: {
+                            $slice: numberOfItems,
+                        },
                     },
                 }
             ))
@@ -119,9 +121,11 @@ class QueueManager {
                     _id: `${owner}-${repo}-${branch}`,
                 },
                 {
-                    _id: false,
-                    queue: {
-                        $elemMatch: { pullRequestNumber },
+                    projection: {
+                        _id: false,
+                        queue: {
+                            $elemMatch: { pullRequestNumber },
+                        },
                     },
                 }
             ))
