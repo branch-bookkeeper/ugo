@@ -5,7 +5,7 @@ const pusher = new Pusher({ appId, key, secret });
 
 const _getChannelId = (owner, repo, branch) => `${owner}-${repo}-${branch}`;
 
-class PusherNotificationManager {
+class PusherNotificationHandler {
     static sendQueueUpdate({
         owner,
         repo,
@@ -24,7 +24,7 @@ class PusherNotificationManager {
 postal.subscribe({
     channel: 'notification',
     topic: 'send.update',
-    callback: PusherNotificationManager.sendQueueUpdate,
+    callback: PusherNotificationHandler.sendQueueUpdate,
 });
 
-module.exports = PusherNotificationManager;
+module.exports = PusherNotificationHandler;
