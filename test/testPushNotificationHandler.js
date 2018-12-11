@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const oneSignalNode = require('onesignal-node');
 const postal = require('postal');
 const mongoManager = require('../manager-mongo');
-const pushNotificationManager = require('../manager-notification-push');
+const pushNotificationHandler = require('../handler-notification-push');
 const GitHub = require('../github');
 const fakeOneSignalSendReponse = { id: 'fake', recipients: 3 };
 const fakeOneSignalCancelReponse = { success: 'true' };
@@ -19,7 +19,7 @@ let postalSpy;
 
 sinon.assert.expose(assert, { prefix: '' });
 
-suite('PushNotificationManager', () => {
+suite('PushNotificationHandler', () => {
     setup(() => {
         oneSignalSendSpy = sinon
             .stub(oneSignalNode.Client.prototype, 'sendNotification')
@@ -27,7 +27,7 @@ suite('PushNotificationManager', () => {
 
         oneSignalCancelSpy = sinon
             .stub(oneSignalNode.Client.prototype, 'cancelNotification')
-            .resolves({ data: JSON.stringify(fakeOneSignalSendReponse) });
+            .resolves({ data: JSON.stringify(fakeOneSignalCancelReponse) });
 
         postalSpy = sinon.stub(postal, 'publish');
         pullRequestNumber = Math.floor(Math.random() * 89) + 10;
@@ -51,7 +51,7 @@ suite('PushNotificationManager', () => {
 
     test('Send first in queue notification', () => {
         const message = `${owner}/${repo} #${pullRequestNumber} is first in the queue`;
-        return pushNotificationManager.sendFirstInQueueNotification(options)
+        return pushNotificationHandler.sendFirstInQueueNotification(options)
             .then(data => {
                 const { args: [{ postBody }] } = oneSignalSendSpy.firstCall;
                 assert.deepEqual(postBody, {
@@ -59,7 +59,7 @@ suite('PushNotificationManager', () => {
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: pushNotificationManager.TITLE_FIRST },
+                    headings: { en: pushNotificationHandler.TITLE_FIRST },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.deepEqual(data, fakeOneSignalSendReponse);
@@ -78,7 +78,7 @@ suite('PushNotificationManager', () => {
             state: GitHub.STATUS_SUCCESS,
         };
         const message = `${owner}/${repo} #${pullRequestNumber} passed its checks`;
-        return pushNotificationManager.sendChecksNotification(options)
+        return pushNotificationHandler.sendChecksNotification(options)
             .then(data => {
                 const { args: [{ postBody }] } = oneSignalSendSpy.firstCall;
                 assert.match(postBody, {
@@ -86,7 +86,7 @@ suite('PushNotificationManager', () => {
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: pushNotificationManager.TITLE_CHECKS_PASSED },
+                    headings: { en: pushNotificationHandler.TITLE_CHECKS_PASSED },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.containsAllKeys(postBody, ['send_after']);
@@ -97,9 +97,9 @@ suite('PushNotificationManager', () => {
                     owner,
                     repo,
                     pullRequestNumber,
-                    title: pushNotificationManager.TITLE_CHECKS_PASSED,
+                    title: pushNotificationHandler.TITLE_CHECKS_PASSED,
                     username,
-                    type: pushNotificationManager.NOTIFICATION_TYPE_CHECKS,
+                    type: pushNotificationHandler.NOTIFICATION_TYPE_CHECKS,
                 });
                 assert.include(data.sendAt.toISOString(), new Date().toISOString().substring(0, 14));
                 assert.notCalled(oneSignalCancelSpy);
@@ -118,7 +118,7 @@ suite('PushNotificationManager', () => {
             state: GitHub.STATUS_FAILURE,
         };
         const message = `${owner}/${repo} #${pullRequestNumber} failed its checks`;
-        return pushNotificationManager.sendChecksNotification(options)
+        return pushNotificationHandler.sendChecksNotification(options)
             .then(data => {
                 const { args: [{ postBody }] } = oneSignalSendSpy.firstCall;
                 assert.match(postBody, {
@@ -126,7 +126,7 @@ suite('PushNotificationManager', () => {
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: pushNotificationManager.TITLE_CHECKS_FAILED },
+                    headings: { en: pushNotificationHandler.TITLE_CHECKS_FAILED },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.containsAllKeys(postBody, ['send_after']);
@@ -137,9 +137,9 @@ suite('PushNotificationManager', () => {
                     owner,
                     repo,
                     pullRequestNumber,
-                    title: pushNotificationManager.TITLE_CHECKS_FAILED,
+                    title: pushNotificationHandler.TITLE_CHECKS_FAILED,
                     username,
-                    type: pushNotificationManager.NOTIFICATION_TYPE_CHECKS,
+                    type: pushNotificationHandler.NOTIFICATION_TYPE_CHECKS,
                 });
                 assert.include(data.sendAt.toISOString(), new Date().toISOString().substring(0, 14));
                 assert.notCalled(oneSignalCancelSpy);
@@ -158,8 +158,8 @@ suite('PushNotificationManager', () => {
             state: GitHub.STATUS_PENDING,
         };
         const message = `${owner}/${repo} #${pullRequestNumber} failed its checks`;
-        return pushNotificationManager.sendChecksNotification(options)
-            .then(() => pushNotificationManager.cancelChecksNotification(options))
+        return pushNotificationHandler.sendChecksNotification(options)
+            .then(() => pushNotificationHandler.cancelChecksNotification(options))
             .then(data => {
                 assert.equal(oneSignalCancelSpy.called, mongoManager.enabled());
                 if (mongoManager.enabled()) {
@@ -172,7 +172,7 @@ suite('PushNotificationManager', () => {
                     filters: [{
                         field: 'tag', key: 'username', relation: '=', value: username,
                     }],
-                    headings: { en: pushNotificationManager.TITLE_CHECKS_FAILED },
+                    headings: { en: pushNotificationHandler.TITLE_CHECKS_FAILED },
                     url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                 });
                 assert.containsAllKeys(postBody, ['send_after']);
@@ -203,8 +203,8 @@ suite('PushNotificationManager', () => {
             state: GitHub.STATUS_FAILURE,
         };
         const message = `${owner}/${repo} #${pullRequestNumber} failed its checks`;
-        return pushNotificationManager.sendChecksNotification(options)
-            .then(() => pushNotificationManager.sendChecksNotification(options))
+        return pushNotificationHandler.sendChecksNotification(options)
+            .then(() => pushNotificationHandler.sendChecksNotification(options))
             .then(data => {
                 oneSignalSendSpy.getCalls().forEach(({ args: [{ postBody }] }) => {
                     assert.match(postBody, {
@@ -212,7 +212,7 @@ suite('PushNotificationManager', () => {
                         filters: [{
                             field: 'tag', key: 'username', relation: '=', value: username,
                         }],
-                        headings: { en: pushNotificationManager.TITLE_CHECKS_FAILED },
+                        headings: { en: pushNotificationHandler.TITLE_CHECKS_FAILED },
                         url: `https://github.com/${owner}/${repo}/pull/${pullRequestNumber}`,
                     });
                     assert.containsAllKeys(postBody, ['send_after']);
@@ -228,9 +228,9 @@ suite('PushNotificationManager', () => {
                     owner,
                     repo,
                     pullRequestNumber,
-                    title: pushNotificationManager.TITLE_CHECKS_FAILED,
+                    title: pushNotificationHandler.TITLE_CHECKS_FAILED,
                     username,
-                    type: pushNotificationManager.NOTIFICATION_TYPE_CHECKS,
+                    type: pushNotificationHandler.NOTIFICATION_TYPE_CHECKS,
                 });
                 assert.include(data.sendAt.toISOString(), new Date().toISOString().substring(0, 14));
                 assert.isTrue(oneSignalSendSpy.calledBefore(postalSpy));

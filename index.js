@@ -19,7 +19,7 @@ const {
     },
 } = process;
 require('./handler-event-queue');
-require('./manager-notification-push');
+require('./handler-notification-push');
 require('./handler-notification-pusher');
 require('./manager-metrics');
 
