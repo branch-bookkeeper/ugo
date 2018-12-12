@@ -16,7 +16,7 @@ suite('PullRequestManager', () => {
         return mongoManager.reset();
     });
 
-    test('Set info', () => {
+    test('Set pull request info', () => {
         return pullRequestManager.setPullRequestInfo(owner, repo, randomNumber, pullRequestInfoFixture)
             .then(items => {
                 assert.deepEqual(items, pullRequestInfoFixture);
