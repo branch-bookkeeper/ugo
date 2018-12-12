@@ -34,7 +34,7 @@ const getNotification = id => !mongoManager.enabled()
     : mongoManager.getCollection(COLLECTION_NAME)
         .then(collection => collection.findOne(
             { _id: id },
-            { projection: { id: true } }
+            { projection: { id: true, _id: false } }
         ));
 
 const deleteNotification = id => !mongoManager.enabled()
