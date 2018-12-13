@@ -2,7 +2,7 @@
 const { assert } = require('chai');
 const sinon = require('sinon');
 const pusher = require('pusher');
-const pusherNotificationManager = require('../manager-notification-pusher');
+const pusherNotificationHandler = require('../handler-notification-pusher');
 const queueItemFixture = require('./fixtures/queue.item');
 const owner = 'branch-bookkeeper';
 const repo = 'branch-bookkeeper';
@@ -13,7 +13,7 @@ let pusherSpy;
 
 sinon.assert.expose(assert, { prefix: '' });
 
-suite('PusherNotificationManager', () => {
+suite('PusherNotificationHandler', () => {
     setup(() => {
         pusherSpy = sinon.stub(pusher.prototype, 'trigger');
     });
@@ -23,7 +23,7 @@ suite('PusherNotificationManager', () => {
     });
 
     test('Send queue update', () => {
-        pusherNotificationManager.sendQueueUpdate({
+        pusherNotificationHandler.sendQueueUpdate({
             owner,
             repo,
             branch,

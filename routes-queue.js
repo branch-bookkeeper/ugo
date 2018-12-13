@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const createError = require('http-errors');
 const manager = require('./manager-queue');
-const pusherManager = require('./manager-notification-pusher');
+const pusherHandler = require('./handler-notification-pusher');
 const authenticator = require('./authenticator-github');
 const validator = require('./validator-queue');
 
@@ -48,7 +48,7 @@ router.route('/:owner/:repository/:branch/update-channel')
     .get((req, res, next) => {
         const { params: { owner, repository, branch } } = req;
         res.send({
-            id: pusherManager.getChannelId(owner, repository, branch),
+            id: pusherHandler.getChannelId(owner, repository, branch),
         });
     });
 
