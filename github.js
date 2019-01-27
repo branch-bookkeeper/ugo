@@ -148,8 +148,9 @@ class Github {
                     'user-agent': userAgent,
                     authorization: `token ${accessToken}`,
                 },
-            })
-                .then(trackApiUsageAndReturnBody));
+            }))
+            .then(trackApiUsageAndReturnBody)
+            .catch(() => {});
     }
 }
 
