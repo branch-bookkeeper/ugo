@@ -109,6 +109,8 @@ router.post('/', (req, res, next) => {
             pullRequestManager.deletePullRequestInfos(owner),
             queueManager.deleteQueue(owner),
         ]);
+    } else {
+        return next();
     }
 
     pendingPromise
