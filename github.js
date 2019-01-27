@@ -42,6 +42,15 @@ const trackApiRequest = (value = 1) => postal.publish({
     },
 });
 
+const trackApiUsageAndReturnBody = response => {
+    trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
+    trackApiRequest();
+    return {
+        ...response.body,
+        client_id: path(['x-oauth-client-id'], response.headers),
+    };
+};
+
 const getInstallationAccessToken = installationId => {
     const token = development ? '' : JWT.sign({
         iat: Math.floor(Date.now() / 1000),
@@ -59,15 +68,6 @@ const getInstallationAccessToken = installationId => {
         },
     })
         .then(path(['body', 'token']));
-};
-
-const trackApiUsageAndReturnBody = response => {
-    trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
-    trackApiRequest();
-    return {
-        ...response.body,
-        client_id: path(['x-oauth-client-id'], response.headers),
-    };
 };
 
 class Github {
