@@ -57,7 +57,8 @@ const getInstallationAccessToken = installationId => {
             'user-agent': userAgent,
             accept: 'application/vnd.github.machine-man-preview+json',
         },
-    }).then(path(['body', 'token']));
+    })
+        .then(path(['body', 'token']));
 };
 
 const trackApiUsageAndReturnBody = response => {
