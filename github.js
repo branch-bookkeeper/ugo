@@ -8,7 +8,6 @@ const {
 const request = require('request-promise-native').defaults({ json: true, resolveWithFullResponse: true });
 const RequestAllPages = require('request-all-pages');
 const postal = require('postal');
-const userAgent = 'branch-bookkeeper';
 const GITHUB_DEFAULT_BASE_HOST = 'https://api.github.com';
 const {
     env: {
@@ -51,6 +50,14 @@ const trackApiUsageAndReturnBody = response => {
     };
 };
 
+const getRequestOptions = (token, accept) => ({
+    headers: {
+        'user-agent': 'branch-bookkeeper',
+        authorization: token ? `token ${token}` : undefined,
+        accept,
+    },
+});
+
 const getInstallationAccessToken = installationId => {
     const token = development ? '' : JWT.sign({
         iat: Math.floor(Date.now() / 1000),
@@ -59,12 +66,9 @@ const getInstallationAccessToken = installationId => {
     }, privateKey, { algorithm: 'RS256' });
 
     return request.post(`${baseHost}/installations/${installationId}/access_tokens`, {
+        ...getRequestOptions(null, 'application/vnd.github.machine-man-preview+json'),
         auth: {
             bearer: token,
-        },
-        headers: {
-            'user-agent': userAgent,
-            accept: 'application/vnd.github.machine-man-preview+json',
         },
     })
         .then(path(['body', 'token']));
@@ -80,10 +84,7 @@ class Github {
     }) {
         return getInstallationAccessToken(installationId)
             .then(accessToken => request.post(updateBaseHost(statusUrl), {
-                headers: {
-                    'user-agent': userAgent,
-                    authorization: `token ${accessToken}`,
-                },
+                ...getRequestOptions(accessToken),
                 body: {
                     state: status,
                     description: description,
@@ -95,12 +96,7 @@ class Github {
     }
 
     static getUserInfo(token) {
-        return request.get(`${baseHost}/user`, {
-            headers: {
-                'user-agent': userAgent,
-                authorization: `token ${token}`,
-            },
-        })
+        return request.get(`${baseHost}/user`, getRequestOptions(token))
             .then(trackApiUsageAndReturnBody);
     }
 
@@ -108,11 +104,7 @@ class Github {
         return requestAllPages({
             uri: `${baseHost}/user/installations/${installationId}/repositories`,
             json: true,
-            headers: {
-                'user-agent': userAgent,
-                authorization: `token ${token}`,
-                accept: 'application/vnd.github.machine-man-preview+json',
-            },
+            ...getRequestOptions(token, 'application/vnd.github.machine-man-preview+json'),
         })
             .then(response => {
                 const lastPage = last(response);
@@ -129,10 +121,7 @@ class Github {
     static getPullRequestInfo(owner, repo, number, installationId) {
         return getInstallationAccessToken(installationId)
             .then(accessToken => request.get(`${baseHost}/repos/${owner}/${repo}/pulls/${number}`, {
-                headers: {
-                    'user-agent': userAgent,
-                    authorization: `token ${accessToken}`,
-                },
+                ...getRequestOptions(accessToken),
                 resolveWithFullResponse: false,
             }));
     }
@@ -144,12 +133,10 @@ class Github {
         sha,
     }) {
         return getInstallationAccessToken(installationId)
-            .then(accessToken => request.get(`${baseHost}/repos/${owner}/${repo}/commits/${sha}/status`, {
-                headers: {
-                    'user-agent': userAgent,
-                    authorization: `token ${accessToken}`,
-                },
-            }))
+            .then(accessToken => request.get(
+                `${baseHost}/repos/${owner}/${repo}/commits/${sha}/status`,
+                getRequestOptions(accessToken)
+            ))
             .then(trackApiUsageAndReturnBody)
             .catch(() => {});
     }
