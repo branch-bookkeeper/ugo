@@ -56,7 +56,7 @@ app.disable('etag');
 app.enable('trust proxy');
 
 app.use((req, res, next) => {
-    newrelic.addCustomParameter('username', path(['user', 'username'], req));
+    newrelic.addCustomAttribute('username', path(['user', 'username'], req));
     next();
 });
 
