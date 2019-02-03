@@ -140,6 +140,21 @@ class Github {
             .then(trackApiUsageAndReturnBody)
             .catch(() => {});
     }
+
+    static getHashCheckSuites({
+        installationId,
+        owner,
+        repo,
+        sha,
+    }) {
+        return getInstallationAccessToken(installationId)
+            .then(accessToken => request.get(
+                `${baseHost}/repos/${owner}/${repo}/commits/${sha}/check-suites`,
+                getRequestOptions(accessToken, 'application/vnd.github.antiope-preview+json')
+            ))
+            .then(trackApiUsageAndReturnBody)
+            .catch(() => {});
+    }
 }
 
 Github.STATUS_SUCCESS = 'success';

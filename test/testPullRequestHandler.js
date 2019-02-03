@@ -19,6 +19,7 @@ const branch = 'master';
 const pullRequestNumber = 1;
 let gitHubSpy;
 let gitHubHashSpy;
+let gitHubHashCheckSuites;
 let queueManagerGetItemSpy;
 let queueManagerGetFirstItemSpy;
 let queueManagerGetItemsSpy;
@@ -37,6 +38,7 @@ suite('PullRequestHandler', () => {
         }
         gitHubSpy = sinon.stub(GitHub, 'updatePullRequestStatus').resolves('');
         gitHubHashSpy = sinon.stub(GitHub, 'getHashStatus').resolves({ state: GitHub.STATUS_PENDING });
+        gitHubHashCheckSuites = sinon.stub(GitHub, 'getHashCheckSuites').resolves({ check_suites: [{ conclusion: GitHub.CHECK_SUITE_CONCLUSION_SUCCESS }] });
         queueManagerGetItemSpy = sinon.stub(queueManager, 'getItem').resolves(queueItemFixture);
         queueManagerGetFirstItemSpy = sinon.stub(queueManager, 'getFirstItem').resolves(queueItemFixture);
         queueManagerGetItemsSpy = sinon.stub(queueManager, 'getItems').resolves([queueItemFixture]);
@@ -50,6 +52,7 @@ suite('PullRequestHandler', () => {
     teardown(() => {
         gitHubSpy.restore();
         gitHubHashSpy.restore();
+        gitHubHashCheckSuites.restore();
         queueManagerGetItemSpy.restore();
         queueManagerGetFirstItemSpy.restore();
         queueManagerGetItemsSpy.restore();
