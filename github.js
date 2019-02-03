@@ -4,6 +4,14 @@ const {
     path,
     last,
     flatten,
+    isEmpty,
+    reject,
+    equals,
+    not,
+    isNil,
+    filter,
+    pathOr,
+    pluck,
 } = require('ramda');
 const request = require('request-promise-native').defaults({ json: true, resolveWithFullResponse: true });
 const RequestAllPages = require('request-all-pages');
@@ -57,6 +65,31 @@ const getRequestOptions = (token, accept) => ({
         accept,
     },
 });
+
+const getCombinedStatus = ([githubSuitesResponse, githubStatusResponse]) => {
+    const githubConclusions = pluck('conclusion', pathOr([], ['check_suites'], githubSuitesResponse));
+    const githubStatus = pathOr('', ['state'], githubStatusResponse);
+
+    const conclusionsHasPending = not(isEmpty(filter(isNil, githubConclusions)));
+    const conclusionsIsSuccess = isEmpty(reject(equals(Github.CHECK_SUITE_CONCLUSION_SUCCESS), githubConclusions));
+    const conclusionsHasFailure = not(isEmpty(filter(equals(Github.CHECK_SUITE_CONCLUSION_FAILURE), githubConclusions)));
+
+    const statusIsPending = equals(Github.STATUS_PENDING, githubStatus);
+    const statusIsSuccess = equals(Github.STATUS_SUCCESS, githubStatus);
+    const statusIsFailure = equals(Github.STATUS_FAILURE, githubStatus);
+
+    if (conclusionsHasPending || statusIsPending) {
+        return Github.STATUS_PENDING;
+    }
+    if (conclusionsHasFailure || statusIsFailure) {
+        return Github.STATUS_FAILURE;
+    }
+    if (conclusionsIsSuccess && statusIsSuccess) {
+        return Github.STATUS_SUCCESS;
+    }
+
+    return Github.STATUS_SUCCESS;
+};
 
 const getInstallationAccessToken = installationId => {
     const token = development ? '' : JWT.sign({
@@ -161,5 +194,12 @@ Github.STATUS_SUCCESS = 'success';
 Github.STATUS_FAILURE = 'failure';
 Github.STATUS_ERROR = 'error';
 Github.STATUS_PENDING = 'pending';
+
+Github.CHECK_SUITE_CONCLUSION_SUCCESS = 'success';
+Github.CHECK_SUITE_CONCLUSION_FAILURE = 'failure';
+Github.CHECK_SUITE_CONCLUSION_NEUTRAL = 'neutral';
+Github.CHECK_SUITE_CONCLUSION_CANCELLED = 'cancelled';
+Github.CHECK_SUITE_CONCLUSION_TIMED_OUT = 'timed_out';
+Github.CHECK_SUITE_CONCLUSION_ACTION_REQUIRED = 'action_required';
 
 module.exports = Github;
