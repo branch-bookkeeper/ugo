@@ -181,13 +181,13 @@ class PullRequestHandler {
                         if (!firstItem || firstItem.pullRequestNumber !== pullRequestNumber) {
                             return Promise.resolve();
                         }
-                        return Github.getHashStatus({
+                        return Github.getHashCombinedStatus({
                             installationId,
                             owner,
                             repo,
                             sha,
                         })
-                            .then(({ state: githubStatus }) => {
+                            .then(githubStatus => {
                                 const { username, pullRequestNumber } = firstItem;
 
                                 pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {

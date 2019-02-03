@@ -188,6 +188,29 @@ class Github {
             .then(trackApiUsageAndReturnBody)
             .catch(() => {});
     }
+
+    static getHashCombinedStatus({
+        installationId,
+        owner,
+        repo,
+        sha,
+    }) {
+        return Promise.all([
+            Github.getHashCheckSuites({
+                installationId,
+                owner,
+                repo,
+                sha,
+            }),
+            Github.getHashStatus({
+                installationId,
+                owner,
+                repo,
+                sha,
+            }),
+        ])
+            .then(getCombinedStatus);
+    }
 }
 
 Github.STATUS_SUCCESS = 'success';
