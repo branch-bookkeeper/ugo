@@ -8,7 +8,7 @@ const username = 'user';
 const pullRequestNumber = 1;
 const type = 'test';
 const notificationId = 'owner-repo-1-user-test';
-const notificationExternalId = 'ciao'
+const notificationExternalId = 'externalId';
 
 suite('PushNotificationManager', () => {
     suiteSetup(function () {
