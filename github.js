@@ -4,11 +4,18 @@ const {
     path,
     last,
     flatten,
+    isEmpty,
+    reject,
+    equals,
+    not,
+    isNil,
+    filter,
+    pathOr,
+    pluck,
 } = require('ramda');
 const request = require('request-promise-native').defaults({ json: true, resolveWithFullResponse: true });
 const RequestAllPages = require('request-all-pages');
 const postal = require('postal');
-const userAgent = 'branch-bookkeeper';
 const GITHUB_DEFAULT_BASE_HOST = 'https://api.github.com';
 const {
     env: {
@@ -42,6 +49,48 @@ const trackApiRequest = (value = 1) => postal.publish({
     },
 });
 
+const trackApiUsageAndReturnBody = response => {
+    trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
+    trackApiRequest();
+    return {
+        ...response.body,
+        client_id: path(['x-oauth-client-id'], response.headers),
+    };
+};
+
+const getRequestOptions = (token, accept) => ({
+    headers: {
+        'user-agent': 'branch-bookkeeper',
+        authorization: token ? `token ${token}` : undefined,
+        accept,
+    },
+});
+
+const getCombinedStatus = ([githubSuitesResponse, githubStatusResponse]) => {
+    const githubConclusions = pluck('conclusion', pathOr([], ['check_suites'], githubSuitesResponse));
+    const githubStatus = pathOr('', ['state'], githubStatusResponse);
+
+    const conclusionsHasPending = not(isEmpty(filter(isNil, githubConclusions)));
+    const conclusionsIsSuccess = isEmpty(reject(equals(Github.CHECK_SUITE_CONCLUSION_SUCCESS), githubConclusions));
+    const conclusionsHasFailure = not(isEmpty(filter(equals(Github.CHECK_SUITE_CONCLUSION_FAILURE), githubConclusions)));
+
+    const statusIsPending = equals(Github.STATUS_PENDING, githubStatus);
+    const statusIsSuccess = equals(Github.STATUS_SUCCESS, githubStatus);
+    const statusIsFailure = equals(Github.STATUS_FAILURE, githubStatus);
+
+    if (conclusionsHasPending || statusIsPending) {
+        return Github.STATUS_PENDING;
+    }
+    if (conclusionsHasFailure || statusIsFailure) {
+        return Github.STATUS_FAILURE;
+    }
+    if (conclusionsIsSuccess && statusIsSuccess) {
+        return Github.STATUS_SUCCESS;
+    }
+
+    return Github.STATUS_SUCCESS;
+};
+
 const getInstallationAccessToken = installationId => {
     const token = development ? '' : JWT.sign({
         iat: Math.floor(Date.now() / 1000),
@@ -50,23 +99,12 @@ const getInstallationAccessToken = installationId => {
     }, privateKey, { algorithm: 'RS256' });
 
     return request.post(`${baseHost}/installations/${installationId}/access_tokens`, {
+        ...getRequestOptions(null, 'application/vnd.github.machine-man-preview+json'),
         auth: {
             bearer: token,
         },
-        headers: {
-            'user-agent': userAgent,
-            accept: 'application/vnd.github.machine-man-preview+json',
-        },
-    }).then(path(['body', 'token']));
-};
-
-const trackApiUsageAndReturnBody = response => {
-    trackRateLimit(path(['x-ratelimit-remaining'], response.headers));
-    trackApiRequest();
-    return {
-        ...response.body,
-        client_id: path(['x-oauth-client-id'], response.headers),
-    };
+    })
+        .then(path(['body', 'token']));
 };
 
 class Github {
@@ -79,10 +117,7 @@ class Github {
     }) {
         return getInstallationAccessToken(installationId)
             .then(accessToken => request.post(updateBaseHost(statusUrl), {
-                headers: {
-                    'user-agent': userAgent,
-                    authorization: `token ${accessToken}`,
-                },
+                ...getRequestOptions(accessToken),
                 body: {
                     state: status,
                     description: description,
@@ -94,12 +129,7 @@ class Github {
     }
 
     static getUserInfo(token) {
-        return request.get(`${baseHost}/user`, {
-            headers: {
-                'user-agent': userAgent,
-                authorization: `token ${token}`,
-            },
-        })
+        return request.get(`${baseHost}/user`, getRequestOptions(token))
             .then(trackApiUsageAndReturnBody);
     }
 
@@ -107,11 +137,7 @@ class Github {
         return requestAllPages({
             uri: `${baseHost}/user/installations/${installationId}/repositories`,
             json: true,
-            headers: {
-                'user-agent': userAgent,
-                authorization: `token ${token}`,
-                accept: 'application/vnd.github.machine-man-preview+json',
-            },
+            ...getRequestOptions(token, 'application/vnd.github.machine-man-preview+json'),
         })
             .then(response => {
                 const lastPage = last(response);
@@ -128,10 +154,7 @@ class Github {
     static getPullRequestInfo(owner, repo, number, installationId) {
         return getInstallationAccessToken(installationId)
             .then(accessToken => request.get(`${baseHost}/repos/${owner}/${repo}/pulls/${number}`, {
-                headers: {
-                    'user-agent': userAgent,
-                    authorization: `token ${accessToken}`,
-                },
+                ...getRequestOptions(accessToken),
                 resolveWithFullResponse: false,
             }));
     }
@@ -143,13 +166,50 @@ class Github {
         sha,
     }) {
         return getInstallationAccessToken(installationId)
-            .then(accessToken => request.get(`${baseHost}/repos/${owner}/${repo}/commits/${sha}/status`, {
-                headers: {
-                    'user-agent': userAgent,
-                    authorization: `token ${accessToken}`,
-                },
-            })
-                .then(trackApiUsageAndReturnBody));
+            .then(accessToken => request.get(
+                `${baseHost}/repos/${owner}/${repo}/commits/${sha}/status`,
+                getRequestOptions(accessToken)
+            ))
+            .then(trackApiUsageAndReturnBody)
+            .catch(() => {});
+    }
+
+    static getHashCheckSuites({
+        installationId,
+        owner,
+        repo,
+        sha,
+    }) {
+        return getInstallationAccessToken(installationId)
+            .then(accessToken => request.get(
+                `${baseHost}/repos/${owner}/${repo}/commits/${sha}/check-suites`,
+                getRequestOptions(accessToken, 'application/vnd.github.antiope-preview+json')
+            ))
+            .then(trackApiUsageAndReturnBody)
+            .catch(() => {});
+    }
+
+    static getHashCombinedStatus({
+        installationId,
+        owner,
+        repo,
+        sha,
+    }) {
+        return Promise.all([
+            Github.getHashCheckSuites({
+                installationId,
+                owner,
+                repo,
+                sha,
+            }),
+            Github.getHashStatus({
+                installationId,
+                owner,
+                repo,
+                sha,
+            }),
+        ])
+            .then(getCombinedStatus);
     }
 }
 
@@ -157,5 +217,12 @@ Github.STATUS_SUCCESS = 'success';
 Github.STATUS_FAILURE = 'failure';
 Github.STATUS_ERROR = 'error';
 Github.STATUS_PENDING = 'pending';
+
+Github.CHECK_SUITE_CONCLUSION_SUCCESS = 'success';
+Github.CHECK_SUITE_CONCLUSION_FAILURE = 'failure';
+Github.CHECK_SUITE_CONCLUSION_NEUTRAL = 'neutral';
+Github.CHECK_SUITE_CONCLUSION_CANCELLED = 'cancelled';
+Github.CHECK_SUITE_CONCLUSION_TIMED_OUT = 'timed_out';
+Github.CHECK_SUITE_CONCLUSION_ACTION_REQUIRED = 'action_required';
 
 module.exports = Github;

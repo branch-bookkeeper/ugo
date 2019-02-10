@@ -44,6 +44,36 @@ router.post('/', (req, res, next) => {
         .then(() => res.json(`Status of ${sha} ${state}`));
 });
 
+// Check suite
+router.post('/', (req, res, next) => {
+    if (req.event !== 'check_suite') {
+        return next();
+    }
+
+    const {
+        body: {
+            action,
+            check_suite: {
+                status,
+                conclusion,
+                head_sha: sha,
+            },
+            repository: { name: repo, owner: { login: owner } },
+        },
+    } = req;
+
+    if (action === 'completed') {
+        return pullRequestHandler.handleStatusChange({
+            owner,
+            repo,
+            sha,
+        })
+            .then(() => res.json(`Check suite for ${sha} ${status} ${conclusion}`));
+    }
+
+    return res.json(`Check suite ${action} for ${sha} ${status}`);
+});
+
 // Repositories
 router.post('/', (req, res, next) => {
     if (req.event !== 'repository') {
@@ -109,6 +139,8 @@ router.post('/', (req, res, next) => {
             pullRequestManager.deletePullRequestInfos(owner),
             queueManager.deleteQueue(owner),
         ]);
+    } else {
+        return next();
     }
 
     pendingPromise

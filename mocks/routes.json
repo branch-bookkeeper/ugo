@@ -1,5 +1,6 @@
 {
   "/github/repos/:owner/:repo/commits/:sha/status": "/status",
+  "/github/repos/:owner/:repo/commits/:sha/check-suites": "/suites",
   "/github/repos/:owner/:repo/statuses/:sha": "/status",
   "/github/installations/:installationId/access_tokens": "/accessTokens",
   "/github/user/installations/:installationId/repositories": "/repositories",
