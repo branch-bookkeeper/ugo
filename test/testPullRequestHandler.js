@@ -151,7 +151,6 @@ suite('PullRequestHandler', () => {
             const { statuses_url: statusUrl } = pullRequest;
             const pullRequestInfo = {
                 ...pullRequestInfoFixture,
-                installationId: 4567,
                 assignees: [],
                 statusUrl,
             };
@@ -173,7 +172,7 @@ suite('PullRequestHandler', () => {
                     assert.calledWith(queueManagerGetItemsSpy, owner, repo, branch);
                     assert.calledWith(gitHubSpy, {
                         description,
-                        installationId: 1234,
+                        installationId,
                         status,
                         statusUrl: 'https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef',
                         targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
@@ -302,6 +301,7 @@ suite('PullRequestHandler', () => {
     });
 
     test('Block', () => {
+        const { installationId } = pullRequestInfoFixture;
         return pullRequestHandler.blockPullRequest({
             owner,
             repo,
@@ -312,7 +312,7 @@ suite('PullRequestHandler', () => {
                 assert.calledWith(pullRequestManagerGetSpy, owner, repo, pullRequestNumber);
                 assert.calledWith(gitHubSpy, {
                     description: 'Description',
-                    installationId: 1234,
+                    installationId,
                     status: GitHub.STATUS_FAILURE,
                     statusUrl: 'https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef',
                     targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
@@ -321,6 +321,7 @@ suite('PullRequestHandler', () => {
     });
 
     test('Unblock', () => {
+        const { installationId } = pullRequestInfoFixture;
         return pullRequestHandler.unblockPullRequest({
             owner,
             repo,
@@ -331,7 +332,7 @@ suite('PullRequestHandler', () => {
                 assert.calledWith(pullRequestManagerGetSpy, owner, repo, pullRequestNumber);
                 assert.calledWith(gitHubSpy, {
                     description: 'Description',
-                    installationId: 1234,
+                    installationId,
                     status: GitHub.STATUS_SUCCESS,
                     statusUrl: 'https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef',
                     targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',

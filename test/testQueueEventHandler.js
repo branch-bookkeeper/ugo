@@ -53,6 +53,7 @@ suite('QueueEventHandler', () => {
         })
             .then(() => {
                 const { pullRequestNumber, username } = queueItemFixture;
+                const { installationId } = pullRequestInfoFixture;
 
                 assert.calledWith(postalSpy, {
                     channel: 'notification',
@@ -69,7 +70,7 @@ suite('QueueEventHandler', () => {
                     status: GitHub.STATUS_SUCCESS,
                     description: 'First in the queue',
                     statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
-                    installationId: 1234,
+                    installationId,
                     targetUrl: `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
                 });
             });
@@ -83,6 +84,7 @@ suite('QueueEventHandler', () => {
             item: queueItemFixture,
         }).then(() => {
             const { pullRequestNumber } = queueItemFixture;
+            const { installationId } = pullRequestInfoFixture;
 
             assert.calledWith(postalSpy, {
                 channel: 'notification',
@@ -99,7 +101,7 @@ suite('QueueEventHandler', () => {
                 status: GitHub.STATUS_FAILURE,
                 description: 'You\'re first in queue',
                 statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
-                installationId: 1234,
+                installationId,
                 targetUrl: `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
             });
         });
