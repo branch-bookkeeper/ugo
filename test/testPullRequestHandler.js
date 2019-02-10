@@ -125,7 +125,6 @@ suite('PullRequestHandler', () => {
 
     test('Handle opened', () => {
         const { pull_request: pullRequest, installation: { id: installationId } } = pullRequestOpenedFixture;
-        const { statuses_url: statusUrl } = pullRequest;
         return pullRequestHandler.handleOpened(pullRequest, installationId)
             .then(() => {
                 assert.calledWith(pullRequestManagerSetSpy, owner, repo, pullRequestNumber, pullRequestInfoFixture);
@@ -148,11 +147,9 @@ suite('PullRequestHandler', () => {
         test(`Handle synchronize for item in position ${position}`, () => {
             queueManagerGetItemsSpy.resolves(queue);
             const { pull_request: pullRequest, installation: { id: installationId } } = pullRequestSynchronizedFixture;
-            const { statuses_url: statusUrl } = pullRequest;
             const pullRequestInfo = {
                 ...pullRequestInfoFixture,
                 assignees: [],
-                statusUrl,
             };
 
             const status = queue.length === 1 ? GitHub.STATUS_SUCCESS : GitHub.STATUS_FAILURE;
@@ -174,7 +171,6 @@ suite('PullRequestHandler', () => {
                         description,
                         installationId,
                         status,
-                        statusUrl: 'https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef',
                         targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
                     });
                 });

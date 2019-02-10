@@ -36,7 +36,6 @@ const _getPullRequestAndUpdateStatus = (owner, repo, pullRequestNumber, status, 
                 pullRequestNumber,
                 branch,
                 installationId,
-                statusUrl,
             } = pullRequestData;
             return _updatePullRequestStatus({
                 owner,
@@ -44,7 +43,6 @@ const _getPullRequestAndUpdateStatus = (owner, repo, pullRequestNumber, status, 
                 branch,
                 pullRequestNumber,
                 installationId,
-                statusUrl,
                 status,
                 description,
             });
@@ -53,7 +51,6 @@ const _getPullRequestAndUpdateStatus = (owner, repo, pullRequestNumber, status, 
 
 const _updatePullRequestInfo = (pullRequest, installationId) => {
     const {
-        statuses_url: statusUrl,
         title,
         html_url: humanUrl,
         assignees,
@@ -64,7 +61,6 @@ const _updatePullRequestInfo = (pullRequest, installationId) => {
     } = pullRequest;
 
     return pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {
-        statusUrl,
         installationId,
         pullRequestNumber,
         title,

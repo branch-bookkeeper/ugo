@@ -69,7 +69,6 @@ suite('QueueEventHandler', () => {
                 assert.calledWith(gitHubSpy, {
                     status: GitHub.STATUS_SUCCESS,
                     description: 'First in the queue',
-                    statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
                     installationId,
                     targetUrl: `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
                 });
@@ -100,7 +99,6 @@ suite('QueueEventHandler', () => {
             assert.calledWith(gitHubSpy, {
                 status: GitHub.STATUS_FAILURE,
                 description: 'You\'re first in queue',
-                statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
                 installationId,
                 targetUrl: `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
             });
