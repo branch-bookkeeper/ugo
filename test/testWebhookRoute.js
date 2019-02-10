@@ -189,7 +189,6 @@ suite('Route webhook', () => {
             .set('X-GitHub-Event', 'check_suite')
             .send(checkSuiteSuccessPayload)
             .expect(res => {
-                console.log(res.body);
                 assert.notEmpty(res.body);
                 assert.isString(res.body);
                 assert.include(res.body, 'success');
@@ -203,7 +202,6 @@ suite('Route webhook', () => {
             .set('X-GitHub-Event', 'check_suite')
             .send(checkSuiteFailurePayload)
             .expect(res => {
-                console.log(res.body);
                 assert.notEmpty(res.body);
                 assert.isString(res.body);
                 assert.include(res.body, 'failure');
