@@ -29,7 +29,7 @@ suite('TokenManager', () => {
     });
 
     test('Get token info from GitHub', () => {
-        return tokenManager.getTokenInfoFromGithub(token)
+        return tokenManager.getTokenInfoFromGitHub(token)
             .then(tokenInfo => {
                 assert.calledWith(gitHubSpy, token);
                 assert.deepEqual(tokenInfo, tokenInfoFixture);

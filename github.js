@@ -71,24 +71,24 @@ const getCombinedStatus = ([githubSuitesResponse, githubStatusResponse]) => {
     const githubStatus = pathOr('', ['state'], githubStatusResponse);
 
     const conclusionsHasPending = not(isEmpty(filter(isNil, githubConclusions)));
-    const conclusionsIsSuccess = isEmpty(reject(equals(Github.CHECK_SUITE_CONCLUSION_SUCCESS), githubConclusions));
-    const conclusionsHasFailure = not(isEmpty(filter(equals(Github.CHECK_SUITE_CONCLUSION_FAILURE), githubConclusions)));
+    const conclusionsIsSuccess = isEmpty(reject(equals(GitHub.CHECK_SUITE_CONCLUSION_SUCCESS), githubConclusions));
+    const conclusionsHasFailure = not(isEmpty(filter(equals(GitHub.CHECK_SUITE_CONCLUSION_FAILURE), githubConclusions)));
 
-    const statusIsPending = equals(Github.STATUS_PENDING, githubStatus);
-    const statusIsSuccess = equals(Github.STATUS_SUCCESS, githubStatus);
-    const statusIsFailure = equals(Github.STATUS_FAILURE, githubStatus);
+    const statusIsPending = equals(GitHub.STATUS_PENDING, githubStatus);
+    const statusIsSuccess = equals(GitHub.STATUS_SUCCESS, githubStatus);
+    const statusIsFailure = equals(GitHub.STATUS_FAILURE, githubStatus);
 
     if (conclusionsHasPending || statusIsPending) {
-        return Github.STATUS_PENDING;
+        return GitHub.STATUS_PENDING;
     }
     if (conclusionsHasFailure || statusIsFailure) {
-        return Github.STATUS_FAILURE;
+        return GitHub.STATUS_FAILURE;
     }
     if (conclusionsIsSuccess && statusIsSuccess) {
-        return Github.STATUS_SUCCESS;
+        return GitHub.STATUS_SUCCESS;
     }
 
-    return Github.STATUS_SUCCESS;
+    return GitHub.STATUS_SUCCESS;
 };
 
 const getInstallationAccessToken = installationId => {
@@ -107,7 +107,7 @@ const getInstallationAccessToken = installationId => {
         .then(path(['body', 'token']));
 };
 
-class Github {
+class GitHub {
     static updatePullRequestStatus({
         installationId,
         statusUrl,
@@ -196,13 +196,13 @@ class Github {
         sha,
     }) {
         return Promise.all([
-            Github.getHashCheckSuites({
+            GitHub.getHashCheckSuites({
                 installationId,
                 owner,
                 repo,
                 sha,
             }),
-            Github.getHashStatus({
+            GitHub.getHashStatus({
                 installationId,
                 owner,
                 repo,
@@ -213,16 +213,16 @@ class Github {
     }
 }
 
-Github.STATUS_SUCCESS = 'success';
-Github.STATUS_FAILURE = 'failure';
-Github.STATUS_ERROR = 'error';
-Github.STATUS_PENDING = 'pending';
+GitHub.STATUS_SUCCESS = 'success';
+GitHub.STATUS_FAILURE = 'failure';
+GitHub.STATUS_ERROR = 'error';
+GitHub.STATUS_PENDING = 'pending';
 
-Github.CHECK_SUITE_CONCLUSION_SUCCESS = 'success';
-Github.CHECK_SUITE_CONCLUSION_FAILURE = 'failure';
-Github.CHECK_SUITE_CONCLUSION_NEUTRAL = 'neutral';
-Github.CHECK_SUITE_CONCLUSION_CANCELLED = 'cancelled';
-Github.CHECK_SUITE_CONCLUSION_TIMED_OUT = 'timed_out';
-Github.CHECK_SUITE_CONCLUSION_ACTION_REQUIRED = 'action_required';
+GitHub.CHECK_SUITE_CONCLUSION_SUCCESS = 'success';
+GitHub.CHECK_SUITE_CONCLUSION_FAILURE = 'failure';
+GitHub.CHECK_SUITE_CONCLUSION_NEUTRAL = 'neutral';
+GitHub.CHECK_SUITE_CONCLUSION_CANCELLED = 'cancelled';
+GitHub.CHECK_SUITE_CONCLUSION_TIMED_OUT = 'timed_out';
+GitHub.CHECK_SUITE_CONCLUSION_ACTION_REQUIRED = 'action_required';
 
-module.exports = Github;
+module.exports = GitHub;

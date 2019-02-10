@@ -1,4 +1,4 @@
-const Github = require('./github');
+const GitHub = require('./github');
 const postal = require('postal');
 const t = require('./manager-localization');
 const {
@@ -174,14 +174,14 @@ class PullRequestHandler {
                     branch,
                     installationId,
                     pullRequestNumber,
-                    status: pullRequestStatus = Github.STATUS_PENDING,
+                    status: pullRequestStatus = GitHub.STATUS_PENDING,
                 } = data;
                 return queueManager.getFirstItem(owner, repo, branch)
                     .then(firstItem => {
                         if (!firstItem || firstItem.pullRequestNumber !== pullRequestNumber) {
                             return Promise.resolve();
                         }
-                        return Github.getHashCombinedStatus({
+                        return GitHub.getHashCombinedStatus({
                             installationId,
                             owner,
                             repo,
@@ -195,7 +195,7 @@ class PullRequestHandler {
                                 })
                                     .then(() => {
                                         if (githubStatus !== pullRequestStatus) {
-                                            const topic = githubStatus === Github.STATUS_PENDING ? 'cancel.checks' : 'send.checks';
+                                            const topic = githubStatus === GitHub.STATUS_PENDING ? 'cancel.checks' : 'send.checks';
                                             postal.publish({
                                                 channel: 'notification',
                                                 topic,

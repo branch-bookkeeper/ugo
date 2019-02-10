@@ -1,6 +1,6 @@
 const mongoManager = require('./manager-mongo');
 const postal = require('postal');
-const Github = require('./github');
+const GitHub = require('./github');
 const COLLECTION_NAME = 'githubToken';
 
 class TokenManager {
@@ -13,16 +13,16 @@ class TokenManager {
                 ))
                 .then(tokenInfo => {
                     if (!tokenInfo) {
-                        return TokenManager.getTokenInfoFromGithub(token);
+                        return TokenManager.getTokenInfoFromGitHub(token);
                     }
                     return tokenInfo;
                 });
         }
-        return TokenManager.getTokenInfoFromGithub(token);
+        return TokenManager.getTokenInfoFromGitHub(token);
     }
 
-    static getTokenInfoFromGithub(token) {
-        return Github.getUserInfo(token)
+    static getTokenInfoFromGitHub(token) {
+        return GitHub.getUserInfo(token)
             .then(tokenInfo => TokenManager.setTokenInfo(token, tokenInfo));
     }
 
