@@ -4,6 +4,9 @@
       "first": "First in the queue",
       "second": "{position} PR before this",
       "position": "{position} PRs before this",
+      "position_title": "Position in {owner}/{repo} {branch} queue",
+      "add": "Add to queue",
+      "remove": "Remove from queue",
       "not": "Not in the queue",
       "over": "More than {number} PRs before this"
     },

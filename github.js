@@ -16,6 +16,7 @@ const {
 const request = require('request-promise-native').defaults({ json: true, resolveWithFullResponse: true });
 const RequestAllPages = require('request-all-pages');
 const postal = require('postal');
+const t = require('./manager-localization');
 const GITHUB_DEFAULT_BASE_HOST = 'https://api.github.com';
 const {
     env: {
@@ -23,6 +24,7 @@ const {
         APP_ID: appId,
         NODE_ENV: environment = 'production',
         PRIVATE_KEY: privateKey,
+        APP_ORIGIN: appBaseHost,
     },
 } = process;
 const development = environment === 'development';
@@ -108,6 +110,17 @@ const getInstallationAccessToken = installationId => {
 };
 
 class GitHub {
+    static createCheckRunForPullRequest(options) {
+        return getCheckRunsForSha(options)
+            .then(checkRuns => {
+                options = {
+                    ...options,
+                    checkRunId: path([0, 'id'], checkRuns),
+                };
+                return isEmpty(checkRuns) ? createCheckRunForSha(options) : updateCheckRun(options);
+            });
+    }
+
     static updatePullRequestStatus({
         installationId,
         statusUrl,
