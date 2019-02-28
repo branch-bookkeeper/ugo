@@ -13,21 +13,6 @@ const pullRequestManager = require('./manager-pullrequest');
 const MAX_REPORTED_QUEUE_POSITION = 5;
 const DESCRIPTION_NOT_IN_QUEUE = t('pullRequest.queue.not');
 const DESCRIPTION_FIRST = t('pullRequest.queue.first');
-const { env: { APP_ORIGIN } } = process;
-
-const _updatePullRequestStatus = ({
-    owner, repo, branch, pullRequestNumber, status, description, statusUrl, installationId,
-}) => {
-    const targetUrl = `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
-
-    return Github.updatePullRequestStatus({
-        installationId,
-        statusUrl,
-        description,
-        status,
-        targetUrl,
-    });
-};
 
 const _getPullRequestAndUpdateStatus = (owner, repo, pullRequestNumber, status, description) => pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
     .then(pullRequestData => {

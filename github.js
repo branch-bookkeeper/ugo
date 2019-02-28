@@ -17,10 +17,9 @@ const request = require('request-promise-native').defaults({ json: true, resolve
 const RequestAllPages = require('request-all-pages');
 const postal = require('postal');
 const t = require('./manager-localization');
-const GITHUB_DEFAULT_BASE_HOST = 'https://api.github.com';
 const {
     env: {
-        GITHUB_BASE_HOST: baseHost = GITHUB_DEFAULT_BASE_HOST,
+        GITHUB_BASE_HOST: baseHost = 'https://api.github.com',
         APP_ID: appId,
         NODE_ENV: environment = 'production',
         PRIVATE_KEY: privateKey,
@@ -28,8 +27,6 @@ const {
     },
 } = process;
 const development = environment === 'development';
-
-const updateBaseHost = url => url.replace(GITHUB_DEFAULT_BASE_HOST, baseHost);
 
 const requestAllPages = opts => new Promise((resolve, reject) => RequestAllPages(opts, { perPage: 100 }, (err, pages) => err ? reject(err) : resolve(pages)));
 
@@ -126,15 +123,18 @@ class GitHub {
         statusUrl,
         status,
         description,
-        targetUrl,
+        owner,
+        repo,
+        branch,
+        pullRequestNumber,
     }) {
         return getInstallationAccessToken(installationId)
-            .then(accessToken => request.post(updateBaseHost(statusUrl), {
+            .then(accessToken => request.post(statusUrl.replace('https://api.github.com', baseHost), {
                 ...getRequestOptions(accessToken),
                 body: {
                     state: status,
                     description: description,
-                    target_url: targetUrl,
+                    target_url: `${appBaseHost}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
                     context: 'Branch Bookkeeper',
                 },
             })
