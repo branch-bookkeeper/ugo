@@ -14,7 +14,6 @@ const pullRequestInfoFixture = {
     ...require('./fixtures/pull_request.info'),
     pullRequestNumber: queueItemFixture.pullRequestNumber,
 };
-const { env: { APP_ORIGIN } } = process;
 const owner = 'branch-bookkeeper';
 const repo = 'branch-bookkeeper';
 const branch = 'master';
@@ -29,7 +28,7 @@ sinon.assert.expose(assert, { prefix: '' });
 suite('QueueEventHandler', () => {
     setup(() => {
         postalSpy = sinon.stub(postal, 'publish');
-        gitHubSpy = sinon.stub(GitHub, 'updatePullRequestStatus').resolves('');
+        gitHubSpy = sinon.stub(GitHub, 'createCheckRunForPullRequest').resolves('');
         pullRequestManagerSpy = sinon.stub(pullRequestManager, 'getPullRequestInfo').resolves(pullRequestInfoFixture);
         queueManagerItemsSpy = sinon.stub(queueManager, 'getItems').resolves([queueItemFixture]);
         queueManagerLengthSpy = sinon.stub(queueManager, 'getLength').resolves(3);
@@ -53,7 +52,7 @@ suite('QueueEventHandler', () => {
         })
             .then(() => {
                 const { pullRequestNumber, username } = queueItemFixture;
-                const { installationId } = pullRequestInfoFixture;
+                const { installationId, sha } = pullRequestInfoFixture;
 
                 assert.calledWith(postalSpy, {
                     channel: 'notification',
@@ -67,40 +66,41 @@ suite('QueueEventHandler', () => {
                 });
 
                 assert.calledWith(gitHubSpy, {
-                    status: GitHub.STATUS_SUCCESS,
+                    status: GitHub.CHECK_SUITE_CONCLUSION_SUCCESS,
                     description: 'First in the queue',
                     installationId,
-                    targetUrl: `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
+                    actions: undefined,
+                    branch,
+                    owner,
+                    pullRequestNumber,
+                    repo,
+                    sha,
                 });
             });
     });
 
-    test('Remove item', () => {
-        queueEventHandler.removeItem({
+    test('Remove item in other position', () => {
+        return queueEventHandler.removeItem({
             owner,
             repo,
             branch,
             item: queueItemFixture,
         }).then(() => {
             const { pullRequestNumber } = queueItemFixture;
-            const { installationId } = pullRequestInfoFixture;
+            const { installationId, sha } = pullRequestInfoFixture;
 
-            assert.calledWith(postalSpy, {
-                channel: 'notification',
-                topic: 'send.update',
-                data: {
-                    owner,
-                    repo,
-                    branch,
-                    items: [],
-                },
-            });
+            assert.notCalled(postalSpy);
 
             assert.calledWith(gitHubSpy, {
-                status: GitHub.STATUS_FAILURE,
-                description: 'You\'re first in queue',
+                status: GitHub.CHECK_SUITE_CONCLUSION_FAILURE,
+                description: 'Not in the queue',
                 installationId,
-                targetUrl: `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
+                actions: undefined,
+                branch,
+                owner,
+                pullRequestNumber,
+                repo,
+                sha,
             });
         });
     });

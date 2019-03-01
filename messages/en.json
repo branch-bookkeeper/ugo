@@ -4,8 +4,6 @@
       "first": "First in the queue",
       "second": "{position} PR before this",
       "position": "{position} PRs before this",
-      "add": "Add to queue",
-      "remove": "Remove from queue",
       "not": "Not in the queue",
       "over": "More than {number} PRs before this"
     },
@@ -13,7 +11,17 @@
   },
   "checkRun": {
     "name": "Branch Bookkeeper",
-    "summary": "Queue: **{owner}/{repo} {branch}**"
+    "summary": "Queue: **{owner}/{repo} {branch}**",
+    "actions": {
+      "add": {
+        "label": "Add to queue",
+        "description": "adds this PR to the queue"
+      },
+      "remove": {
+        "label": "Remove from queue",
+        "description": "removes this PR from the queue"
+      }
+    }
   },
   "notification": {
     "title": {

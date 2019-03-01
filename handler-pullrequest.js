@@ -13,6 +13,12 @@ const pullRequestManager = require('./manager-pullrequest');
 const MAX_REPORTED_QUEUE_POSITION = 5;
 const DESCRIPTION_NOT_IN_QUEUE = t('pullRequest.queue.not');
 const DESCRIPTION_FIRST = t('pullRequest.queue.first');
+const ACTION_QUEUE_ADD_LABEL = t('checkRun.actions.add.label');
+const ACTION_QUEUE_ADD_DESCRIPTION = t('checkRun.actions.add.description');
+const ACTION_QUEUE_ADD_IDENTIFIER = 'queue-add';
+const ACTION_QUEUE_REMOVE_LABEL = t('checkRun.actions.remove.label');
+const ACTION_QUEUE_REMOVE_DESCRIPTION = t('checkRun.actions.remove.description');
+const ACTION_QUEUE_REMOVE_IDENTIFIER = 'queue-remove';
 
 const _getPullRequestAndUpdateStatus = (owner, repo, pullRequestNumber, status, description) => pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
     .then(pullRequestData => {
@@ -21,15 +27,25 @@ const _getPullRequestAndUpdateStatus = (owner, repo, pullRequestNumber, status, 
                 pullRequestNumber,
                 branch,
                 installationId,
+                sha,
             } = pullRequestData;
-            return _updatePullRequestStatus({
+
+            const actions = process.env.CHECK_RUN_ACTIONS === true ? [{
+                label: description === DESCRIPTION_NOT_IN_QUEUE ? ACTION_QUEUE_ADD_LABEL : ACTION_QUEUE_REMOVE_LABEL,
+                description: description === DESCRIPTION_NOT_IN_QUEUE ? ACTION_QUEUE_ADD_DESCRIPTION : ACTION_QUEUE_REMOVE_DESCRIPTION,
+                identifier: description === DESCRIPTION_NOT_IN_QUEUE ? ACTION_QUEUE_ADD_IDENTIFIER : ACTION_QUEUE_REMOVE_IDENTIFIER,
+            }] : undefined;
+
+            return GitHub.createCheckRunForPullRequest({
+                installationId,
+                sha,
+                status,
+                description,
+                actions,
                 owner,
                 repo,
                 branch,
                 pullRequestNumber,
-                installationId,
-                status,
-                description,
             });
         }
     });
@@ -206,7 +222,7 @@ class PullRequestHandler {
             owner,
             repo,
             pullRequestNumber,
-            Github.STATUS_FAILURE,
+            GitHub.CHECK_SUITE_CONCLUSION_FAILURE,
             description
         );
     }
@@ -221,7 +237,7 @@ class PullRequestHandler {
             owner,
             repo,
             pullRequestNumber,
-            Github.STATUS_SUCCESS,
+            GitHub.CHECK_SUITE_CONCLUSION_SUCCESS,
             description
         );
     }
@@ -281,5 +297,7 @@ class PullRequestHandler {
 }
 
 PullRequestHandler.MAX_REPORTED_QUEUE_POSITION = MAX_REPORTED_QUEUE_POSITION;
+PullRequestHandler.ACTION_QUEUE_ADD_IDENTIFIER = ACTION_QUEUE_ADD_IDENTIFIER;
+PullRequestHandler.ACTION_QUEUE_REMOVE_IDENTIFIER = ACTION_QUEUE_REMOVE_IDENTIFIER;
 
 module.exports = PullRequestHandler;

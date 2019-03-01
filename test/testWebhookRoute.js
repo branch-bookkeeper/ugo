@@ -35,7 +35,7 @@ suite('Route webhook', () => {
             this.skip();
         } else {
             sinon.stub(GitHub, 'getInstallationInfo').resolves(installationInfoFixture);
-            sinon.stub(GitHub, 'updatePullRequestStatus').resolves({
+            sinon.stub(GitHub, 'createCheckRunForPullRequest').resolves({
                 owner,
                 repo,
                 branch,

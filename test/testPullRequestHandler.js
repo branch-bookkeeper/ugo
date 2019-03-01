@@ -36,7 +36,7 @@ suite('PullRequestHandler', () => {
         if (!pullRequestHandler.enabled()) {
             this.skip();
         }
-        gitHubSpy = sinon.stub(GitHub, 'updatePullRequestStatus').resolves('');
+        gitHubSpy = sinon.stub(GitHub, 'createCheckRunForPullRequest').resolves('');
         gitHubHashSpy = sinon.stub(GitHub, 'getHashStatus').resolves({ state: GitHub.STATUS_PENDING });
         gitHubHashCheckSuites = sinon.stub(GitHub, 'getHashCheckSuites').resolves({ check_suites: [{ conclusion: GitHub.CHECK_SUITE_CONCLUSION_SUCCESS }] });
         queueManagerGetItemSpy = sinon.stub(queueManager, 'getItem').resolves(queueItemFixture);
@@ -64,7 +64,7 @@ suite('PullRequestHandler', () => {
     });
 
     test('Handle closed', () => {
-        const { installationId, statusUrl } = pullRequestInfoFixture;
+        const { installationId, sha } = pullRequestInfoFixture;
         const { pull_request: pullRequest } = pullRequestClosedFixture;
         return pullRequestHandler.handleClosed(pullRequest)
             .then(() => {
@@ -86,15 +86,19 @@ suite('PullRequestHandler', () => {
                         description: 'Not in the queue',
                         installationId,
                         status: GitHub.STATUS_FAILURE,
-                        statusUrl,
-                        targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
+                        actions: undefined,
+                        branch,
+                        owner,
+                        pullRequestNumber,
+                        repo,
+                        sha,
                     }
                 );
             });
     });
 
     test('Handle merged', () => {
-        const { installationId, statusUrl } = pullRequestInfoFixture;
+        const { installationId, sha } = pullRequestInfoFixture;
         const { pull_request: pullRequest } = pullRequestMergedFixture;
         return pullRequestHandler.handleClosed(pullRequest)
             .then(() => {
@@ -116,15 +120,19 @@ suite('PullRequestHandler', () => {
                         description: 'Merged by branch-bookkeeper',
                         installationId,
                         status: GitHub.STATUS_SUCCESS,
-                        statusUrl,
-                        targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
+                        actions: undefined,
+                        branch,
+                        owner,
+                        pullRequestNumber,
+                        repo,
+                        sha,
                     }
                 );
             });
     });
 
     test('Handle opened', () => {
-        const { pull_request: pullRequest, installation: { id: installationId } } = pullRequestOpenedFixture;
+        const { pull_request: pullRequest, pull_request: { head: { sha } }, installation: { id: installationId } } = pullRequestOpenedFixture;
         return pullRequestHandler.handleOpened(pullRequest, installationId)
             .then(() => {
                 assert.calledWith(pullRequestManagerSetSpy, owner, repo, pullRequestNumber, pullRequestInfoFixture);
@@ -134,8 +142,12 @@ suite('PullRequestHandler', () => {
                         description: 'Not in the queue',
                         installationId,
                         status: GitHub.STATUS_FAILURE,
-                        statusUrl,
-                        targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
+                        actions: undefined,
+                        branch,
+                        owner,
+                        pullRequestNumber,
+                        repo,
+                        sha,
                     }
                 );
             });
@@ -146,7 +158,7 @@ suite('PullRequestHandler', () => {
 
         test(`Handle synchronize for item in position ${position}`, () => {
             queueManagerGetItemsSpy.resolves(queue);
-            const { pull_request: pullRequest, installation: { id: installationId } } = pullRequestSynchronizedFixture;
+            const { pull_request: pullRequest, pull_request: { head: { sha } }, installation: { id: installationId } } = pullRequestSynchronizedFixture;
             const pullRequestInfo = {
                 ...pullRequestInfoFixture,
                 assignees: [],
@@ -171,7 +183,12 @@ suite('PullRequestHandler', () => {
                         description,
                         installationId,
                         status,
-                        targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
+                        actions: undefined,
+                        branch,
+                        owner,
+                        pullRequestNumber,
+                        repo,
+                        sha,
                     });
                 });
         });
@@ -297,7 +314,7 @@ suite('PullRequestHandler', () => {
     });
 
     test('Block', () => {
-        const { installationId } = pullRequestInfoFixture;
+        const { installationId, sha } = pullRequestInfoFixture;
         return pullRequestHandler.blockPullRequest({
             owner,
             repo,
@@ -310,14 +327,18 @@ suite('PullRequestHandler', () => {
                     description: 'Description',
                     installationId,
                     status: GitHub.STATUS_FAILURE,
-                    statusUrl: 'https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef',
-                    targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
+                    actions: undefined,
+                    branch,
+                    owner,
+                    pullRequestNumber,
+                    repo,
+                    sha,
                 });
             });
     });
 
     test('Unblock', () => {
-        const { installationId } = pullRequestInfoFixture;
+        const { installationId, sha } = pullRequestInfoFixture;
         return pullRequestHandler.unblockPullRequest({
             owner,
             repo,
@@ -330,8 +351,12 @@ suite('PullRequestHandler', () => {
                     description: 'Description',
                     installationId,
                     status: GitHub.STATUS_SUCCESS,
-                    statusUrl: 'https://api.github.com/repos/branch-bookkeeper/branch-bookkeeper/statuses/d34d8eef',
-                    targetUrl: 'fake/branch-bookkeeper/branch-bookkeeper/master/1',
+                    actions: undefined,
+                    branch,
+                    owner,
+                    pullRequestNumber,
+                    repo,
+                    sha,
                 });
             });
     });
