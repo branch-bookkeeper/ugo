@@ -2,6 +2,7 @@
   "/github/repos/:owner/:repo/commits/:sha/status": "/status",
   "/github/repos/:owner/:repo/commits/:sha/check-suites": "/suites",
   "/github/repos/:owner/:repo/commits/:sha/check-runs": "/runs",
+  "/github/repos/:owner/:repo/check-runs/:id": "/runUpdated",
   "/github/repos/:owner/:repo/check-runs": "/runCreated",
   "/github/repos/:owner/:repo/statuses/:sha": "/status",
   "/github/installations/:installationId/access_tokens": "/accessTokens",

@@ -15,6 +15,7 @@ module.exports = () => ({
     suites: suitesSuccess,
     runs,
     runCreated,
+    runUpdated: runCreated,
     accessTokens,
     repositories,
     pullRequest,
