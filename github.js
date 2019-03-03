@@ -12,6 +12,8 @@ const {
     filter,
     pathOr,
     pluck,
+    pathEq,
+    compose,
 } = require('ramda');
 const request = require('request-promise-native').defaults({ json: true, resolveWithFullResponse: true });
 const RequestAllPages = require('request-all-pages');
@@ -129,6 +131,23 @@ const getInstallationAccessToken = installationId => {
     })
         .then(path(['body', 'token']));
 };
+
+const getCheckRunsForSha = ({
+    installationId,
+    owner,
+    repo,
+    sha,
+}) => getInstallationAccessToken(installationId)
+    .then(accessToken => request.get(
+        `${baseHost}/repos/${owner}/${repo}/commits/${sha}/check-runs`,
+        getRequestOptions(accessToken, 'application/vnd.github.antiope-preview+json')
+    ))
+    .then(trackApiUsageAndReturnBody)
+    .then(compose(
+        filter(pathEq(['app', 'id'], Number(appId))),
+        path(['check_runs'])
+    ))
+    .catch(() => []);
 
 class GitHub {
     static createCheckRunForPullRequest(options) {
