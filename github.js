@@ -156,6 +156,14 @@ const createCheckRunForSha = options => getInstallationAccessToken(options.insta
     ))
     .then(trackApiUsageAndReturnBody);
 
+const updateCheckRun = options => getInstallationAccessToken(options.installationId)
+    .then(accessToken => request.patch(
+        `${baseHost}/repos/${options.owner}/${options.repo}/check-runs/${options.checkRunId}`,
+        getRequestOptions(accessToken, 'application/vnd.github.antiope-preview+json', getCheckRunBody(options))
+    ))
+    .then(trackApiUsageAndReturnBody)
+    .catch(() => {});
+
 class GitHub {
     static createCheckRunForPullRequest(options) {
         return getCheckRunsForSha(options)
