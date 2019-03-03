@@ -57,12 +57,13 @@ const trackApiUsageAndReturnBody = response => {
     };
 };
 
-const getRequestOptions = (token, accept) => ({
+const getRequestOptions = (token, accept = 'application/json', body) => ({
     headers: {
         'user-agent': 'branch-bookkeeper',
         authorization: token ? `token ${token}` : undefined,
         accept,
     },
+    body,
 });
 
 const getCombinedStatus = ([githubSuitesResponse, githubStatusResponse]) => {
@@ -130,13 +131,12 @@ class GitHub {
     }) {
         return getInstallationAccessToken(installationId)
             .then(accessToken => request.post(statusUrl.replace('https://api.github.com', baseHost), {
-                ...getRequestOptions(accessToken),
-                body: {
+                ...getRequestOptions(accessToken, undefined, {
                     state: status,
-                    description: description,
+                    description,
                     target_url: `${appBaseHost}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
                     context: 'Branch Bookkeeper',
-                },
+                }),
             })
                 .then(trackApiUsageAndReturnBody));
     }
