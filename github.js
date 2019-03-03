@@ -149,6 +149,13 @@ const getCheckRunsForSha = ({
     ))
     .catch(() => []);
 
+const createCheckRunForSha = options => getInstallationAccessToken(options.installationId)
+    .then(accessToken => request.post(
+        `${baseHost}/repos/${options.owner}/${options.repo}/check-runs`,
+        getRequestOptions(accessToken, 'application/vnd.github.antiope-preview+json', getCheckRunBody(options))
+    ))
+    .then(trackApiUsageAndReturnBody);
+
 class GitHub {
     static createCheckRunForPullRequest(options) {
         return getCheckRunsForSha(options)
