@@ -66,6 +66,29 @@ const getRequestOptions = (token, accept = 'application/json', body) => ({
     body,
 });
 
+const getCheckRunBody = ({
+    sha,
+    status,
+    description,
+    actions,
+    owner,
+    repo,
+    branch,
+    pullRequestNumber,
+}) => ({
+    name: t('checkRun.name'),
+    head_sha: sha,
+    details_url: `${appBaseHost}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
+    conclusion: status,
+    started_at: (new Date()).toISOString(),
+    completed_at: (new Date()).toISOString(),
+    output: {
+        title: description,
+        summary: t('checkRun.summary', { owner, repo, branch }),
+    },
+    actions,
+});
+
 const getCombinedStatus = ([githubSuitesResponse, githubStatusResponse]) => {
     const githubConclusions = pluck('conclusion', pathOr([], ['check_suites'], githubSuitesResponse));
     const githubStatus = pathOr('', ['state'], githubStatusResponse);
