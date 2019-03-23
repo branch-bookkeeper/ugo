@@ -176,28 +176,6 @@ class GitHub {
             });
     }
 
-    static updatePullRequestStatus({
-        installationId,
-        statusUrl,
-        status,
-        description,
-        owner,
-        repo,
-        branch,
-        pullRequestNumber,
-    }) {
-        return getInstallationAccessToken(installationId)
-            .then(accessToken => request.post(statusUrl.replace('https://api.github.com', baseHost), {
-                ...getRequestOptions(accessToken, undefined, {
-                    state: status,
-                    description,
-                    target_url: `${appBaseHost}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
-                    context: 'Branch Bookkeeper',
-                }),
-            })
-                .then(trackApiUsageAndReturnBody));
-    }
-
     static getUserInfo(token) {
         return request.get(`${baseHost}/user`, getRequestOptions(token))
             .then(trackApiUsageAndReturnBody);
