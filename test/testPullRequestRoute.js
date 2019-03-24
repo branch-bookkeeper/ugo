@@ -64,7 +64,7 @@ suite('Route pull-request', () => {
             .get(`${url}/${owner}/${repo}`)
             .set('Authorization', `token ${userToken}`)
             .expect('content-type', /application\/json/)
-            .expect('content-length', '341')
+            .expect('content-length', '244')
             .expect([pullRequestInfoFixture])
             .expect(200, done);
     });

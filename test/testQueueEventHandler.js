@@ -14,7 +14,6 @@ const pullRequestInfoFixture = {
     ...require('./fixtures/pull_request.info'),
     pullRequestNumber: queueItemFixture.pullRequestNumber,
 };
-const { env: { APP_ORIGIN } } = process;
 const owner = 'branch-bookkeeper';
 const repo = 'branch-bookkeeper';
 const branch = 'master';
@@ -29,7 +28,7 @@ sinon.assert.expose(assert, { prefix: '' });
 suite('QueueEventHandler', () => {
     setup(() => {
         postalSpy = sinon.stub(postal, 'publish');
-        gitHubSpy = sinon.stub(GitHub, 'updatePullRequestStatus').resolves('');
+        gitHubSpy = sinon.stub(GitHub, 'createCheckRunForPullRequest').resolves('');
         pullRequestManagerSpy = sinon.stub(pullRequestManager, 'getPullRequestInfo').resolves(pullRequestInfoFixture);
         queueManagerItemsSpy = sinon.stub(queueManager, 'getItems').resolves([queueItemFixture]);
         queueManagerLengthSpy = sinon.stub(queueManager, 'getLength').resolves(3);
@@ -53,6 +52,7 @@ suite('QueueEventHandler', () => {
         })
             .then(() => {
                 const { pullRequestNumber, username } = queueItemFixture;
+                const { installationId, sha } = pullRequestInfoFixture;
 
                 assert.calledWith(postalSpy, {
                     channel: 'notification',
@@ -66,41 +66,105 @@ suite('QueueEventHandler', () => {
                 });
 
                 assert.calledWith(gitHubSpy, {
-                    status: GitHub.STATUS_SUCCESS,
+                    status: GitHub.CHECK_SUITE_CONCLUSION_SUCCESS,
                     description: 'First in the queue',
-                    statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
-                    installationId: 1234,
-                    targetUrl: `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
+                    installationId,
+                    actions: undefined,
+                    branch,
+                    owner,
+                    pullRequestNumber,
+                    repo,
+                    sha,
                 });
             });
     });
 
-    test('Remove item', () => {
-        queueEventHandler.removeItem({
+    test('Add item in other position', () => {
+        return queueEventHandler.addItem({
+            owner,
+            repo,
+            branch,
+            item: queueItemFixture,
+            index: 1,
+        })
+            .then(() => {
+                const { pullRequestNumber } = queueItemFixture;
+                const { installationId, sha } = pullRequestInfoFixture;
+
+                assert.notCalled(postalSpy);
+
+                assert.calledWith(gitHubSpy, {
+                    status: GitHub.CHECK_SUITE_CONCLUSION_FAILURE,
+                    description: '1 PR before this',
+                    installationId,
+                    actions: undefined,
+                    branch,
+                    owner,
+                    pullRequestNumber,
+                    repo,
+                    sha,
+                });
+            });
+    });
+
+    test('Remove item in first position', () => {
+        return queueEventHandler.removeItem({
+            owner,
+            repo,
+            branch,
+            item: queueItemFixture,
+            meta: { firstItemChanged: true },
+        }).then(() => {
+            const { pullRequestNumber, username } = queueItemFixture;
+            const { installationId, sha } = pullRequestInfoFixture;
+
+            assert.calledWith(postalSpy, {
+                channel: 'notification',
+                topic: 'send.queue.first',
+                data: {
+                    owner,
+                    repo,
+                    pullRequestNumber,
+                    username,
+                },
+            });
+
+            assert.calledWith(gitHubSpy, {
+                status: GitHub.CHECK_SUITE_CONCLUSION_FAILURE,
+                description: 'Not in the queue',
+                installationId,
+                actions: undefined,
+                branch,
+                owner,
+                pullRequestNumber,
+                repo,
+                sha,
+            });
+        });
+    });
+
+    test('Remove item in other position', () => {
+        return queueEventHandler.removeItem({
             owner,
             repo,
             branch,
             item: queueItemFixture,
         }).then(() => {
             const { pullRequestNumber } = queueItemFixture;
+            const { installationId, sha } = pullRequestInfoFixture;
 
-            assert.calledWith(postalSpy, {
-                channel: 'notification',
-                topic: 'send.update',
-                data: {
-                    owner,
-                    repo,
-                    branch,
-                    items: [],
-                },
-            });
+            assert.notCalled(postalSpy);
 
             assert.calledWith(gitHubSpy, {
-                status: GitHub.STATUS_FAILURE,
-                description: 'You\'re first in queue',
-                statusUrl: `https://api.github.com/repos/${owner}/${repo}/statuses/d34d8eef`,
-                installationId: 1234,
-                targetUrl: `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
+                status: GitHub.CHECK_SUITE_CONCLUSION_FAILURE,
+                description: 'Not in the queue',
+                installationId,
+                actions: undefined,
+                branch,
+                owner,
+                pullRequestNumber,
+                repo,
+                sha,
             });
         });
     });

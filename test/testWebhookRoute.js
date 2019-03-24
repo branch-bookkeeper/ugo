@@ -21,8 +21,8 @@ const pullRequestClosedPayload = require('./fixtures/pull_request.closed');
 const pullRequestMergededPayload = require('./fixtures/pull_request.merged');
 const statusFailurePayload = require('./fixtures/status.failure');
 const statusSuccessPayload = require('./fixtures/status.success');
-const checkSuiteFailurePayload = require('./fixtures/checksuites.failure');
-const checkSuiteSuccessPayload = require('./fixtures/checksuites.success');
+const checkSuiteFailurePayload = require('./fixtures/check_suites.failure');
+const checkSuiteSuccessPayload = require('./fixtures/check_suites.success');
 const pullRequestSynchronizePayload = require('./fixtures/pull_request.synchronize');
 const repositoryCreatedPayload = require('./fixtures/repository.created');
 const repositoryDeletedPayload = require('./fixtures/repository.deleted');
@@ -35,7 +35,7 @@ suite('Route webhook', () => {
             this.skip();
         } else {
             sinon.stub(GitHub, 'getInstallationInfo').resolves(installationInfoFixture);
-            sinon.stub(GitHub, 'updatePullRequestStatus').resolves({
+            sinon.stub(GitHub, 'createCheckRunForPullRequest').resolves({
                 owner,
                 repo,
                 branch,
@@ -189,7 +189,6 @@ suite('Route webhook', () => {
             .set('X-GitHub-Event', 'check_suite')
             .send(checkSuiteSuccessPayload)
             .expect(res => {
-                console.log(res.body);
                 assert.notEmpty(res.body);
                 assert.isString(res.body);
                 assert.include(res.body, 'success');
@@ -203,7 +202,6 @@ suite('Route webhook', () => {
             .set('X-GitHub-Event', 'check_suite')
             .send(checkSuiteFailurePayload)
             .expect(res => {
-                console.log(res.body);
                 assert.notEmpty(res.body);
                 assert.isString(res.body);
                 assert.include(res.body, 'failure');

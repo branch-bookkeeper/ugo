@@ -36,7 +36,6 @@ mongoManager.getCollection('pullRequest')
     }) => GitHub.getPullRequestInfo(owner, repo, pullRequestNumber, installationId)
         .then(pullRequest => {
             const {
-                statuses_url: statusUrl,
                 title,
                 html_url: humanUrl,
                 assignees,
@@ -47,7 +46,6 @@ mongoManager.getCollection('pullRequest')
             const { owner: { login: owner }, name: repo } = baseRepo;
 
             return pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {
-                statusUrl,
                 installationId,
                 pullRequestNumber,
                 title,

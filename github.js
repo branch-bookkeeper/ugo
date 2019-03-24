@@ -12,22 +12,23 @@ const {
     filter,
     pathOr,
     pluck,
+    pathEq,
+    compose,
 } = require('ramda');
 const request = require('request-promise-native').defaults({ json: true, resolveWithFullResponse: true });
 const RequestAllPages = require('request-all-pages');
 const postal = require('postal');
-const GITHUB_DEFAULT_BASE_HOST = 'https://api.github.com';
+const t = require('./manager-localization');
 const {
     env: {
-        GITHUB_BASE_HOST: baseHost = GITHUB_DEFAULT_BASE_HOST,
+        GITHUB_BASE_HOST: baseHost = 'https://api.github.com',
         APP_ID: appId,
         NODE_ENV: environment = 'production',
         PRIVATE_KEY: privateKey,
+        APP_ORIGIN: appBaseHost,
     },
 } = process;
 const development = environment === 'development';
-
-const updateBaseHost = url => url.replace(GITHUB_DEFAULT_BASE_HOST, baseHost);
 
 const requestAllPages = opts => new Promise((resolve, reject) => RequestAllPages(opts, { perPage: 100 }, (err, pages) => err ? reject(err) : resolve(pages)));
 
@@ -58,12 +59,36 @@ const trackApiUsageAndReturnBody = response => {
     };
 };
 
-const getRequestOptions = (token, accept) => ({
+const getRequestOptions = (token, accept = 'application/json', body) => ({
     headers: {
         'user-agent': 'branch-bookkeeper',
         authorization: token ? `token ${token}` : undefined,
         accept,
     },
+    body,
+});
+
+const getCheckRunBody = ({
+    sha,
+    status,
+    description,
+    actions,
+    owner,
+    repo,
+    branch,
+    pullRequestNumber,
+}) => ({
+    name: t('checkRun.name'),
+    head_sha: sha,
+    details_url: `${appBaseHost}/${owner}/${repo}/${branch}/${pullRequestNumber}`,
+    conclusion: status,
+    started_at: (new Date()).toISOString(),
+    completed_at: (new Date()).toISOString(),
+    output: {
+        title: description,
+        summary: t('checkRun.summary', { owner, repo, branch }),
+    },
+    actions,
 });
 
 const getCombinedStatus = ([githubSuitesResponse, githubStatusResponse]) => {
@@ -71,24 +96,24 @@ const getCombinedStatus = ([githubSuitesResponse, githubStatusResponse]) => {
     const githubStatus = pathOr('', ['state'], githubStatusResponse);
 
     const conclusionsHasPending = not(isEmpty(filter(isNil, githubConclusions)));
-    const conclusionsIsSuccess = isEmpty(reject(equals(Github.CHECK_SUITE_CONCLUSION_SUCCESS), githubConclusions));
-    const conclusionsHasFailure = not(isEmpty(filter(equals(Github.CHECK_SUITE_CONCLUSION_FAILURE), githubConclusions)));
+    const conclusionsIsSuccess = isEmpty(reject(equals(GitHub.CHECK_SUITE_CONCLUSION_SUCCESS), githubConclusions));
+    const conclusionsHasFailure = not(isEmpty(filter(equals(GitHub.CHECK_SUITE_CONCLUSION_FAILURE), githubConclusions)));
 
-    const statusIsPending = equals(Github.STATUS_PENDING, githubStatus);
-    const statusIsSuccess = equals(Github.STATUS_SUCCESS, githubStatus);
-    const statusIsFailure = equals(Github.STATUS_FAILURE, githubStatus);
+    const statusIsPending = equals(GitHub.STATUS_PENDING, githubStatus);
+    const statusIsSuccess = equals(GitHub.STATUS_SUCCESS, githubStatus);
+    const statusIsFailure = equals(GitHub.STATUS_FAILURE, githubStatus);
 
     if (conclusionsHasPending || statusIsPending) {
-        return Github.STATUS_PENDING;
+        return GitHub.STATUS_PENDING;
     }
     if (conclusionsHasFailure || statusIsFailure) {
-        return Github.STATUS_FAILURE;
+        return GitHub.STATUS_FAILURE;
     }
     if (conclusionsIsSuccess && statusIsSuccess) {
-        return Github.STATUS_SUCCESS;
+        return GitHub.STATUS_SUCCESS;
     }
 
-    return Github.STATUS_SUCCESS;
+    return GitHub.STATUS_SUCCESS;
 };
 
 const getInstallationAccessToken = installationId => {
@@ -107,25 +132,48 @@ const getInstallationAccessToken = installationId => {
         .then(path(['body', 'token']));
 };
 
-class Github {
-    static updatePullRequestStatus({
-        installationId,
-        statusUrl,
-        status,
-        description,
-        targetUrl,
-    }) {
-        return getInstallationAccessToken(installationId)
-            .then(accessToken => request.post(updateBaseHost(statusUrl), {
-                ...getRequestOptions(accessToken),
-                body: {
-                    state: status,
-                    description: description,
-                    target_url: targetUrl,
-                    context: 'Branch Bookkeeper',
-                },
-            })
-                .then(trackApiUsageAndReturnBody));
+const getCheckRunsForSha = ({
+    installationId,
+    owner,
+    repo,
+    sha,
+}) => getInstallationAccessToken(installationId)
+    .then(accessToken => request.get(
+        `${baseHost}/repos/${owner}/${repo}/commits/${sha}/check-runs`,
+        getRequestOptions(accessToken, 'application/vnd.github.antiope-preview+json')
+    ))
+    .then(trackApiUsageAndReturnBody)
+    .then(compose(
+        filter(pathEq(['app', 'id'], Number(appId))),
+        path(['check_runs'])
+    ))
+    .catch(() => []);
+
+const createCheckRunForSha = options => getInstallationAccessToken(options.installationId)
+    .then(accessToken => request.post(
+        `${baseHost}/repos/${options.owner}/${options.repo}/check-runs`,
+        getRequestOptions(accessToken, 'application/vnd.github.antiope-preview+json', getCheckRunBody(options))
+    ))
+    .then(trackApiUsageAndReturnBody);
+
+const updateCheckRun = options => getInstallationAccessToken(options.installationId)
+    .then(accessToken => request.patch(
+        `${baseHost}/repos/${options.owner}/${options.repo}/check-runs/${options.checkRunId}`,
+        getRequestOptions(accessToken, 'application/vnd.github.antiope-preview+json', getCheckRunBody(options))
+    ))
+    .then(trackApiUsageAndReturnBody)
+    .catch(() => {});
+
+class GitHub {
+    static createCheckRunForPullRequest(options) {
+        return getCheckRunsForSha(options)
+            .then(checkRuns => {
+                options = {
+                    ...options,
+                    checkRunId: path([0, 'id'], checkRuns),
+                };
+                return isEmpty(checkRuns) ? createCheckRunForSha(options) : updateCheckRun(options);
+            });
     }
 
     static getUserInfo(token) {
@@ -196,13 +244,13 @@ class Github {
         sha,
     }) {
         return Promise.all([
-            Github.getHashCheckSuites({
+            GitHub.getHashCheckSuites({
                 installationId,
                 owner,
                 repo,
                 sha,
             }),
-            Github.getHashStatus({
+            GitHub.getHashStatus({
                 installationId,
                 owner,
                 repo,
@@ -213,16 +261,16 @@ class Github {
     }
 }
 
-Github.STATUS_SUCCESS = 'success';
-Github.STATUS_FAILURE = 'failure';
-Github.STATUS_ERROR = 'error';
-Github.STATUS_PENDING = 'pending';
+GitHub.STATUS_SUCCESS = 'success';
+GitHub.STATUS_FAILURE = 'failure';
+GitHub.STATUS_ERROR = 'error';
+GitHub.STATUS_PENDING = 'pending';
 
-Github.CHECK_SUITE_CONCLUSION_SUCCESS = 'success';
-Github.CHECK_SUITE_CONCLUSION_FAILURE = 'failure';
-Github.CHECK_SUITE_CONCLUSION_NEUTRAL = 'neutral';
-Github.CHECK_SUITE_CONCLUSION_CANCELLED = 'cancelled';
-Github.CHECK_SUITE_CONCLUSION_TIMED_OUT = 'timed_out';
-Github.CHECK_SUITE_CONCLUSION_ACTION_REQUIRED = 'action_required';
+GitHub.CHECK_SUITE_CONCLUSION_SUCCESS = 'success';
+GitHub.CHECK_SUITE_CONCLUSION_FAILURE = 'failure';
+GitHub.CHECK_SUITE_CONCLUSION_NEUTRAL = 'neutral';
+GitHub.CHECK_SUITE_CONCLUSION_CANCELLED = 'cancelled';
+GitHub.CHECK_SUITE_CONCLUSION_TIMED_OUT = 'timed_out';
+GitHub.CHECK_SUITE_CONCLUSION_ACTION_REQUIRED = 'action_required';
 
-module.exports = Github;
+module.exports = GitHub;

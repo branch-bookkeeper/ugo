@@ -7,6 +7,7 @@ const pullRequestHandler = require('./handler-pullrequest');
 const queueManager = require('./manager-queue');
 const logger = require('./logger');
 const validator = require('./validator-signature-github');
+const { path } = require('ramda');
 
 // Validator
 router.post('/', validator);
@@ -72,6 +73,53 @@ router.post('/', (req, res, next) => {
     }
 
     return res.json(`Check suite ${action} for ${sha} ${status}`);
+});
+
+// Check run
+router.post('/', (req, res, next) => {
+    if (req.event !== 'check_run') {
+        return next();
+    }
+
+    const {
+        body: {
+            action,
+        },
+    } = req;
+
+    if (action !== 'requested_action') {
+        return next();
+    }
+
+    const username = path(['body', 'sender', 'login'], req);
+    const owner = path(['body', 'repository', 'owner', 'login'], req);
+    const repo = path(['body', 'repository', 'name'], req);
+    const identifier = path(['body', 'requested_action', 'identifier'], req);
+    const pullRequestNumber = path(['body', 'check_run', 'check_suite', 'pull_requests', 0, 'number'], req);
+    const branch = path(['body', 'check_run', 'check_suite', 'pull_requests', 0, 'base', 'ref'], req);
+
+    if (!username || !owner || !repo || !identifier || !pullRequestNumber || !branch) {
+        return next();
+    }
+
+    const item = {
+        username,
+        pullRequestNumber,
+        createdAt: new Date(),
+    };
+
+    let pendingPromise;
+
+    if (identifier === pullRequestHandler.ACTION_QUEUE_REMOVE_IDENTIFIER) {
+        pendingPromise = queueManager.removeItem;
+    } else if (identifier === pullRequestHandler.ACTION_QUEUE_ADD_IDENTIFIER) {
+        pendingPromise = queueManager.addItem;
+    } else {
+        return next();
+    }
+
+    return pendingPromise(owner, repo, branch, item)
+        .then(() => res.json(`PR ${pullRequestNumber} ${identifier} for queue ${branch}`));
 });
 
 // Repositories

@@ -9,6 +9,20 @@
     },
     "merged": "Merged by {username}"
   },
+  "checkRun": {
+    "name": "Branch Bookkeeper",
+    "summary": "Queue: **{owner}/{repo} {branch}**",
+    "actions": {
+      "add": {
+        "label": "Add to queue",
+        "description": "adds this PR to the queue"
+      },
+      "remove": {
+        "label": "Remove from queue",
+        "description": "removes this PR from the queue"
+      }
+    }
+  },
   "notification": {
     "title": {
       "checks": {

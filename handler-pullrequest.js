@@ -1,4 +1,4 @@
-const Github = require('./github');
+const GitHub = require('./github');
 const postal = require('postal');
 const t = require('./manager-localization');
 const {
@@ -13,21 +13,12 @@ const pullRequestManager = require('./manager-pullrequest');
 const MAX_REPORTED_QUEUE_POSITION = 5;
 const DESCRIPTION_NOT_IN_QUEUE = t('pullRequest.queue.not');
 const DESCRIPTION_FIRST = t('pullRequest.queue.first');
-const { env: { APP_ORIGIN } } = process;
-
-const _updatePullRequestStatus = ({
-    owner, repo, branch, pullRequestNumber, status, description, statusUrl, installationId,
-}) => {
-    const targetUrl = `${APP_ORIGIN}/${owner}/${repo}/${branch}/${pullRequestNumber}`;
-
-    return Github.updatePullRequestStatus({
-        installationId,
-        statusUrl,
-        description,
-        status,
-        targetUrl,
-    });
-};
+const ACTION_QUEUE_ADD_LABEL = t('checkRun.actions.add.label');
+const ACTION_QUEUE_ADD_DESCRIPTION = t('checkRun.actions.add.description');
+const ACTION_QUEUE_ADD_IDENTIFIER = 'queue-add';
+const ACTION_QUEUE_REMOVE_LABEL = t('checkRun.actions.remove.label');
+const ACTION_QUEUE_REMOVE_DESCRIPTION = t('checkRun.actions.remove.description');
+const ACTION_QUEUE_REMOVE_IDENTIFIER = 'queue-remove';
 
 const _getPullRequestAndUpdateStatus = (owner, repo, pullRequestNumber, status, description) => pullRequestManager.getPullRequestInfo(owner, repo, pullRequestNumber)
     .then(pullRequestData => {
@@ -36,24 +27,31 @@ const _getPullRequestAndUpdateStatus = (owner, repo, pullRequestNumber, status, 
                 pullRequestNumber,
                 branch,
                 installationId,
-                statusUrl,
+                sha,
             } = pullRequestData;
-            return _updatePullRequestStatus({
+
+            const actions = process.env.CHECK_RUN_ACTIONS === true ? [{
+                label: description === DESCRIPTION_NOT_IN_QUEUE ? ACTION_QUEUE_ADD_LABEL : ACTION_QUEUE_REMOVE_LABEL,
+                description: description === DESCRIPTION_NOT_IN_QUEUE ? ACTION_QUEUE_ADD_DESCRIPTION : ACTION_QUEUE_REMOVE_DESCRIPTION,
+                identifier: description === DESCRIPTION_NOT_IN_QUEUE ? ACTION_QUEUE_ADD_IDENTIFIER : ACTION_QUEUE_REMOVE_IDENTIFIER,
+            }] : undefined;
+
+            return GitHub.createCheckRunForPullRequest({
+                installationId,
+                sha,
+                status,
+                description,
+                actions,
                 owner,
                 repo,
                 branch,
                 pullRequestNumber,
-                installationId,
-                statusUrl,
-                status,
-                description,
             });
         }
     });
 
 const _updatePullRequestInfo = (pullRequest, installationId) => {
     const {
-        statuses_url: statusUrl,
         title,
         html_url: humanUrl,
         assignees,
@@ -64,7 +62,6 @@ const _updatePullRequestInfo = (pullRequest, installationId) => {
     } = pullRequest;
 
     return pullRequestManager.setPullRequestInfo(owner, repo, pullRequestNumber, {
-        statusUrl,
         installationId,
         pullRequestNumber,
         title,
@@ -174,14 +171,14 @@ class PullRequestHandler {
                     branch,
                     installationId,
                     pullRequestNumber,
-                    status: pullRequestStatus = Github.STATUS_PENDING,
+                    status: pullRequestStatus = GitHub.STATUS_PENDING,
                 } = data;
                 return queueManager.getFirstItem(owner, repo, branch)
                     .then(firstItem => {
                         if (!firstItem || firstItem.pullRequestNumber !== pullRequestNumber) {
                             return Promise.resolve();
                         }
-                        return Github.getHashCombinedStatus({
+                        return GitHub.getHashCombinedStatus({
                             installationId,
                             owner,
                             repo,
@@ -195,7 +192,7 @@ class PullRequestHandler {
                                 })
                                     .then(() => {
                                         if (githubStatus !== pullRequestStatus) {
-                                            const topic = githubStatus === Github.STATUS_PENDING ? 'cancel.checks' : 'send.checks';
+                                            const topic = githubStatus === GitHub.STATUS_PENDING ? 'cancel.checks' : 'send.checks';
                                             postal.publish({
                                                 channel: 'notification',
                                                 topic,
@@ -225,7 +222,7 @@ class PullRequestHandler {
             owner,
             repo,
             pullRequestNumber,
-            Github.STATUS_FAILURE,
+            GitHub.CHECK_SUITE_CONCLUSION_FAILURE,
             description
         );
     }
@@ -240,7 +237,7 @@ class PullRequestHandler {
             owner,
             repo,
             pullRequestNumber,
-            Github.STATUS_SUCCESS,
+            GitHub.CHECK_SUITE_CONCLUSION_SUCCESS,
             description
         );
     }
@@ -300,5 +297,7 @@ class PullRequestHandler {
 }
 
 PullRequestHandler.MAX_REPORTED_QUEUE_POSITION = MAX_REPORTED_QUEUE_POSITION;
+PullRequestHandler.ACTION_QUEUE_ADD_IDENTIFIER = ACTION_QUEUE_ADD_IDENTIFIER;
+PullRequestHandler.ACTION_QUEUE_REMOVE_IDENTIFIER = ACTION_QUEUE_REMOVE_IDENTIFIER;
 
 module.exports = PullRequestHandler;

@@ -1,6 +1,6 @@
 const mongoManager = require('./manager-mongo');
 const postal = require('postal');
-const Github = require('./github');
+const GitHub = require('./github');
 const {
     evolve,
     map,
@@ -19,12 +19,12 @@ class InstallationInfoManager {
                 ))
                 .then(installationInfo => {
                     if (isNil(installationInfo)) {
-                        return InstallationInfoManager._getInstallationInfoFromGithub(token, installationId);
+                        return InstallationInfoManager._getInstallationInfoFromGitHub(token, installationId);
                     }
                     return installationInfo;
                 });
         }
-        return InstallationInfoManager._getInstallationInfoFromGithub(token, installationId);
+        return InstallationInfoManager._getInstallationInfoFromGitHub(token, installationId);
     }
 
     static deleteInstallationInfos(installationId) {
@@ -44,8 +44,8 @@ class InstallationInfoManager {
         return Promise.resolve();
     }
 
-    static _getInstallationInfoFromGithub(token, installationId) {
-        return Github.getInstallationInfo(token, installationId)
+    static _getInstallationInfoFromGitHub(token, installationId) {
+        return GitHub.getInstallationInfo(token, installationId)
             .then(evolve({ repositories: map(pick(['full_name', 'permissions'])) }))
             .then(installationInfo => InstallationInfoManager._setInstallationInfo(installationId, installationInfo, token));
     }
