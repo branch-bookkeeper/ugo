@@ -1,7 +1,6 @@
 const createError = require('http-errors');
 const crypto = require('crypto');
-const { env: { SECRET_TOKEN: token, NODE_ENV } } = process;
-const environment = NODE_ENV || 'production';
+const { env: { SECRET_TOKEN: token, NODE_ENV: environment = 'production' } } = process;
 const development = environment === 'development';
 const test = environment === 'test';
 
