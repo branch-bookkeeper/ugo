@@ -1,4 +1,4 @@
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const createError = require('http-errors');
 
 const schema = Joi.object().keys({
