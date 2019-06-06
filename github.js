@@ -91,8 +91,8 @@ const getCheckRunBody = ({
     actions,
 });
 
-const getCombinedStatus = ([githubSuitesResponse, githubStatusResponse]) => {
-    const githubConclusions = pluck('conclusion', pathOr([], ['check_suites'], githubSuitesResponse));
+const getCombinedStatus = ([githubRunsResponse, githubStatusResponse]) => {
+    const githubConclusions = pluck('conclusion', pathOr([], ['check_runs'], githubRunsResponse));
     const githubStatus = pathOr('', ['state'], githubStatusResponse);
 
     const conclusionsHasPending = not(isEmpty(filter(isNil, githubConclusions)));
@@ -259,7 +259,7 @@ class GitHub {
         sha,
     }) {
         return Promise.all([
-            GitHub.getHashCheckSuites({
+            GitHub.getHashCheckRuns({
                 installationId,
                 owner,
                 repo,
