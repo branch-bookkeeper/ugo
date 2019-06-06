@@ -237,6 +237,21 @@ class GitHub {
             .catch(() => {});
     }
 
+    static getHashCheckRuns({
+        installationId,
+        owner,
+        repo,
+        sha,
+    }) {
+        return getInstallationAccessToken(installationId)
+            .then(accessToken => request.get(
+                `${baseHost}/repos/${owner}/${repo}/commits/${sha}/check-runs`,
+                getRequestOptions(accessToken, 'application/vnd.github.antiope-preview+json')
+            ))
+            .then(trackApiUsageAndReturnBody)
+            .catch(() => {});
+    }
+
     static getHashCombinedStatus({
         installationId,
         owner,
