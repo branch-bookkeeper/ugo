@@ -53,7 +53,6 @@ router.post('/', (req, res, next) => {
 
     const {
         body: {
-            action,
             check_suite: {
                 status,
                 conclusion,
@@ -63,16 +62,12 @@ router.post('/', (req, res, next) => {
         },
     } = req;
 
-    if (action === 'completed') {
-        return pullRequestHandler.handleStatusChange({
-            owner,
-            repo,
-            sha,
-        })
-            .then(() => res.json(`Check suite for ${sha} ${status} ${conclusion}`));
-    }
-
-    return res.json(`Check suite ${action} for ${sha} ${status}`);
+    return pullRequestHandler.handleStatusChange({
+        owner,
+        repo,
+        sha,
+    })
+        .then(() => res.json(`Check suite for ${sha} ${status} ${conclusion}`));
 });
 
 // Check run
