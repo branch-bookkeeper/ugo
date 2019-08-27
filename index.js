@@ -14,7 +14,7 @@ const {
     env: {
         ROLLBAR_KEY: rollbarAccessToken,
         PORT: port = 3000,
-        APP_ORIGIN: appOrigin = 'http://localhost:4000',
+        APP_ORIGIN: appOrigin = '^http://localhost:4000',
         UA: analyticsUa,
     },
 } = process;
@@ -38,7 +38,7 @@ const rollbar = new Rollbar({
 
 app.use(express.json());
 app.use(compression());
-app.use(cors({ origin: appOrigin }));
+app.use(cors({ origin: RegExp(appOrigin) }));
 
 morgan.token('remote-user', path(['user', 'username']));
 app.use(morgan('combined', { stream: logger }));
