@@ -123,7 +123,7 @@ const getInstallationAccessToken = installationId => {
         iss: appId,
     }, privateKey, { algorithm: 'RS256' });
 
-    return request.post(`${baseHost}/installations/${installationId}/access_tokens`, {
+    return request.post(`${baseHost}/app/installations/${installationId}/access_tokens`, {
         ...getRequestOptions(null, 'application/vnd.github.machine-man-preview+json'),
         auth: {
             bearer: token,

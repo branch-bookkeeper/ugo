@@ -5,7 +5,7 @@
   "/github/repos/:owner/:repo/check-runs/:id": "/runUpdated",
   "/github/repos/:owner/:repo/check-runs": "/runCreated",
   "/github/repos/:owner/:repo/statuses/:sha": "/status",
-  "/github/installations/:installationId/access_tokens": "/accessTokens",
+  "/github/app/installations/:installationId/access_tokens": "/accessTokens",
   "/github/user/installations/:installationId/repositories": "/repositories",
   "/github/user": "/user",
   "/github/repos/:owner/:repo/pulls/:number": "/pullRequest"
