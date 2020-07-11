@@ -8,7 +8,7 @@ const getDb = new Promise(resolve => {
         if (!isNil(database)) {
             return resolve(database);
         }
-        MongoClient.connect(MONGO_URL, { useNewUrlParser: true })
+        MongoClient.connect(MONGO_URL, { useUnifiedTopology: true })
             .then(c => c.db())
             .then(db => {
                 logger.info('Connected to mongo');
