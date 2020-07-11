@@ -29,6 +29,7 @@ const {
     },
 } = process;
 const development = environment === 'development';
+const test = environment === 'test';
 
 const requestAllPages = opts => new Promise((resolve, reject) => RequestAllPages(opts, { perPage: 100 }, (err, pages) => err ? reject(err) : resolve(pages)));
 
@@ -117,7 +118,7 @@ const getCombinedStatus = ([githubRunsResponse, githubStatusResponse]) => {
 };
 
 const getInstallationAccessToken = installationId => {
-    const token = development ? '' : JWT.sign({
+    const token = development || test ? '' : JWT.sign({
         iat: Math.floor(Date.now() / 1000),
         exp: (Math.floor(Date.now() / 1000) + (10 * 60)),
         iss: appId,
