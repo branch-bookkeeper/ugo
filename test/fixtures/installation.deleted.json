@@ -22,7 +22,7 @@
       "site_admin": false
     },
     "repository_selection": "selected",
-    "access_tokens_url": "https://api.github.com/installations/12345/access_tokens",
+    "access_tokens_url": "https://api.github.com/app/installations/12345/access_tokens",
     "repositories_url": "https://api.github.com/installation/repositories",
     "html_url": "https://github.com/settings/installations/12345",
     "app_id": 4567,
