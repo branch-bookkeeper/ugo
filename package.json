@@ -39,7 +39,7 @@
     "request-promise-native": "^1.0.5",
     "rollbar": "^2.5.1",
     "universal-analytics": "^0.4.20",
-    "winston": "^2.4.4"
+    "winston": "^2.4.5"
   },
   "devDependencies": {
     "chai": "^4.2.0",
