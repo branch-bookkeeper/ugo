@@ -8,7 +8,7 @@ require('r7insight_node');
 if (!development && logentriesToken) {
     logger.add(new winston.transports.Insight({ token: logentriesToken, region: 'eu', console: true }));
 } else if (!test) {
-    logger.add(new winston.transports.Console({ format: winston.format.simple() } ));
+    logger.add(new winston.transports.Console({ format: winston.format.simple() }));
 }
 
 module.exports = logger;
