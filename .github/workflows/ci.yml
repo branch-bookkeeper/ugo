@@ -1,0 +1,26 @@
+name: CI
+
+on: [push]
+
+jobs:
+  ci:
+    runs-on: ubuntu-18.04
+    services:
+      mongo:
+        image: mongo:3.6.6
+        ports:
+          - 27017/tcp
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v1
+    - name: Setup node
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10.14.2
+    - name: Install yarn and run tests
+      env:
+        MONGO_URL: mongodb://localhost:${{ job.services.mongo.ports['27017'] }}/branch-bookkeeper
+      run: |
+        npm install --global yarn@1.19.0
+        yarn
+        yarn test
