@@ -32,6 +32,7 @@
     "onesignal-node": "^2.0.1",
     "postal": "^2.0.5",
     "pusher": "^2.2.0",
+    "r7insight_node": "^2.1.0",
     "ramda": "^0.26.1",
     "request": "^2.88.0",
     "request-all-pages": "^0.3.1",
