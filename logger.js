@@ -2,16 +2,13 @@ const winston = require('winston');
 const { env: { LOGENTRIES_TOKEN: logentriesToken, NODE_ENV: environment = 'production' } } = process;
 const development = environment === 'development';
 const test = environment === 'test';
-const logger = new winston.Logger();
-require('le_node');
+const logger = winston.createLogger({ exitOnError: false });
+require('r7insight_node');
 
-if (!development && !test && logentriesToken) {
-    winston.exitOnError = false;
-    logger.add(winston.transports.Logentries, { token: logentriesToken, withStack: true, secure: true });
+if (!development && logentriesToken) {
+    logger.add(new winston.transports.Insight({ token: logentriesToken, region: 'eu', console: true }));
 } else if (!test) {
-    logger.add(winston.transports.Console, {}, false);
+    logger.add(new winston.transports.Console({ format: winston.format.simple() } ));
 }
-
-logger.write = logger.info;
 
 module.exports = logger;
