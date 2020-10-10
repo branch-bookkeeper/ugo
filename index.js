@@ -41,7 +41,6 @@ app.use(compression());
 app.use(cors({ origin: appOrigin }));
 
 morgan.token('remote-user', path(['user', 'username']));
-app.use(morgan('combined', { stream: logger }));
 
 if (analyticsUa) {
     app.use(analytics.trackRequest);
@@ -79,7 +78,7 @@ app.use((err, req, res, next) => {
 });
 
 if (!test) {
-    app.use(morgan('combined'));
+    app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 }
 
 app.get('/', (req, res) => {

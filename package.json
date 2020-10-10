@@ -25,7 +25,6 @@
     "http-errors": "^1.7.1",
     "joi": "^14.3.0",
     "jsonwebtoken": "^8.4.0",
-    "le_node": "^1.8.0",
     "localizify": "^1.2.4",
     "mongodb": "^3.1.13",
     "morgan": "^1.9.1",
@@ -33,13 +32,15 @@
     "onesignal-node": "^2.0.1",
     "postal": "^2.0.5",
     "pusher": "^2.2.0",
+    "r7insight_node": "^2.1.0",
     "ramda": "^0.26.1",
     "request": "^2.88.0",
     "request-all-pages": "^0.3.1",
     "request-promise-native": "^1.0.5",
     "rollbar": "^2.5.1",
     "universal-analytics": "^0.4.20",
-    "winston": "^2.4.5"
+    "winston": "^3.3.3",
+    "winston-transport": "^4.4.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
