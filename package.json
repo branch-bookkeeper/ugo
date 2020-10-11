@@ -26,7 +26,7 @@
     "joi": "^14.3.0",
     "jsonwebtoken": "^8.5.1",
     "localizify": "^1.2.4",
-    "mongodb": "^3.1.13",
+    "mongodb": "^3.6.2",
     "morgan": "^1.10.0",
     "newrelic": "^4.12.0",
     "onesignal-node": "^2.0.1",

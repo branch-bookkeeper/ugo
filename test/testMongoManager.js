@@ -11,10 +11,6 @@ suite('MongoManager', () => {
         collectionName = Math.random().toString(36).substring(2);
     });
 
-    test('Get collection', () => {
-        return mongoManager.getCollection(collectionName)
-            .then(collection => {
-                assert.deepEqual(collectionName, collection.s.name);
-            });
-    });
+    test('Get collection', () => mongoManager.getCollection(collectionName)
+        .then(collection => assert.deepEqual(collectionName, collection.s.namespace.collection)));
 });
