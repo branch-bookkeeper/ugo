@@ -16,7 +16,7 @@ const getDb = new Promise(resolve => {
                 resolve(db);
             })
             .catch(e => {
-                logger.error('Error connectiong to mongo', e);
+                logger.error('Error connecting to mongo', e);
                 resolve({});
             });
     } else {
