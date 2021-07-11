@@ -29,6 +29,7 @@ const {
     },
 } = process;
 const development = environment === 'development';
+const test = environment === 'test';
 
 const requestAllPages = opts => new Promise((resolve, reject) => RequestAllPages(opts, { perPage: 100 }, (err, pages) => err ? reject(err) : resolve(pages)));
 
@@ -91,8 +92,8 @@ const getCheckRunBody = ({
     actions,
 });
 
-const getCombinedStatus = ([githubSuitesResponse, githubStatusResponse]) => {
-    const githubConclusions = pluck('conclusion', pathOr([], ['check_suites'], githubSuitesResponse));
+const getCombinedStatus = ([githubRunsResponse, githubStatusResponse]) => {
+    const githubConclusions = pluck('conclusion', pathOr([], ['check_runs'], githubRunsResponse));
     const githubStatus = pathOr('', ['state'], githubStatusResponse);
 
     const conclusionsHasPending = not(isEmpty(filter(isNil, githubConclusions)));
@@ -117,7 +118,7 @@ const getCombinedStatus = ([githubSuitesResponse, githubStatusResponse]) => {
 };
 
 const getInstallationAccessToken = installationId => {
-    const token = development ? '' : JWT.sign({
+    const token = development || test ? '' : JWT.sign({
         iat: Math.floor(Date.now() / 1000),
         exp: (Math.floor(Date.now() / 1000) + (10 * 60)),
         iss: appId,
@@ -237,6 +238,21 @@ class GitHub {
             .catch(() => {});
     }
 
+    static getHashCheckRuns({
+        installationId,
+        owner,
+        repo,
+        sha,
+    }) {
+        return getInstallationAccessToken(installationId)
+            .then(accessToken => request.get(
+                `${baseHost}/repos/${owner}/${repo}/commits/${sha}/check-runs`,
+                getRequestOptions(accessToken, 'application/vnd.github.antiope-preview+json')
+            ))
+            .then(trackApiUsageAndReturnBody)
+            .catch(() => {});
+    }
+
     static getHashCombinedStatus({
         installationId,
         owner,
@@ -244,7 +260,7 @@ class GitHub {
         sha,
     }) {
         return Promise.all([
-            GitHub.getHashCheckSuites({
+            GitHub.getHashCheckRuns({
                 installationId,
                 owner,
                 repo,
